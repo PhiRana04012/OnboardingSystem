@@ -1,0 +1,258 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>OnboardingSystem</name>
+    </assembly>
+    <members>
+        <member name="M:OnboardingSystem.Controllers.ActionLogsController.GetUserLogs(System.Int32,System.Nullable{System.DateTime},System.Nullable{System.DateTime})">
+            <summary>
+            Получить журнал действий пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ActionLogsController.GetAllLogs(System.Nullable{System.Int32},System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime})">
+            <summary>
+            Получить все записи журнала действий
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ActionLogsController.CreateLog(OnboardingSystem.DTOs.CreateActionLogDto)">
+            <summary>
+            Создать запись в журнале действий
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.DepartmentsController.GetDepartments">
+            <summary>
+            Получить список всех подразделений
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.DepartmentsController.GetDepartment(System.Int32)">
+            <summary>
+            Получить подразделение по ID
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.DepartmentsController.CreateDepartment(OnboardingSystem.DTOs.CreateDepartmentDto)">
+            <summary>
+            Создать новое подразделение
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.DepartmentsController.UpdateDepartment(System.Int32,OnboardingSystem.DTOs.UpdateDepartmentDto)">
+            <summary>
+            Обновить подразделение
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.DepartmentsController.DeleteDepartment(System.Int32)">
+            <summary>
+            Удалить подразделение
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ModulesController.GetModules(System.Nullable{System.Int32},System.Nullable{System.Boolean})">
+            <summary>
+            Получить список всех модулей
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ModulesController.GetModule(System.Int32)">
+            <summary>
+            Получить модуль по ID
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ModulesController.CreateModule(OnboardingSystem.DTOs.CreateModuleDto)">
+            <summary>
+            Создать новый модуль
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ModulesController.UpdateModule(System.Int32,OnboardingSystem.DTOs.UpdateModuleDto)">
+            <summary>
+            Обновить модуль
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ModulesController.DeleteModule(System.Int32)">
+            <summary>
+            Удалить модуль
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ProgressController.GetUserProgress(System.Int32)">
+            <summary>
+            Получить прогресс онбординга пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ProgressController.GetModuleProgress(System.Int32,System.Int32)">
+            <summary>
+            Получить прогресс по модулю
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ProgressController.MarkModuleAsRead(System.Int32,OnboardingSystem.DTOs.MarkModuleAsReadDto)">
+            <summary>
+            Отметить модуль как прочитанный
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ProgressController.GetAllProgress(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Получить список всех прогрессов
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.QuestionsController.GetQuestionsByModule(System.Int32)">
+            <summary>
+            Получить вопросы по модулю
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.QuestionsController.GetQuestionsForTest(System.Int32)">
+            <summary>
+            Получить вопросы для теста (без правильных ответов)
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.QuestionsController.GetQuestion(System.Int32)">
+            <summary>
+            Получить вопрос по ID
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.QuestionsController.CreateQuestion(OnboardingSystem.DTOs.CreateQuestionDto)">
+            <summary>
+            Создать вопрос
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.QuestionsController.UpdateQuestion(System.Int32,OnboardingSystem.DTOs.UpdateQuestionDto)">
+            <summary>
+            Обновить вопрос
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.QuestionsController.DeleteQuestion(System.Int32)">
+            <summary>
+            Удалить вопрос
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ReportsController.GetOnboardingProgressReport(System.Int32)">
+            <summary>
+            Получить отчёт о прогрессе онбординга сотрудника
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ReportsController.GetTestResultsReport(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Получить отчёт о результатах тестов
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ReportsController.GetDepartmentReport(System.Int32)">
+            <summary>
+            Получить отчёт по подразделению
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Controllers.RimsSyncController">
+            Контроллер для синхронизации с RIMS API
+        </member>
+        <member name="M:OnboardingSystem.Controllers.RimsSyncController.SyncUserByUid(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Синхронизировать пользователя из RIMS по Uid
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.RimsSyncController.SyncUserByEmail(OnboardingSystem.Controllers.SyncByEmailRequest,System.Threading.CancellationToken)">
+            <summary>
+            Синхронизировать пользователя из RIMS по Email
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Controllers.SyncByEmailRequest">
+            <summary>
+            Запрос на синхронизацию по email
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.TestAttemptsController.GetUserAttempts(System.Int32)">
+            <summary>
+            Получить попытки прохождения теста пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.TestAttemptsController.GetModuleAttempts(System.Int32,System.Int32)">
+            <summary>
+            Получить попытки прохождения теста по модулю
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.TestAttemptsController.SubmitTest(OnboardingSystem.DTOs.SubmitTestDto)">
+            <summary>
+            Отправить ответы на тест
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.TestAttemptsController.GetAttempt(System.Int64)">
+            <summary>
+            Получить результат попытки
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.UsersController.GetUsers">
+            <summary>
+            Получить список всех пользователей
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.UsersController.CreateUser(OnboardingSystem.DTOs.CreateUserDto)">
+            <summary>
+            Создать нового пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.UsersController.UpdateUser(System.Int32,OnboardingSystem.DTOs.UpdateUserDto)">
+            <summary>
+            Обновить пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.UsersController.DeleteUser(System.Int32)">
+            <summary>
+            Удалить пользователя
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddRimsIntegrationFields">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddRimsIntegrationFields.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddRimsIntegrationFields.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddRimsIntegrationFields.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Services.IRimsIntegrationService">
+            <summary>
+            Интерфейс для интеграции с RIMS API
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IRimsIntegrationService.FindPersonByUidAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Поиск пользователя в RIMS по Uid
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IRimsIntegrationService.FindPersonByEmailAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Поиск пользователя в RIMS по Email
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IRimsIntegrationService.SyncUserFromRimsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Синхронизация: создание/обновление пользователя из RIMS
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IRimsIntegrationService.GetOrCreateDepartmentAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Получение или создание Department по названию из RIMS
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Services.RimsIntegrationService">
+            <summary>
+            Сервис интеграции с RIMS API
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.RimsIntegrationService.FindPersonByUidAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Поиск пользователя в RIMS по Uid
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.RimsIntegrationService.FindPersonByEmailAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Поиск пользователя в RIMS по Email
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.RimsIntegrationService.SyncUserFromRimsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Синхронизация: создание/обновление пользователя из RIMS
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.RimsIntegrationService.GetOrCreateDepartmentAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Получение или создание Department по названию из RIMS
+            </summary>
+        </member>
+    </members>
+</doc>
