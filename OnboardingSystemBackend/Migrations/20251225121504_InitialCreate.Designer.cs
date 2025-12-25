@@ -12,8 +12,8 @@ using OnboardingSystem.Data;
 namespace OnboardingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251118133012_AddRimsIntegrationFields")]
-    partial class AddRimsIntegrationFields
+    [Migration("20251225121504_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

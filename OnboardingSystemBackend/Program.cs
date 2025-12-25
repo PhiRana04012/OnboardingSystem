@@ -96,4 +96,51 @@ app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 
+// Apply migrations at startup
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    
+    // Retry strategy for database migration
+    int maxRetries = 12;
+    int delaySeconds = 5;
+    
+    for (int i = 0; i < maxRetries; i++)
+    {
+        try
+        {
+            var context = services.GetRequiredService<AppDbContext>();
+            
+            // Log connection string (safe version)
+            var connStr = context.Database.GetConnectionString();
+            var safeConnStr = System.Text.RegularExpressions.Regex.Replace(connStr ?? "", "Password=.*?;", "Password=***;");
+            logger.LogInformation("Attempting to connect to database number {Attempt}/{MaxRetries}. Connection String: {ConnStr}", i + 1, maxRetries, safeConnStr);
+
+            if (i == 0) 
+            {
+               // Brief wait on first attempt to give SQL Server a moment to start listening
+               System.Threading.Thread.Sleep(2000);
+            }
+
+            context.Database.Migrate();
+            DbInitializer.Initialize(context);
+            logger.LogInformation("Database migration and seeding completed successfully.");
+            break; // Success, exit loop
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Attempt {Attempt} of {MaxRetries} to migrate database failed. Waiting {Delay} seconds...", i + 1, maxRetries, delaySeconds);
+            if (i == maxRetries - 1)
+            {
+                logger.LogError(ex, "Failed to migrate database after {MaxRetries} attempts.", maxRetries);
+                // We might want to rethrow here if DB is critical
+                // throw; 
+            }
+            // Sync wait is okay here as it's startup
+            System.Threading.Thread.Sleep(delaySeconds * 1000); 
+        }
+    }
+}
+
 app.Run();

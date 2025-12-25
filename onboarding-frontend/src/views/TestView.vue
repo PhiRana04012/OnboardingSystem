@@ -174,7 +174,20 @@ const submitTest = async () => {
     return
   }
 
-  if (Object.keys(selectedAnswers).length !== questions.value.length) {
+  // Check if all questions have a selected answer
+  console.log('Validating answers...');
+  console.log('Selected Answers:', JSON.parse(JSON.stringify(selectedAnswers.value)));
+  console.log('Questions:', questions.value.map(q => q.questionId));
+
+  const allAnswered = questions.value.every(q => {
+    const answer = selectedAnswers.value[q.questionId];
+    const isAnswered = answer !== null && answer !== undefined;
+    console.log(`Question ${q.questionId}: answer=${answer}, isAnswered=${isAnswered}`);
+    return isAnswered;
+  });
+
+  if (!allAnswered) {
+    console.warn('Validation failed: not all questions answered');
     alert('Пожалуйста, ответьте на все вопросы')
     return
   }

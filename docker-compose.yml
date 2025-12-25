@@ -1,0 +1,50 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: onboarding-db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Password123
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - onboarding-network
+    restart: always
+
+  backend:
+    build:
+      context: ./OnboardingSystemBackend
+      dockerfile: Dockerfile
+    container_name: onboarding-backend
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Database=onboarding;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5233:8080"
+    depends_on:
+      - db
+    networks:
+      - onboarding-network
+    restart: always
+
+  frontend:
+    build:
+      context: ./onboarding-frontend
+      dockerfile: Dockerfile
+    container_name: onboarding-frontend
+    ports:
+      - "8085:80"
+    depends_on:
+      - backend
+    networks:
+      - onboarding-network
+    restart: always
+
+networks:
+  onboarding-network:
+    driver: bridge
+
+volumes:
+  mssql_data:

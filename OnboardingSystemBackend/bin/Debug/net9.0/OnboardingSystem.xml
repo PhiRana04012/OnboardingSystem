@@ -192,16 +192,16 @@
             Удалить пользователя
             </summary>
         </member>
-        <member name="T:OnboardingSystem.Migrations.AddRimsIntegrationFields">
+        <member name="T:OnboardingSystem.Migrations.InitialCreate">
             <inheritdoc />
         </member>
-        <member name="M:OnboardingSystem.Migrations.AddRimsIntegrationFields.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:OnboardingSystem.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:OnboardingSystem.Migrations.AddRimsIntegrationFields.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:OnboardingSystem.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:OnboardingSystem.Migrations.AddRimsIntegrationFields.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:OnboardingSystem.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:OnboardingSystem.Services.IRimsIntegrationService">
