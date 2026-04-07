@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
 using OnboardingSystem.Entities;
+using OnboardingSystem.Services;
 
 namespace OnboardingSystem.Controllers;
 
@@ -13,12 +14,15 @@ public class TestAttemptsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<TestAttemptsController> _logger;
+    private readonly IEmailService _emailService;
 
-    public TestAttemptsController(AppDbContext context, ILogger<TestAttemptsController> logger)
+    public TestAttemptsController(AppDbContext context, ILogger<TestAttemptsController> logger, IEmailService emailService)
     {
         _context = context;
         _logger = logger;
+        _emailService = emailService;
     }
+
 
     /// <summary>
     /// Получить попытки прохождения теста пользователя
@@ -203,6 +207,12 @@ public class TestAttemptsController : ControllerBase
         _context.ActionLogs.Add(actionLog);
 
         await _context.SaveChangesAsync();
+        
+        // --- Логика успешного окончания онбординга ---
+        if (isPassed)
+        {
+            await CheckAndCompleteOnboardingAsync(dto.UserId);
+        }
 
         var result = new TestResultDto
         {
@@ -255,6 +265,93 @@ public class TestAttemptsController : ControllerBase
         };
 
         return Ok(attemptDto);
+    }
+
+    /// <summary>
+    /// Сбросить попытки теста для пользователя (доступно Админам/HR)
+    /// </summary>
+    [HttpDelete("reset/user/{userId}/module/{moduleId}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> ResetAttempts(int userId, int moduleId)
+    {
+        var attempts = await _context.TestAttempts
+            .Where(t => t.UserId == userId && t.ModuleId == moduleId)
+            .ToListAsync();
+
+        if (attempts.Any())
+        {
+            _context.TestAttempts.RemoveRange(attempts);
+        }
+        
+        var progress = await _context.UserModuleProgresses
+            .FirstOrDefaultAsync(p => p.UserId == userId && p.ModuleId == moduleId);
+            
+        if (progress != null)
+        {
+            progress.Status = "В процессе";
+            progress.CompletionDate = null;
+        }
+
+        var actionLog = new ActionLog
+        {
+            UserId = userId,
+            ActionType = "Сброс попыток теста",
+            Timestamp = DateTime.UtcNow,
+            Details = $"Сброшены попытки по модулю ID {moduleId}"
+        };
+        _context.ActionLogs.Add(actionLog);
+
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    private async Task CheckAndCompleteOnboardingAsync(int userId)
+    {
+        var user = await _context.Users
+            .Include(u => u.Department)
+            .Include(u => u.Mentor)
+            .FirstOrDefaultAsync(u => u.UserId == userId);
+            
+        if (user == null || user.OnboardingStatus == "Завершён") return;
+
+        var userModules = await _context.Modules
+            .Where(m => m.DepartmentId == null || m.DepartmentId == user.DepartmentId)
+            .ToListAsync();
+            
+        var mandatoryModules = userModules.Where(m => m.IsMandatory).Select(m => m.ModuleId).ToList();
+        
+        var progressList = await _context.UserModuleProgresses
+            .Where(p => p.UserId == userId && mandatoryModules.Contains(p.ModuleId))
+            .ToListAsync();
+            
+        var completedMandatoryCount = progressList.Count(p => p.Status == "Завершён");
+        
+        if (mandatoryModules.Count > 0 && completedMandatoryCount == mandatoryModules.Count)
+        {
+            user.OnboardingStatus = "Завершён";
+            
+            var actionLog = new ActionLog
+            {
+                UserId = userId,
+                ActionType = "Онбординг завершен",
+                Timestamp = DateTime.UtcNow,
+                Details = "Сотрудник завершил все обязательные модули"
+            };
+            _context.ActionLogs.Add(actionLog);
+            await _context.SaveChangesAsync();
+
+            // Find HR emails (Users with HR role)
+            var hrEmails = await _context.Users
+                .Where(u => u.Roles.Any(r => r.RoleName == "HR-специалист"))
+                .Select(u => u.Email)
+                .ToListAsync();
+
+            var hrEmail = hrEmails.FirstOrDefault() ?? "";
+            var mentorEmail = user.Mentor?.Email ?? "";
+
+            await _emailService.SendOnboardingCompletedEmailAsync(hrEmail, mentorEmail, user.FullName);
+        }
     }
 }
 

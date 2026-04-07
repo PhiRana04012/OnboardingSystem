@@ -206,7 +206,11 @@ const startTest = () => {
 
 const formatContent = (content) => {
   if (!content) return ''
-  // Simple formatting - in production, use a proper markdown/HTML renderer
+  // If the content comes from Quill, it already has HTML tags like <p>, <h1>, etc.
+  if (content.includes('<p>') || content.includes('<h1>') || content.includes('<ul>')) {
+    return content
+  }
+  // Otherwise it's plain text legacy content, add <br> tags.
   return content.replace(/\n/g, '<br>')
 }
 

@@ -1,58 +1,68 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
+// Get base URLs from environment variables or use defaults
+const IDENTITY_API_URL = import.meta.env.VITE_IDENTITY_API_URL || 'http://localhost:5001/api'
+const CONTENT_API_URL = import.meta.env.VITE_CONTENT_API_URL || 'http://localhost:5002/api'
+const PROGRESS_API_URL = import.meta.env.VITE_PROGRESS_API_URL || 'http://localhost:5003/api'
 
-// Request interceptor for adding auth token if needed
-api.interceptors.request.use(
-  (config) => {
-    // TODO: Add SSO token if needed
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
-
-// Response interceptor for error handling
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response) {
-      // Server responded with error status
-      const status = error.response.status
-      const data = error.response.data
-      
-      if (status === 401) {
-        console.error('Unauthorized')
-      } else if (status === 404) {
-        console.error('Resource not found:', error.config.url)
-      } else if (status === 500) {
-        console.error('Server error:', data || 'Internal server error')
-        // Log more details for debugging
-        console.error('Request URL:', error.config.url)
-        console.error('Request method:', error.config.method)
-        // Try to extract more details from the error response
-        if (typeof data === 'string') {
-          console.error('Error details:', data)
-        } else if (data && typeof data === 'object') {
-          console.error('Error object:', JSON.stringify(data, null, 2))
-        }
-      }
-    } else if (error.request) {
-      // Request was made but no response received
-      console.error('No response received:', error.request)
-    } else {
-      // Error setting up the request
-      console.error('Error setting up request:', error.message)
+// Create axios instances for each microservice
+const createApiInstance = (baseURL) => {
+  const instance = axios.create({
+    baseURL,
+    headers: {
+      'Content-Type': 'application/json'
     }
-    return Promise.reject(error)
-  }
-)
+  })
 
-export default api
+  // Request interceptor for adding auth token if needed
+  instance.interceptors.request.use(
+    (config) => {
+      // TODO: Add SSO token if needed
+      return config
+    },
+    (error) => {
+      return Promise.reject(error)
+    }
+  )
 
+  // Response interceptor for error handling
+  instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response) {
+        const status = error.response.status
+        const data = error.response.data
+        
+        if (status === 401) {
+          console.error('Unauthorized')
+        } else if (status === 404) {
+          console.error('Resource not found:', error.config.url)
+        } else if (status === 500) {
+          console.error('Server error:', data || 'Internal server error')
+          console.error('Request URL:', error.config.url)
+          console.error('Request method:', error.config.method)
+          if (typeof data === 'string') {
+            console.error('Error details:', data)
+          } else if (data && typeof data === 'object') {
+            console.error('Error object:', JSON.stringify(data, null, 2))
+          }
+        }
+      } else if (error.request) {
+        console.error('No response received:', error.request)
+      } else {
+        console.error('Error setting up request:', error.message)
+      }
+      return Promise.reject(error)
+    }
+  )
+
+  return instance
+}
+
+// Export separate API instances for each microservice
+export const identityApi = createApiInstance(IDENTITY_API_URL)
+export const contentApi = createApiInstance(CONTENT_API_URL)
+export const progressApi = createApiInstance(PROGRESS_API_URL)
+
+// Export default (for backward compatibility, uses Identity service)
+export default identityApi

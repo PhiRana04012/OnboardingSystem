@@ -2,8 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.Services;
 using System.Reflection;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure QuestPDF
+QuestPDF.Settings.License = LicenseType.Community;
+
 
 // Add services
 builder.Services.AddControllers();
@@ -29,6 +34,12 @@ builder.Services.AddHttpClient("RimsApi", client =>
 
 // Add RIMS Integration Service
 builder.Services.AddScoped<IRimsIntegrationService, RimsIntegrationService>();
+
+// Add Email Service
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+// Add Export Service
+builder.Services.AddScoped<IReportExportService, ReportExportService>();
 
 // Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>

@@ -43,20 +43,26 @@
       <div class="card">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-gray-900">Прогресс онбординга</h2>
-          <select
-            v-model="selectedUserId"
-            @change="loadProgressReport"
-            class="input w-auto"
-          >
-            <option value="">Выберите сотрудника</option>
-            <option
-              v-for="user in users"
-              :key="user.userId"
-              :value="user.userId"
+          <div class="flex items-center space-x-3">
+            <select
+              v-model="selectedUserId"
+              @change="loadProgressReport"
+              class="input w-auto"
             >
-              {{ user.fullName }} ({{ user.departmentName }})
-            </option>
-          </select>
+              <option value="">Выберите сотрудника</option>
+              <option
+                v-for="user in users"
+                :key="user.userId"
+                :value="user.userId"
+              >
+                {{ user.fullName }} ({{ user.departmentName }})
+              </option>
+            </select>
+            <div v-if="selectedUserId" class="flex space-x-2">
+              <button @click="exportProgress('excel')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-green-600 hover:bg-green-700">Excel</button>
+              <button @click="exportProgress('pdf')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700">PDF</button>
+            </div>
+          </div>
         </div>
 
         <div v-if="progressReport" class="space-y-4">
@@ -171,6 +177,10 @@
                 {{ user.fullName }}
               </option>
             </select>
+            <div class="flex space-x-2">
+              <button @click="exportTests('excel')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-green-600 hover:bg-green-700">Excel</button>
+              <button @click="exportTests('pdf')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700">PDF</button>
+            </div>
           </div>
         </div>
 
@@ -213,6 +223,15 @@
                   >
                     {{ result.isPassed ? 'Сдано' : 'Не сдано' }}
                   </span>
+                  
+                  <button 
+                    v-if="!result.isPassed && (authStore.isAdmin || authStore.isHR)"
+                    @click="resetUserAttempts(result.userId, result.moduleId)"
+                    class="ml-3 text-red-600 hover:text-red-900 text-xs font-medium underline"
+                    title="Сбросить все попытки по этому модулю"
+                  >
+                    Сбросить
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -229,20 +248,26 @@
       <div class="card">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-gray-900">Отчёт по подразделению</h2>
-          <select
-            v-model="selectedDepartmentId"
-            @change="loadDepartmentReport"
-            class="input w-auto"
-          >
-            <option value="">Выберите подразделение</option>
-            <option
-              v-for="dept in departments"
-              :key="dept.departmentId"
-              :value="dept.departmentId"
+          <div class="flex items-center space-x-3">
+            <select
+              v-model="selectedDepartmentId"
+              @change="loadDepartmentReport"
+              class="input w-auto"
             >
-              {{ dept.name }}
-            </option>
-          </select>
+              <option value="">Выберите подразделение</option>
+              <option
+                v-for="dept in departments"
+                :key="dept.departmentId"
+                :value="dept.departmentId"
+              >
+                {{ dept.name }}
+              </option>
+            </select>
+            <div v-if="selectedDepartmentId" class="flex space-x-2">
+              <button @click="exportDepartment('excel')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-green-600 hover:bg-green-700">Excel</button>
+              <button @click="exportDepartment('pdf')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700">PDF</button>
+            </div>
+          </div>
         </div>
 
         <div v-if="departmentReport" class="space-y-4">
@@ -324,7 +349,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { reportsApi, usersApi, departmentsApi } from '../api/services'
+import { reportsApi, usersApi, departmentsApi, testAttemptsApi } from '../api/services'
 
 const authStore = useAuthStore()
 
@@ -404,6 +429,18 @@ const loadTestResults = async () => {
   }
 }
 
+const resetUserAttempts = async (userId, moduleId) => {
+  if (!confirm('Вы уверены, что хотите обнулить все попытки сотрудника по этому модулю? Сотрудник сможет пройти тест заново.')) return
+  
+  try {
+    await testAttemptsApi.resetAttempts(userId, moduleId)
+    await loadTestResults() // Reload table
+  } catch (error) {
+    console.error('Failed to reset attempts:', error)
+    alert('Произошла ошибка при сбросе попыток')
+  }
+}
+
 const loadDepartmentReport = async () => {
   if (!selectedDepartmentId.value) {
     departmentReport.value = null
@@ -422,5 +459,53 @@ const formatDate = (dateString) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('ru-RU')
 }
+
+const downloadFile = (response, defaultFilename) => {
+  const url = window.URL.createObjectURL(new Blob([response.data]))
+  const link = document.createElement('a')
+  link.href = url
+  let filename = defaultFilename
+  const contentDisposition = response.headers['content-disposition']
+  if (contentDisposition) {
+    const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+    if (filenameMatch && filenameMatch.length === 2) filename = filenameMatch[1]
+  }
+  link.setAttribute('download', filename)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+const exportProgress = async (format) => {
+  if (!selectedUserId.value) return
+  try {
+    const response = await reportsApi.exportOnboardingProgress(parseInt(selectedUserId.value), format)
+    downloadFile(response, `Progress_${format.toUpperCase()}.` + (format === 'excel' ? 'xlsx' : 'pdf'))
+  } catch (error) {
+    console.error('Failed to export:', error)
+  }
+}
+
+const exportTests = async (format) => {
+  try {
+    const params = {}
+    if (testFilterUserId.value) params.userId = parseInt(testFilterUserId.value)
+    const response = await reportsApi.exportTestResults(params, format)
+    downloadFile(response, `TestResults_${format.toUpperCase()}.` + (format === 'excel' ? 'xlsx' : 'pdf'))
+  } catch (error) {
+    console.error('Failed to export:', error)
+  }
+}
+
+const exportDepartment = async (format) => {
+  if (!selectedDepartmentId.value) return
+  try {
+    const response = await reportsApi.exportDepartmentReport(parseInt(selectedDepartmentId.value), format)
+    downloadFile(response, `Department_${format.toUpperCase()}.` + (format === 'excel' ? 'xlsx' : 'pdf'))
+  } catch (error) {
+    console.error('Failed to export:', error)
+  }
+}
+
 </script>
 

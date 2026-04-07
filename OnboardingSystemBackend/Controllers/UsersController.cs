@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
 using OnboardingSystem.Entities;
+using OnboardingSystem.Services;
 
 namespace OnboardingSystem.Controllers;
 
@@ -13,12 +14,15 @@ public class UsersController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<UsersController> _logger;
+    private readonly IEmailService _emailService;
 
-    public UsersController(AppDbContext context, ILogger<UsersController> logger)
+    public UsersController(AppDbContext context, ILogger<UsersController> logger, IEmailService emailService)
     {
         _context = context;
         _logger = logger;
+        _emailService = emailService;
     }
+
 
     /// <summary>
     /// Получить список всех пользователей
@@ -147,6 +151,9 @@ public class UsersController : ControllerBase
             JobTitle = user.JobTitle,
             Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>()
         };
+
+        // Send Welcome Email
+        await _emailService.SendWelcomeEmailAsync(user.Email, user.FullName);
 
         return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, userDto);
     }

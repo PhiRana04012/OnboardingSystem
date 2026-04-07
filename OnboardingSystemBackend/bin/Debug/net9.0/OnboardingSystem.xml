@@ -172,6 +172,11 @@
             Получить результат попытки
             </summary>
         </member>
+        <member name="M:OnboardingSystem.Controllers.TestAttemptsController.ResetAttempts(System.Int32,System.Int32)">
+            <summary>
+            Сбросить попытки теста для пользователя (доступно Админам/HR)
+            </summary>
+        </member>
         <member name="M:OnboardingSystem.Controllers.UsersController.GetUsers">
             <summary>
             Получить список всех пользователей

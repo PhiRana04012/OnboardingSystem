@@ -65,16 +65,16 @@ public class QuestionsController : ControllerBase
             return NotFound("Модуль не найден");
         }
 
-        if (module.Questions.Count < 10)
+        if (module.Questions.Count < 1)
         {
-            return BadRequest("В модуле должно быть минимум 10 вопросов");
+            return BadRequest("В модуле нет добавленных вопросов");
         }
 
-        // Случайный выбор вопросов (минимум 10)
+        // Случайный выбор вопросов (максимум 10, но если меньше - берем сколько есть)
         var random = new Random();
         var selectedQuestions = module.Questions
             .OrderBy(x => random.Next())
-            .Take(Math.Max(10, module.Questions.Count))
+            .Take(Math.Min(10, module.Questions.Count))
             .Select(q => new QuestionForTestDto
             {
                 QuestionId = q.QuestionId,

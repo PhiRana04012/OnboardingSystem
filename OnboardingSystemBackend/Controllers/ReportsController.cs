@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
+using OnboardingSystem.Services;
 
 namespace OnboardingSystem.Controllers;
 
@@ -12,12 +13,15 @@ public class ReportsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<ReportsController> _logger;
+    private readonly IReportExportService _exportService;
 
-    public ReportsController(AppDbContext context, ILogger<ReportsController> logger)
+    public ReportsController(AppDbContext context, ILogger<ReportsController> logger, IReportExportService exportService)
     {
         _context = context;
         _logger = logger;
+        _exportService = exportService;
     }
+
 
     /// <summary>
     /// Получить отчёт о прогрессе онбординга сотрудника
@@ -253,6 +257,59 @@ public class ReportsController : ControllerBase
         };
 
         return Ok(report);
+    }
+
+    [HttpGet("onboarding-progress/{userId}/export")]
+    [ProducesResponseType(200)]
+    public async Task<IActionResult> ExportOnboardingProgressList(int userId, [FromQuery] string format = "excel")
+    {
+        var result = await GetOnboardingProgressReport(userId);
+        if (result.Result is NotFoundResult) return NotFound();
+        var report = ((OkObjectResult)result.Result).Value as OnboardingProgressReportDto;
+
+        if (format.ToLower() == "pdf")
+        {
+            var pdfBytes = _exportService.ExportOnboardingProgressToPdf(report);
+            return File(pdfBytes, "application/pdf", $"Progress_{report.FullName}.pdf");
+        }
+        
+        var excelBytes = _exportService.ExportOnboardingProgressToExcel(report);
+        return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Progress_{report.FullName}.xlsx");
+    }
+
+    [HttpGet("test-results/export")]
+    [ProducesResponseType(200)]
+    public async Task<IActionResult> ExportTestResultsList([FromQuery] int? userId, [FromQuery] int? moduleId, [FromQuery] string format = "excel")
+    {
+        var result = await GetTestResultsReport(userId, moduleId);
+        var report = ((OkObjectResult)result.Result).Value as List<TestResultsReportDto>;
+
+        if (format.ToLower() == "pdf")
+        {
+            var pdfBytes = _exportService.ExportTestResultsToPdf(report);
+            return File(pdfBytes, "application/pdf", $"TestResults.pdf");
+        }
+        
+        var excelBytes = _exportService.ExportTestResultsToExcel(report);
+        return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"TestResults.xlsx");
+    }
+
+    [HttpGet("department/{departmentId}/export")]
+    [ProducesResponseType(200)]
+    public async Task<IActionResult> ExportDepartmentReportList(int departmentId, [FromQuery] string format = "excel")
+    {
+        var result = await GetDepartmentReport(departmentId);
+        if (result.Result is NotFoundResult) return NotFound();
+        var report = ((OkObjectResult)result.Result).Value as DepartmentReportDto;
+
+        if (format.ToLower() == "pdf")
+        {
+            var pdfBytes = _exportService.ExportDepartmentReportToPdf(report);
+            return File(pdfBytes, "application/pdf", $"Department_{report.DepartmentName}.pdf");
+        }
+        
+        var excelBytes = _exportService.ExportDepartmentReportToExcel(report);
+        return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Department_{report.DepartmentName}.xlsx");
     }
 }
 

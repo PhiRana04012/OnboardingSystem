@@ -19,7 +19,9 @@
           </div>
           <div class="text-right">
             <p class="text-sm text-gray-600">Вопросов: {{ questions.length }}</p>
-            <p class="text-sm text-gray-600">Осталось попыток: {{ remainingAttempts }}</p>
+            <p class="text-sm font-medium" :class="remainingAttempts === 0 ? 'text-red-600' : 'text-gray-600'">
+              Осталось попыток: {{ remainingAttempts }}
+            </p>
           </div>
         </div>
       </div>
@@ -53,7 +55,8 @@
                 :name="`question-${question.questionId}`"
                 :value="answer.answerId"
                 v-model="selectedAnswers[question.questionId]"
-                class="mt-1 mr-3 h-4 w-4 text-primary-600 focus:ring-primary-500"
+                :disabled="remainingAttempts === 0"
+                class="mt-1 mr-3 h-4 w-4 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <span class="flex-1 text-gray-700">{{ answer.answerText }}</span>
             </label>
@@ -66,7 +69,11 @@
             <p class="text-sm text-gray-600">
               Ответов выбрано: {{ Object.keys(selectedAnswers).length }} / {{ questions.length }}
             </p>
+            <div v-if="remainingAttempts === 0" class="px-4 py-2 bg-red-50 text-red-700 rounded text-sm font-medium">
+              Все попытки исчерпаны
+            </div>
             <button
+              v-else
               type="submit"
               :disabled="Object.keys(selectedAnswers).length !== questions.length || isSubmitting"
               class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
