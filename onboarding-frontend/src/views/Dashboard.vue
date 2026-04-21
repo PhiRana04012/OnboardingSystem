@@ -1,29 +1,36 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Мой онбординг</h1>
-        <p class="mt-1 text-gray-600">
-          Рады видеть тебя снова, <span class="font-bold text-primary-600">{{ authStore.currentUser?.fullName }}</span>!
+  <div class="space-y-8">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
+      <div class="flex-1">
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">Мой онбординг</h1>
+        <p class="text-lg text-gray-600 leading-relaxed">
+          Рады видеть тебя снова, <span class="font-semibold text-primary-600">{{ authStore.currentUser?.fullName }}</span>! 👋
         </p>
       </div>
-      <div v-if="authStore.isMentor || authStore.isHR || authStore.isManager">
-        <router-link to="/reports" class="btn-secondary flex items-center gap-2">
-          📊 Просмотр отчётов
+      <div v-if="authStore.isMentor || authStore.isHR || authStore.isManager" class="flex-shrink-0">
+        <router-link to="/reports" class="btn-secondary inline-flex items-center gap-2 whitespace-nowrap">
+          <span>📊</span>
+          <span>Просмотр отчётов</span>
         </router-link>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="progressStore.isLoading" class="card text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      <p class="mt-4 text-gray-600 font-medium">Загружаем твой прогресс...</p>
+    <div v-if="progressStore.isLoading" class="card text-center py-16">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-primary-600"></div>
+      <p class="mt-6 text-gray-600 font-medium text-lg">Загружаем твой прогресс...</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="progressStore.error" class="card border-l-4 border-red-500 bg-red-50 text-red-700 p-6">
-      {{ progressStore.error }}
+    <div v-else-if="progressStore.error" class="card border-l-4 border-red-500 bg-gradient-to-r from-red-50 to-orange-50 text-red-700 p-6">
+      <div class="flex gap-3 items-start">
+        <span class="text-2xl flex-shrink-0">⚠️</span>
+        <div>
+          <p class="font-semibold">Ошибка при загрузке</p>
+          <p class="text-sm mt-1">{{ progressStore.error }}</p>
+        </div>
+      </div>
     </div>
 
     <!-- Progress Map (Zigzag Content) -->

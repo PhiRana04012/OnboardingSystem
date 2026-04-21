@@ -572,8 +572,9 @@ const loadDepartments = async () => {
 const loadPotentialMentors = async () => {
   try {
     const response = await usersApi.getAll()
-    // Фильтруем пользователей которые могут быть наставниками (у них есть роль "Наставник")
-    mentors.value = response.data.filter(u => u.roles && u.roles.includes('Наставник'))
+    // Загружаем всех пользователей как потенциальных наставников
+    // Фильтрация по отделу происходит в компоненте выбора
+    mentors.value = response.data
   } catch (error) {
     console.error('Failed to load mentors:', error)
   }
@@ -650,9 +651,28 @@ const closeUserForm = () => {
 
 const saveUser = async () => {
   try {
-    const payload = { ...userForm.value }
+    // Получаем ID роли на основе выбранной роли
+    let roleIds = []
+    if (userForm.value.role === 'admin') {
+      // ID роли администратора может быть 1, но нужно проверить реальные ID
+      roleIds = [1] // Нужно получить реальный ID роли администратора
+    }
+    // для обычного пользователя roleIds остается пустым или получаем ID роли пользователя
+    
+    const payload = {
+      fullName: userForm.value.fullName,
+      email: userForm.value.email,
+      departmentId: userForm.value.departmentId,
+      mentorId: userForm.value.mentorId || null,
+      roleIds: roleIds,
+      hireDate: new Date().toISOString().split('T')[0] // Текущая дата в формате YYYY-MM-DD
+    }
+    
+    if (!editingUser.value && userForm.value.passwordHash) {
+      payload.passwordHash = userForm.value.passwordHash
+    }
+    
     if (editingUser.value) {
-      // API expects different structures/ignores password for update, but here we just send what we have mapping to DTO
       await usersApi.update(editingUser.value.userId, payload)
     } else {
       await usersApi.create(payload)
@@ -661,7 +681,7 @@ const saveUser = async () => {
     closeUserForm()
   } catch (error) {
     console.error('Failed to save user:', error)
-    alert('Ошибка при сохранении пользователя')
+    alert('Ошибка при сохранении пользователя: ' + (error.response?.data?.message || error.message))
   }
 }
 

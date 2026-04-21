@@ -1,33 +1,35 @@
 <template>
   <div class="space-y-10 pb-20">
     <!-- Progress Summary -->
-    <div class="card bg-white shadow-sm border border-gray-100 p-8">
-      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="card p-8 bg-gradient-to-br from-white to-gray-50/50">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-8">
         <div class="text-center md:text-left w-full md:w-1/3">
-          <h2 class="text-xl font-bold text-gray-900 mb-1">Прогресс онбординга</h2>
-          <p class="text-sm text-gray-500">{{ completedCount }} из {{ modules.length }} модулей завершено</p>
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Прогресс онбординга</h2>
+          <p class="text-base text-gray-600"><span class="font-semibold text-primary-600">{{ completedCount }}</span> из <span class="font-semibold">{{ modules.length }}</span> модулей завершено</p>
         </div>
         
         <div class="w-full md:w-1/3 text-center hidden md:block">
-          <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-            <div class="h-full bg-[#0f766e] rounded-full transition-all" :style="{ width: progressPercentage + '%' }"></div>
+          <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+            <div class="h-full bg-gradient-to-r from-primary-600 to-primary-500 rounded-full transition-all duration-500" :style="{ width: progressPercentage + '%' }"></div>
           </div>
-          <div class="flex justify-between items-center mt-2 text-xs">
-             <span class="text-gray-400">Обязательных: {{ completedMandatory }} / {{ totalMandatory }}</span>
-             <span v-if="allDone" class="font-bold text-[#0f766e]">🎉 Онбординг завершён!</span>
+          <div class="flex justify-between items-center mt-3 text-sm gap-2">
+             <span class="text-gray-600 font-medium"><span class="font-bold">{{ completedMandatory }}</span> / {{ totalMandatory }} обяз.</span>
+             <span v-if="allDone" class="font-bold text-primary-600">🎉 Завершён!</span>
           </div>
         </div>
 
         <div class="w-full md:w-1/3 text-center md:text-right">
-          <div class="text-3xl font-extrabold text-[#0f766e] opacity-90">{{ Math.round(progressPercentage) }}%</div>
+          <div class="text-5xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">{{ Math.round(progressPercentage) }}%</div>
+          <p class="text-sm text-gray-500 mt-2">Завершено</p>
         </div>
       </div>
     </div>
 
     <!-- START BUTTON -->
     <div class="text-center">
-      <button class="bg-[#004746] hover:bg-[#003837] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 inline-flex items-center gap-2 relative z-10">
-        🚀 Начало онбординга
+      <button class="btn-primary rounded-full py-4 px-10 inline-flex items-center gap-3 relative z-10 text-lg font-bold">
+        <span class="text-xl">🚀</span>
+        <span>Начать онбординг</span>
       </button>
     </div>
 
@@ -64,25 +66,25 @@
           }"
         >
           <div
-            class="card !p-5 w-[280px] cursor-pointer hover:shadow-xl transition-all border-0 shadow-lg relative rounded-2xl"
+            class="card w-[280px] cursor-pointer hover:shadow-2xl transition-all border-0 shadow-lg relative rounded-2xl p-6 hover:border-primary-100 hover:-translate-y-1"
             @click="$emit('open-module', module)"
           >
-            <div class="flex justify-between items-start mb-3">
-              <h3 class="font-bold text-gray-900 text-base leading-tight w-2/3">{{ module.moduleTitle || module.title }}</h3>
-              <span v-if="module.status === 'Завершён'" class="px-2 py-1 text-[10px] font-bold bg-green-100 text-green-600 rounded-lg whitespace-nowrap">Завершён</span>
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="font-bold text-gray-900 text-base leading-snug w-2/3">{{ module.moduleTitle || module.title }}</h3>
+              <span v-if="module.status === 'Завершён'" class="badge badge-success text-xs whitespace-nowrap">✓ Готово</span>
             </div>
-            <div class="mb-4">
-              <span v-if="module.isMandatory" class="px-2 py-1 text-[10px] font-bold bg-red-50 text-red-500 rounded whitespace-nowrap">Обязательный</span>
-              <span v-else class="px-2 py-1 text-[10px] font-bold bg-gray-50 text-gray-500 rounded whitespace-nowrap">Дополнительный</span>
+            <div class="mb-4 flex gap-2">
+              <span v-if="module.isMandatory" class="badge badge-primary text-xs">Обязательный</span>
+              <span v-else class="badge bg-gray-100 text-gray-600 text-xs">Доп.</span>
             </div>
-            <div v-if="module.status === 'Завершён'" class="space-y-1 mb-4 text-xs">
-              <p class="text-gray-500">Результат: <span class="font-bold text-green-600">{{ module.bestScore !== null ? Math.round(module.bestScore) : 100 }}%</span></p>
-              <p class="text-gray-500">Попыток: {{ module.attemptsCount || 1 }}</p>
+            <div v-if="module.status === 'Завершён'" class="space-y-2 mb-4 text-sm">
+              <p class="text-gray-600">Результат: <span class="font-bold text-green-600">{{ module.bestScore !== null ? Math.round(module.bestScore) : 100 }}%</span></p>
+              <p class="text-gray-600">Попыток: <span class="font-semibold">{{ module.attemptsCount || 1 }}</span></p>
             </div>
-            <div v-else class="h-10 mb-4"></div>
+            <div v-else class="h-12 mb-4"></div>
             
-            <button class="w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm transition-colors">
-              Просмотреть
+            <button class="w-full py-2.5 bg-primary-50 hover:bg-primary-100 text-primary-700 font-semibold rounded-lg text-sm transition-colors duration-200">
+              Просмотреть →
             </button>
           </div>
         </div>

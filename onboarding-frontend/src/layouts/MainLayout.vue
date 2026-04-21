@@ -1,44 +1,44 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex flex-col">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <nav class="bg-white/95 shadow-sm border-b border-gray-200/50 backdrop-blur-sm sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
+        <div class="flex justify-between h-16 items-center">
           <!-- Logo -->
           <div class="flex items-center">
-            <router-link to="/" class="flex items-center space-x-3">
-              <div class="w-11 h-11 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center bg-white shadow-sm p-0.5">
+            <router-link to="/" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+              <div class="w-11 h-11 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center bg-gradient-to-br from-primary-50 to-white shadow-md p-0.5 hover:shadow-lg transition-shadow">
                 <img src="/image6.png" alt="Logo" class="w-full h-full object-contain" />
               </div>
-              <span class="text-xl font-bold text-gray-900 hidden sm:block">Система онбординга</span>
+              <span class="text-xl font-bold text-gray-900 hidden sm:block">Онбординг</span>
             </router-link>
           </div>
           
           <!-- Desktop Nav Items -->
-          <div class="hidden md:flex items-center space-x-4">
+          <div class="hidden md:flex items-center space-x-2">
             <router-link
               v-for="item in navItems"
               :key="item.to"
               :to="item.to"
               v-show="item.show"
-              class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              active-class="text-primary-600 font-bold"
+              class="text-gray-600 hover:text-primary-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-primary-50"
+              active-class="text-primary-600 font-bold bg-primary-50"
             >
               {{ item.name }}
             </router-link>
             
-            <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
-              <div class="text-right">
-                <p class="text-sm font-medium text-gray-900">{{ authStore.currentUser?.fullName }}</p>
+            <div class="flex items-center space-x-4 pl-6 border-l border-gray-200">
+              <div class="text-right hidden sm:block">
+                <p class="text-sm font-semibold text-gray-900">{{ authStore.currentUser?.fullName }}</p>
                 <p class="text-xs text-gray-500">{{ authStore.currentUser?.departmentName }}</p>
               </div>
-              <router-link to="/profile" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm"
+              <router-link to="/profile" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-md hover:shadow-lg transition-all hover:scale-105"
                            :style="{ background: getAvatarGradient(authStore.currentUser?.fullName) }">
                 {{ authStore.currentUser?.fullName?.charAt(0) }}
               </router-link>
               <button
                 @click="handleLogout"
-                class="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                class="p-2 text-gray-400 hover:text-red-600 transition-colors hover:bg-red-50 rounded-lg"
                 title="Выйти"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,15 +64,15 @@
       </div>
 
       <!-- Mobile menu -->
-      <div v-show="isMobileMenuOpen" class="md:hidden bg-white border-t border-gray-200 shadow-lg">
+      <div v-show="isMobileMenuOpen" class="md:hidden bg-white border-t border-gray-200 shadow-xl">
         <div class="px-2 pt-2 pb-3 space-y-1">
           <router-link
             v-for="item in navItems"
             :key="item.to"
             :to="item.to"
             v-show="item.show"
-            class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
-            active-class="bg-primary-50 text-primary-600 font-bold"
+            class="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+            active-class="bg-primary-100 text-primary-600 font-bold"
             @click="isMobileMenuOpen = false"
           >
             {{ item.name }}
@@ -85,16 +85,16 @@
                 {{ authStore.currentUser?.fullName?.charAt(0) }}
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-900">{{ authStore.currentUser?.fullName }}</p>
+              <p class="text-sm font-semibold text-gray-900">{{ authStore.currentUser?.fullName }}</p>
               <p class="text-xs text-gray-500 text-left">{{ authStore.currentUser?.departmentName }}</p>
             </div>
           </div>
-          <button @click="handleLogout" class="text-red-600 font-bold text-sm">Выйти</button>
+          <button @click="handleLogout" class="text-red-600 font-bold text-sm hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">Выйти</button>
         </div>
       </div>
     </nav>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
       <router-view />
     </main>
   </div>
