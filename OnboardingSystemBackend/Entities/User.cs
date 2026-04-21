@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace OnboardingSystem.Entities;
@@ -23,7 +23,15 @@ public partial class User
 
     public string? JobTitle { get; set; }
 
+    public string? TelegramTag { get; set; }
+    
+    public string? Bio { get; set; }
+
     public DateTime? RimsLastSyncDate { get; set; }
+
+    public int TotalXP { get; set; } = 0;
+
+    public int Level { get; set; } = 1;
 
     public virtual ICollection<ActionLog> ActionLogs { get; set; } = new List<ActionLog>();
 
@@ -36,6 +44,10 @@ public partial class User
     public virtual ICollection<TestAttempt> TestAttempts { get; set; } = new List<TestAttempt>();
 
     public virtual ICollection<UserModuleProgress> UserModuleProgresses { get; set; } = new List<UserModuleProgress>();
+
+    public virtual ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
+
+    public virtual ICollection<UserChecklistItem> UserChecklistItems { get; set; } = new List<UserChecklistItem>();
 
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
 }

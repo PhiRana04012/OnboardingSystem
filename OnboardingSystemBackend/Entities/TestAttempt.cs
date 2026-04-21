@@ -23,3 +23,6 @@ public partial class TestAttempt
 
     public virtual User User { get; set; } = null!;
 }
+
+
+

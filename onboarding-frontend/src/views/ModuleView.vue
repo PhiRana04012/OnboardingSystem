@@ -49,33 +49,99 @@
         ></div>
       </div>
 
-      <!-- Actions -->
-      <div class="card bg-gray-50">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">
-              После ознакомления с материалом вы можете пройти тест
-            </p>
-            <p v-if="module.questionCount > 0" class="text-sm text-gray-500 mt-1">
-              В тесте будет {{ module.questionCount }} вопросов
-            </p>
+      <!-- Checklist Section -->
+      <div v-if="hasChecklist" class="card border-l-4 border-yellow-400 bg-yellow-50/30">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <span class="text-xl">📝</span>
+          Практические задания
+        </h3>
+        <div class="space-y-3">
+          <div 
+            v-for="item in checklistItems" 
+            :key="item.checklistItemId"
+            class="flex items-start gap-3 p-3 rounded-xl transition-all cursor-pointer select-none"
+            :class="item.isCompleted ? 'bg-green-100/50' : 'bg-white hover:bg-gray-50 border border-gray-100 shadow-sm'"
+            @click="toggleChecklistItem(item)"
+          >
+            <div 
+              class="w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all"
+              :class="item.isCompleted ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 bg-white'"
+            >
+              <svg v-if="item.isCompleted" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-gray-800" :class="{ 'line-through text-gray-500': item.isCompleted }">
+                {{ item.text }}
+              </p>
+              <span v-if="item.isRequired" class="text-[10px] uppercase tracking-wider font-bold text-yellow-600 bg-yellow-100 px-1.5 py-0.5 rounded mt-1 inline-block">Обязательно</span>
+              <span v-else class="text-[10px] uppercase tracking-wider font-bold text-gray-400 mt-1 inline-block">Дополнительно</span>
+            </div>
           </div>
-          <div class="flex space-x-3">
-            <button
-              v-if="!hasTest"
-              @click="markAsRead"
-              :disabled="isMarking"
-              class="btn-primary disabled:opacity-50"
-            >
-              {{ isMarking ? 'Сохранение...' : 'Ознакомлен' }}
-            </button>
-            <button
-              v-if="module.questionCount > 0"
-              @click="startTest"
-              class="btn-primary"
-            >
-              Пройти тест
-            </button>
+        </div>
+        <p v-if="!allRequiredChecked" class="mt-4 text-xs text-red-500 font-medium italic">
+          * Завершение модуля доступно только после выполнения всех обязательных заданий.
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="card bg-gray-50 border-t-4" :class="hasPassedBefore ? 'border-primary-500' : 'border-gray-200'">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <p v-if="!hasTest" class="text-sm text-gray-600 font-medium">
+              Пожалуйста, подтвердите полное ознакомление с материалом.
+            </p>
+            <template v-else>
+               <p class="text-sm text-gray-800 font-medium font-bold">Тестирование по модулю</p>
+               <p class="text-sm text-gray-600 mt-1">Обязательно изучите материал выше, прежде чем приступать к проверке знаний.</p>
+               <p class="text-xs text-primary-600 mt-1 flex items-center gap-1 font-semibold">
+                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                 Всего вопросов в тесте: {{ module.questionCount }} 
+               </p>
+            </template>
+          </div>
+          
+          <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+            <!-- МОДУЛЬ БЕЗ ТЕСТА -->
+            <template v-if="!hasTest">
+              <button
+                v-if="moduleStatus !== 'Завершён'"
+                @click="markAsRead"
+                :disabled="isMarking || !allRequiredChecked"
+                class="btn-primary w-full sm:w-auto disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {{ isMarking ? 'Сохранение...' : '✅ Ознакомлен' }}
+              </button>
+              <button
+                v-else
+                class="btn-secondary bg-green-50 text-green-700 hover:bg-green-100 transition-all font-bold tracking-wide shadow w-full sm:w-auto"
+                disabled
+              >
+                ✅ Модуль завершён
+              </button>
+            </template>
+
+            <!-- МОДУЛЬ С ТЕСТОМ -->
+            <template v-else>
+              <button
+                v-if="!isReadyForTest && !hasPassedBefore"
+                @click="isReadyForTest = true"
+                :disabled="!allRequiredChecked"
+                class="btn-secondary w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                👀 Я всё изучил
+              </button>
+              
+              <button
+                @click="startTest"
+                :disabled="(!isReadyForTest && !hasPassedBefore) || !allRequiredChecked"
+                class="w-full sm:w-auto transition-all shadow-md"
+                :class="(isReadyForTest || hasPassedBefore) && allRequiredChecked ? 'btn-primary' : 'bg-gray-300 text-gray-500 py-2.5 px-4 rounded-xl cursor-not-allowed font-medium'"
+              >
+                {{ hasPassedBefore ? 'Пройти тест повторно' : '🚀 Начать тест' }}
+              </button>
+            </template>
           </div>
         </div>
       </div>
@@ -135,7 +201,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useProgressStore } from '../stores/progress'
-import { modulesApi, testAttemptsApi } from '../api/services'
+import { modulesApi, testAttemptsApi, checklistsApi } from '../api/services'
+import confetti from 'canvas-confetti'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,15 +213,32 @@ const module = ref(null)
 const isLoading = ref(true)
 const isMarking = ref(false)
 const previousAttempts = ref([])
+const isReadyForTest = ref(false)
+const checklistItems = ref([])
 
 const hasTest = computed(() => {
   if (!module.value) return false
   return module.value.questionCount > 0
 })
 
+const hasChecklist = computed(() => checklistItems.value.length > 0)
+const allRequiredChecked = computed(() => {
+  return checklistItems.value.filter(i => i.isRequired).every(i => i.isCompleted)
+})
+
+const hasPassedBefore = computed(() => {
+  return previousAttempts.value.some(a => a.isPassed)
+})
+
+const moduleStatus = computed(() => {
+  const mod = progressStore.modules.find(m => m.moduleId === module.value?.moduleId)
+  return mod ? mod.status : 'Не начат'
+})
+
 onMounted(async () => {
   await loadModule()
   await loadAttempts()
+  await loadChecklist()
 })
 
 const loadModule = async () => {
@@ -182,6 +266,31 @@ const loadAttempts = async () => {
   }
 }
 
+const loadChecklist = async () => {
+  if (!authStore.currentUser || !module.value) return
+  try {
+    const response = await checklistsApi.getModuleChecklist(module.value.moduleId, authStore.currentUser.userId)
+    checklistItems.value = response.data
+  } catch (error) {
+    console.error('Failed to load checklist:', error)
+  }
+}
+
+const toggleChecklistItem = async (item) => {
+  if (!authStore.currentUser) return
+  item.isCompleted = !item.isCompleted
+  try {
+    await checklistsApi.toggleItem({
+      userId: authStore.currentUser.userId,
+      checklistItemId: item.checklistItemId,
+      isCompleted: item.isCompleted
+    })
+  } catch (error) {
+    console.error('Failed to toggle checklist item:', error)
+    item.isCompleted = !item.isCompleted // Rollback
+  }
+}
+
 const markAsRead = async () => {
   if (!authStore.currentUser || !module.value) return
   try {
@@ -192,6 +301,34 @@ const markAsRead = async () => {
     )
     // Refresh progress
     await progressStore.fetchUserProgress(authStore.currentUser.userId)
+    
+    const end = Date.now() + 2000;
+    const colors = ['#004746', '#117f6b', '#4ade80', '#f59e0b'];
+
+    (function frame() {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: colors
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: colors
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
+
+    setTimeout(() => {
+      router.push('/');
+    }, 2500);
   } catch (error) {
     console.error('Failed to mark as read:', error)
     alert('Ошибка при сохранении. Попробуйте снова.')

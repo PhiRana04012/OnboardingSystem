@@ -15,12 +15,14 @@ public class TestAttemptsController : ControllerBase
     private readonly AppDbContext _context;
     private readonly ILogger<TestAttemptsController> _logger;
     private readonly IEmailService _emailService;
+    private readonly IGamificationService _gamificationService;
 
-    public TestAttemptsController(AppDbContext context, ILogger<TestAttemptsController> logger, IEmailService emailService)
+    public TestAttemptsController(AppDbContext context, ILogger<TestAttemptsController> logger, IEmailService emailService, IGamificationService gamificationService)
     {
         _context = context;
         _logger = logger;
         _emailService = emailService;
+        _gamificationService = gamificationService;
     }
 
 
@@ -214,6 +216,31 @@ public class TestAttemptsController : ControllerBase
             await CheckAndCompleteOnboardingAsync(dto.UserId);
         }
 
+        // --- Gamification ---
+        int xpEarned = 0;
+        if (isPassed)
+        {
+            xpEarned += 50; // База за сдачу 
+            if (attemptNumber == 1) xpEarned += 20; // С первой попытки
+            if (score == 100) xpEarned += 30; // 100% результат
+
+            await _gamificationService.AddXpAsync(dto.UserId, xpEarned);
+
+            // Ачивки за тесты
+            if (score == 100) await _gamificationService.GrantAchievementAsync(dto.UserId, "TEST_100");
+            
+            // Если модуль безопасности
+            if (module.Title.Contains("узост", StringComparison.OrdinalIgnoreCase) || module.Title.Contains("езопасн", StringComparison.OrdinalIgnoreCase))
+            {
+                await _gamificationService.GrantAchievementAsync(dto.UserId, "MODULE_SAFETY");
+            }
+        }
+        else
+        {
+            // Утешительный опыт
+            await _gamificationService.AddXpAsync(dto.UserId, 5);
+        }
+
         var result = new TestResultDto
         {
             AttemptId = attempt.AttemptId,
@@ -351,6 +378,7 @@ public class TestAttemptsController : ControllerBase
             var mentorEmail = user.Mentor?.Email ?? "";
 
             await _emailService.SendOnboardingCompletedEmailAsync(hrEmail, mentorEmail, user.FullName);
+            await _gamificationService.GrantAchievementAsync(userId, "ONBOARDING_DONE");
         }
     }
 }

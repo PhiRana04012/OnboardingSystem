@@ -26,61 +26,76 @@
         </div>
       </div>
 
-      <!-- Questions -->
-      <form @submit.prevent="submitTest" class="space-y-6">
-        <div
-          v-for="(question, index) in questions"
-          :key="question.questionId"
-          class="card"
-        >
-          <div class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 mb-1">
-              Вопрос {{ index + 1 }} из {{ questions.length }}
-            </h3>
-            <p class="text-gray-700">{{ question.questionText }}</p>
-          </div>
-
-          <div class="space-y-3">
-            <label
-              v-for="answer in question.answerOptions"
-              :key="answer.answerId"
-              class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
-              :class="{
-                'border-primary-500 bg-primary-50': selectedAnswers[question.questionId] === answer.answerId,
-                'border-gray-200 hover:border-gray-300': selectedAnswers[question.questionId] !== answer.answerId
-              }"
-            >
-              <input
-                type="radio"
-                :name="`question-${question.questionId}`"
-                :value="answer.answerId"
-                v-model="selectedAnswers[question.questionId]"
-                :disabled="remainingAttempts === 0"
-                class="mt-1 mr-3 h-4 w-4 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              <span class="flex-1 text-gray-700">{{ answer.answerText }}</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="card bg-gray-50">
-          <div class="flex items-center justify-between">
-            <p class="text-sm text-gray-600">
-              Ответов выбрано: {{ Object.keys(selectedAnswers).length }} / {{ questions.length }}
-            </p>
-            <div v-if="remainingAttempts === 0" class="px-4 py-2 bg-red-50 text-red-700 rounded text-sm font-medium">
-              Все попытки исчерпаны
+      <!-- Questions Container -->
+      <form @submit.prevent="submitTest" class="space-y-6 relative overflow-hidden">
+        <transition name="slide-fade" mode="out-in">
+          <div
+            v-if="currentQuestion"
+            :key="currentQuestion.questionId"
+            class="card"
+          >
+            <div class="mb-4">
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                Вопрос {{ currentQuestionIndex + 1 }} из {{ questions.length }}
+              </h3>
+              <p class="text-gray-700">{{ currentQuestion.questionText }}</p>
             </div>
-            <button
-              v-else
-              type="submit"
-              :disabled="Object.keys(selectedAnswers).length !== questions.length || isSubmitting"
-              class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ isSubmitting ? 'Отправка...' : 'Завершить тест' }}
-            </button>
+
+            <div class="space-y-3">
+              <label
+                v-for="answer in currentQuestion.answerOptions"
+                :key="answer.answerId"
+                class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
+                :class="{
+                  'border-primary-500 bg-primary-50': selectedAnswers[currentQuestion.questionId] === answer.answerId,
+                  'border-gray-200 hover:border-gray-300': selectedAnswers[currentQuestion.questionId] !== answer.answerId
+                }"
+              >
+                <input
+                  type="radio"
+                  :name="`question-${currentQuestion.questionId}`"
+                  :value="answer.answerId"
+                  v-model="selectedAnswers[currentQuestion.questionId]"
+                  :disabled="remainingAttempts === 0"
+                  class="mt-1 mr-3 h-4 w-4 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <span class="flex-1 text-gray-700">{{ answer.answerText }}</span>
+              </label>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="mt-8 flex items-center justify-between border-t pt-4">
+               <div>
+                  <button type="button" @click="prevQuestion" :disabled="currentQuestionIndex === 0" class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed">
+                     &larr; Назад
+                  </button>
+               </div>
+               <div>
+                  <button 
+                     v-if="currentQuestionIndex < questions.length - 1" 
+                     type="button" 
+                     @click="nextQuestion" 
+                     :disabled="!selectedAnswers[currentQuestion.questionId]" 
+                     class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                     Далее &rarr;
+                  </button>
+                  <button 
+                     v-else 
+                     type="submit" 
+                     :disabled="!allAnswered || isSubmitting || remainingAttempts === 0" 
+                     class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                     {{ isSubmitting ? 'Отправка...' : 'Завершить тест' }}
+                  </button>
+               </div>
+            </div>
           </div>
+        </transition>
+
+        <!-- Attempt Limit Warning -->
+        <div v-if="remainingAttempts === 0" class="mt-4 px-4 py-3 bg-red-50 text-red-700 rounded text-center font-medium shadow">
+          У вас больше не осталось попыток для сдачи этого теста.
         </div>
       </form>
     </div>
@@ -115,6 +130,7 @@ const authStore = useAuthStore()
 
 const questions = ref([])
 const selectedAnswers = ref({})
+const currentQuestionIndex = ref(0)
 const isLoading = ref(true)
 const isSubmitting = ref(false)
 const error = ref('')
@@ -175,6 +191,30 @@ const passingScore = computed(() => {
   return moduleInfo.value?.passingScore || 80
 })
 
+const currentQuestion = computed(() => {
+  if (questions.value.length === 0) return null
+  return questions.value[currentQuestionIndex.value]
+})
+
+const allAnswered = computed(() => {
+  return questions.value.every(q => {
+    const ans = selectedAnswers.value[q.questionId]
+    return ans !== null && ans !== undefined
+  })
+})
+
+const prevQuestion = () => {
+  if (currentQuestionIndex.value > 0) {
+    currentQuestionIndex.value--
+  }
+}
+
+const nextQuestion = () => {
+  if (currentQuestionIndex.value < questions.value.length - 1) {
+    currentQuestionIndex.value++
+  }
+}
+
 const submitTest = async () => {
   if (!authStore.currentUser) {
     router.push('/login')
@@ -184,16 +224,8 @@ const submitTest = async () => {
   // Check if all questions have a selected answer
   console.log('Validating answers...');
   console.log('Selected Answers:', JSON.parse(JSON.stringify(selectedAnswers.value)));
-  console.log('Questions:', questions.value.map(q => q.questionId));
 
-  const allAnswered = questions.value.every(q => {
-    const answer = selectedAnswers.value[q.questionId];
-    const isAnswered = answer !== null && answer !== undefined;
-    console.log(`Question ${q.questionId}: answer=${answer}, isAnswered=${isAnswered}`);
-    return isAnswered;
-  });
-
-  if (!allAnswered) {
+  if (!allAnswered.value) {
     console.warn('Validation failed: not all questions answered');
     alert('Пожалуйста, ответьте на все вопросы')
     return
@@ -231,4 +263,21 @@ const submitTest = async () => {
   }
 }
 </script>
+
+<style scoped>
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-enter-from {
+  transform: translateX(20px);
+  opacity: 0;
+}
+.slide-fade-leave-to {
+  transform: translateX(-20px);
+  opacity: 0;
+}
+</style>
 

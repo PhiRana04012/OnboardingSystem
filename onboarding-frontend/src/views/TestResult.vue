@@ -134,6 +134,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { testAttemptsApi } from '../api/services'
+import confetti from 'canvas-confetti'
 
 const route = useRoute()
 const router = useRouter()
@@ -162,11 +163,41 @@ const loadResult = async () => {
         questionResults: [] // Question details not available from this endpoint
       }
     }
+    
+    if (result.value && result.value.isPassed) {
+      triggerCelebration();
+    }
   } catch (error) {
     console.error('Failed to load result:', error)
   } finally {
     isLoading.value = false
   }
+}
+
+const triggerCelebration = () => {
+  const duration = 4000;
+  const end = Date.now() + duration;
+
+  (function frame() {
+    confetti({
+      particleCount: 5,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 },
+      colors: ['#004746', '#117f6b', '#4ade80', '#e5e7eb', '#f59e0b']
+    });
+    confetti({
+      particleCount: 5,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 },
+      colors: ['#004746', '#117f6b', '#4ade80', '#e5e7eb', '#f59e0b']
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  }());
 }
 
 const retryTest = () => {

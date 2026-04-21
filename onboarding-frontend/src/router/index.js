@@ -49,6 +49,17 @@ const routes = [
         path: 'profile',
         name: 'Profile',
         component: () => import('../views/Profile.vue')
+      },
+      {
+        path: 'mentor',
+        name: 'MentorDashboard',
+        component: () => import('../views/MentorDashboard.vue'),
+        meta: { requiresMentor: true }
+      },
+      {
+        path: 'faq',
+        name: 'FAQ',
+        component: () => import('../views/FaqView.vue')
       }
     ]
   }
@@ -79,6 +90,12 @@ router.beforeEach((to, from, next) => {
       next({ name: 'Dashboard' })
       return
     }
+  }
+
+  // Check mentor specific access
+  if (to.meta.requiresMentor && !authStore.isMentor && !authStore.isAdmin) {
+    next({ name: 'Dashboard' })
+    return
   }
 
   next()

@@ -48,7 +48,12 @@ public class UsersController : ControllerBase
                 HireDate = u.HireDate,
                 OnboardingStatus = u.OnboardingStatus,
                 JobTitle = u.JobTitle,
-                Roles = u.Roles.Select(r => r.RoleName).ToList() ?? new List<string>()
+                TelegramTag = u.TelegramTag,
+                Bio = u.Bio,
+                Roles = u.Roles.Select(r => r.RoleName).ToList() ?? new List<string>(),
+                HasMentees = u.InverseMentor.Any(),
+                TotalXP = u.TotalXP,
+                Level = u.Level
             })
             .ToListAsync();
 
@@ -65,6 +70,7 @@ public class UsersController : ControllerBase
             .Include(u => u.Department)
             .Include(u => u.Mentor)
             .Include(u => u.Roles)
+            .Include(u => u.InverseMentor)
             .FirstOrDefaultAsync(u => u.UserId == id);
 
         if (user == null)
@@ -85,7 +91,12 @@ public class UsersController : ControllerBase
             HireDate = user.HireDate,
             OnboardingStatus = user.OnboardingStatus,
             JobTitle = user.JobTitle,
-            Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>()
+            TelegramTag = user.TelegramTag,
+            Bio = user.Bio,
+            Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>(),
+            HasMentees = user.InverseMentor != null && user.InverseMentor.Any(),
+            TotalXP = user.TotalXP,
+            Level = user.Level
         };
 
         return Ok(userDto);
@@ -104,6 +115,13 @@ public class UsersController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        // Проверка на дубликат email
+        var emailExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+        if (emailExists)
+        {
+            return Conflict(new { message = $"Пользователь с email '{dto.Email}' уже существует" });
+        }
+
         var user = new User
         {
             ExternalId = dto.ExternalId,
@@ -112,6 +130,7 @@ public class UsersController : ControllerBase
             DepartmentId = dto.DepartmentId,
             MentorId = dto.MentorId,
             HireDate = dto.HireDate,
+            JobTitle = dto.JobTitle,
             OnboardingStatus = "Не начат"
         };
 
@@ -149,7 +168,9 @@ public class UsersController : ControllerBase
             HireDate = user.HireDate,
             OnboardingStatus = user.OnboardingStatus,
             JobTitle = user.JobTitle,
-            Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>()
+            Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>(),
+            TotalXP = user.TotalXP,
+            Level = user.Level
         };
 
         // Send Welcome Email
@@ -183,6 +204,9 @@ public class UsersController : ControllerBase
         if (dto.MentorId.HasValue) user.MentorId = dto.MentorId;
         if (dto.HireDate.HasValue) user.HireDate = dto.HireDate.Value;
         if (dto.OnboardingStatus != null) user.OnboardingStatus = dto.OnboardingStatus;
+        if (dto.JobTitle != null) user.JobTitle = dto.JobTitle;
+        if (dto.TelegramTag != null) user.TelegramTag = dto.TelegramTag;
+        if (dto.Bio != null) user.Bio = dto.Bio;
 
         if (dto.RoleIds != null)
         {
@@ -217,7 +241,9 @@ public class UsersController : ControllerBase
             HireDate = user.HireDate,
             OnboardingStatus = user.OnboardingStatus,
             JobTitle = user.JobTitle,
-            Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>()
+            Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>(),
+            TotalXP = user.TotalXP,
+            Level = user.Level
         };
 
         return Ok(userDto);
@@ -241,6 +267,35 @@ public class UsersController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Получить список подопечных для наставника
+    /// </summary>
+    [HttpGet("mentor/{mentorId}/mentees")]
+    [ProducesResponseType(typeof(List<object>), 200)]
+    public async Task<ActionResult> GetMentees(int mentorId)
+    {
+        var mentees = await _context.Users
+            .Include(u => u.Department)
+            .Include(u => u.Roles)
+            .Where(u => u.MentorId == mentorId)
+            .Select(u => new
+            {
+                UserId = u.UserId,
+                FullName = u.FullName,
+                Email = u.Email,
+                DepartmentName = u.Department != null ? u.Department.Name : "Не указано",
+                JobTitle = u.JobTitle,
+                HireDate = u.HireDate,
+                OnboardingStatus = u.OnboardingStatus,
+                TelegramTag = u.TelegramTag,
+                Level = u.Level,
+                TotalXP = u.TotalXP
+            })
+            .ToListAsync();
+
+        return Ok(mentees);
     }
 }
 

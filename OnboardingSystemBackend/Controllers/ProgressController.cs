@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
 using OnboardingSystem.Entities;
+using OnboardingSystem.Services;
 
 namespace OnboardingSystem.Controllers;
 
@@ -13,11 +14,13 @@ public class ProgressController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<ProgressController> _logger;
+    private readonly IGamificationService _gamificationService;
 
-    public ProgressController(AppDbContext context, ILogger<ProgressController> logger)
+    public ProgressController(AppDbContext context, ILogger<ProgressController> logger, IGamificationService gamificationService)
     {
         _context = context;
         _logger = logger;
+        _gamificationService = gamificationService;
     }
 
     /// <summary>
@@ -211,6 +214,19 @@ public class ProgressController : ControllerBase
         _context.ActionLogs.Add(actionLog);
 
         await _context.SaveChangesAsync();
+        
+        // --- Gamification ---
+        await _gamificationService.AddXpAsync(userId, 20); // 20 XP за прочтение теории
+        
+        // Check if this is the first module ever completed by checking total modules read
+        var completedCount = await _context.UserModuleProgresses
+            .Where(p => p.UserId == userId && p.Status == "Завершён")
+            .CountAsync();
+            
+        if (completedCount == 1)
+        {
+            await _gamificationService.GrantAchievementAsync(userId, "FIRST_MODULE");
+        }
 
         await _context.Entry(progress)
             .Reference(p => p.User)

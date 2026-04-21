@@ -19,6 +19,31 @@
             Создать запись в журнале действий
             </summary>
         </member>
+        <member name="M:OnboardingSystem.Controllers.ChecklistsController.GetModuleChecklist(System.Int32,System.Int32)">
+            <summary>
+            Получить чек-лист модуля для конкретного пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ChecklistsController.ToggleItem(OnboardingSystem.DTOs.ToggleChecklistDto)">
+            <summary>
+            Отметить пункт чек-листа
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ChecklistsController.CreateItem(OnboardingSystem.DTOs.CreateChecklistItemDto)">
+            <summary>
+            Создать новый пункт чек-листа
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ChecklistsController.UpdateItem(System.Int32,OnboardingSystem.DTOs.CreateChecklistItemDto)">
+            <summary>
+            Обновить пункт чек-листа
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ChecklistsController.DeleteItem(System.Int32)">
+            <summary>
+            Удалить пункт чек-листа
+            </summary>
+        </member>
         <member name="M:OnboardingSystem.Controllers.DepartmentsController.GetDepartments">
             <summary>
             Получить список всех подразделений
@@ -42,6 +67,31 @@
         <member name="M:OnboardingSystem.Controllers.DepartmentsController.DeleteDepartment(System.Int32)">
             <summary>
             Удалить подразделение
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.FaqController.GetFaq">
+            <summary>
+            Получить все вопросы FAQ
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.FaqController.CreateFaq(OnboardingSystem.DTOs.FaqCreateDto)">
+            <summary>
+            Создать новый вопрос FAQ (только для админов)
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.FaqController.UpdateFaq(System.Int32,OnboardingSystem.DTOs.FaqCreateDto)">
+            <summary>
+            Обновить вопрос FAQ
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.FaqController.DeleteFaq(System.Int32)">
+            <summary>
+            Удалить вопрос FAQ
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.GamificationController.GetUserProfile(System.Int32)">
+            <summary>
+            Получить профиль геймификации пользователя
             </summary>
         </member>
         <member name="M:OnboardingSystem.Controllers.ModulesController.GetModules(System.Nullable{System.Int32},System.Nullable{System.Boolean})">
@@ -152,6 +202,11 @@
             Запрос на синхронизацию по email
             </summary>
         </member>
+        <member name="M:OnboardingSystem.Controllers.RolesController.GetRoles">
+            <summary>
+            Получить список всех ролей
+            </summary>
+        </member>
         <member name="M:OnboardingSystem.Controllers.TestAttemptsController.GetUserAttempts(System.Int32)">
             <summary>
             Получить попытки прохождения теста пользователя
@@ -197,6 +252,11 @@
             Удалить пользователя
             </summary>
         </member>
+        <member name="M:OnboardingSystem.Controllers.UsersController.GetMentees(System.Int32)">
+            <summary>
+            Получить список подопечных для наставника
+            </summary>
+        </member>
         <member name="T:OnboardingSystem.Migrations.InitialCreate">
             <inheritdoc />
         </member>
@@ -207,6 +267,66 @@
             <inheritdoc />
         </member>
         <member name="M:OnboardingSystem.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddUserProfileFields">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddUserProfileFields.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddUserProfileFields.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddUserProfileFields.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddGamification">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddGamification.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddGamification.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddGamification.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddChecklists2">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddChecklists2.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddChecklists2.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddChecklists2.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddChecklists">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddChecklists.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddChecklists.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddChecklists.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddFaqEntries">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddFaqEntries.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddFaqEntries.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddFaqEntries.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:OnboardingSystem.Services.IRimsIntegrationService">

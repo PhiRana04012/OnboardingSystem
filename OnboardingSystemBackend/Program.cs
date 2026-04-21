@@ -32,8 +32,9 @@ builder.Services.AddHttpClient("RimsApi", client =>
     }
 });
 
-// Add RIMS Integration Service
-builder.Services.AddScoped<IRimsIntegrationService, RimsIntegrationService>();
+// builder.Services.AddScoped<IProgressService, ProgressService>();
+builder.Services.AddScoped<IGamificationService, GamificationService>();
+builder.Services.AddHttpClient<IRimsIntegrationService, RimsIntegrationService>();
 
 // Add Email Service
 builder.Services.AddScoped<IEmailService, EmailService>();

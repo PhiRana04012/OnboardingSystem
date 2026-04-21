@@ -13,7 +13,18 @@ public class UserDto
     public DateOnly HireDate { get; set; }
     public string OnboardingStatus { get; set; } = null!;
     public string? JobTitle { get; set; }
+    public string? TelegramTag { get; set; }
+    public string? Bio { get; set; }
     public List<string> Roles { get; set; } = new();
+    public bool HasMentees { get; set; }
+    public int TotalXP { get; set; }
+    public int Level { get; set; }
+}
+
+public class UpdateUserProfileDto
+{
+    public string? TelegramTag { get; set; }
+    public string? Bio { get; set; }
 }
 
 public class CreateUserDto
@@ -24,6 +35,7 @@ public class CreateUserDto
     public int DepartmentId { get; set; }
     public int? MentorId { get; set; }
     public DateOnly HireDate { get; set; }
+    public string? JobTitle { get; set; }
     public List<int> RoleIds { get; set; } = new();
 }
 
@@ -36,6 +48,9 @@ public class UpdateUserDto
     public int? MentorId { get; set; }
     public DateOnly? HireDate { get; set; }
     public string? OnboardingStatus { get; set; }
+    public string? JobTitle { get; set; }
+    public string? TelegramTag { get; set; }
+    public string? Bio { get; set; }
     public List<int>? RoleIds { get; set; }
 }
 

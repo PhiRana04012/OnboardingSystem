@@ -8,30 +8,26 @@ namespace OnboardingSystem.Data
         {
             context.Database.EnsureCreated();
 
-            // Look for any roles.
-            if (context.Roles.Any())
-            {
-                return;   // DB has been seeded
-            }
+            context.Database.EnsureCreated();
 
-            var roles = new Role[]
+            // --- Роли (Roles) ---
+            if (!context.Roles.Any())
             {
-                new Role { RoleName = "Администратор системы" },
-                new Role { RoleName = "HR-специалист" },
-                new Role { RoleName = "Руководитель подразделения" },
-                new Role { RoleName = "Наставник" },
-                new Role { RoleName = "Новый сотрудник" }
-            };
+                var roles = new Role[]
+                {
+                    new Role { RoleName = "Администратор системы" },
+                    new Role { RoleName = "HR-специалист" },
+                    new Role { RoleName = "Руководитель подразделения" },
+                    new Role { RoleName = "Наставник" },
+                    new Role { RoleName = "Новый сотрудник" }
+                };
 
-            foreach (var r in roles)
-            {
-                // Проверка, чтобы не дублировать, если вдруг запускаем повторно
-                if (!context.Roles.Any(existing => existing.RoleName == r.RoleName))
+                foreach (var r in roles)
                 {
                     context.Roles.Add(r);
                 }
+                context.SaveChanges();
             }
-            context.SaveChanges();
 
             // --- Подразделения (Departments) ---
             if (!context.Departments.Any())
@@ -55,6 +51,8 @@ namespace OnboardingSystem.Data
                 var adminRole = context.Roles.First(r => r.RoleName == "Администратор системы");
                 var hrRole = context.Roles.First(r => r.RoleName == "HR-специалист");
                 var empRole = context.Roles.First(r => r.RoleName == "Новый сотрудник");
+
+                var mentorRole = context.Roles.First(r => r.RoleName == "Наставник");
 
                 var users = new List<User>
                 {
@@ -84,6 +82,33 @@ namespace OnboardingSystem.Data
                         OnboardingStatus = "В процессе",
                         JobTitle = "Младший Разработчик",
                         Department = itDept
+                    },
+                    new User
+                    {
+                        FullName = "Петр Сергеевич",
+                        Email = "mentor1@example.com",
+                        HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-3)),
+                        OnboardingStatus = "Завершен",
+                        JobTitle = "Старший Разработчик",
+                        Department = itDept
+                    },
+                    new User
+                    {
+                        FullName = "Александр Валерьевич",
+                        Email = "mentor2@example.com",
+                        HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-2)),
+                        OnboardingStatus = "Завершен",
+                        JobTitle = "Ведущий Разработчик",
+                        Department = itDept
+                    },
+                    new User
+                    {
+                        FullName = "Елена Михайловна",
+                        Email = "mentor3@example.com",
+                        HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-4)),
+                        OnboardingStatus = "Завершен",
+                        JobTitle = "Архитектор систем",
+                        Department = itDept
                     }
                 };
 
@@ -94,6 +119,9 @@ namespace OnboardingSystem.Data
                 users[0].Roles.Add(adminRole);
                 users[1].Roles.Add(hrRole);
                 users[2].Roles.Add(empRole);
+                users[3].Roles.Add(mentorRole);
+                users[4].Roles.Add(mentorRole);
+                users[5].Roles.Add(mentorRole);
                 context.SaveChanges();
             }
 
@@ -190,6 +218,54 @@ namespace OnboardingSystem.Data
                 };
 
                 context.Questions.AddRange(questions);
+                context.SaveChanges();
+            }
+
+            // --- Achievements ---
+            if (!context.Achievements.Any())
+            {
+                var achievements = new[]
+                {
+                    new Achievement { Title = "Первые шаги", Description = "Пройти первый модуль онбординга.", IconName = "🎯", ConditionKey = "FIRST_MODULE" },
+                    new Achievement { Title = "Идеальный результат", Description = "Сдать тест на 100%.", IconName = "⭐", ConditionKey = "TEST_100" },
+                    new Achievement { Title = "Знаток безопасности", Description = "Завершить модуль безопасности.", IconName = "🛡️", ConditionKey = "MODULE_SAFETY" },
+                    new Achievement { Title = "Полный курс", Description = "Полностью завершить программу онбординга.", IconName = "🏆", ConditionKey = "ONBOARDING_DONE" },
+                    new Achievement { Title = "Кандидат", Description = "Достичь 2 уровня.", IconName = "📈", ConditionKey = "LEVEL_2" },
+                    new Achievement { Title = "Ветеран", Description = "Достичь 5 уровня.", IconName = "👑", ConditionKey = "LEVEL_5" },
+                };
+                context.Achievements.AddRange(achievements);
+                context.SaveChanges();
+            }
+
+            // --- Checklist Items ---
+            if (!context.ChecklistItems.Any())
+            {
+                var welcomeModule = context.Modules.FirstOrDefault(m => m.Title == "Введение в компанию");
+                if (welcomeModule != null)
+                {
+                    var checklistItems = new[]
+                    {
+                        new ChecklistItem { ModuleId = welcomeModule.ModuleId, Text = "Получить рабочий пропуск у охраны", OrderIndex = 1, IsRequired = true },
+                        new ChecklistItem { ModuleId = welcomeModule.ModuleId, Text = "Настроить корпоративную почту", OrderIndex = 2, IsRequired = true },
+                        new ChecklistItem { ModuleId = welcomeModule.ModuleId, Text = "Заполнить профиль в кадровой системе", OrderIndex = 3, IsRequired = true },
+                        new ChecklistItem { ModuleId = welcomeModule.ModuleId, Text = "Познакомиться с командой (ланч)", OrderIndex = 4, IsRequired = false }
+                    };
+                    context.ChecklistItems.AddRange(checklistItems);
+                    context.SaveChanges();
+                }
+            }
+            // --- FAQ Entries ---
+            if (!context.FaqEntries.Any())
+            {
+                var faqEntries = new FaqEntry[]
+                {
+                    new FaqEntry { Question = "Где я могу найти свой график работы?", Answer = "Ваш индивидуальный график работы указан в трудовом договоре и доступен в личном кабинете в разделе 'Профиль'. Стандартный график для офиса: с 9:00 до 18:00.", Category = "Общее", DisplayOrder = 1 },
+                    new FaqEntry { Question = "Как оформить отпуск?", Answer = "Отпуск оформляется через портал самообслуживания не менее чем за 2 недели. Сначала согласуйте даты с вашим руководителем.", Category = "HR", DisplayOrder = 2 },
+                    new FaqEntry { Question = "Что делать, если сломался ноутбук?", Answer = "Немедленно создайте заявку в Service Desk или напишите в чат технической поддержки в Telegram.", Category = "Техника", DisplayOrder = 3 },
+                    new FaqEntry { Question = "Где находится столовая?", Answer = "Столовая расположена на 2-м этаже бизнес-центра. Часы работы: с 12:00 до 16:00.", Category = "Офис", DisplayOrder = 4 },
+                    new FaqEntry { Question = "Когда придет зарплата?", Answer = "Зарплата выплачивается дважды в месяц: 25-го числа (аванс) и 10-го числа следующего месяца (основная часть).", Category = "Финансы", DisplayOrder = 5 }
+                };
+                context.FaqEntries.AddRange(faqEntries);
                 context.SaveChanges();
             }
         }

@@ -6,7 +6,9 @@ export const usersApi = {
   getById: (id) => identityClient.get(`/users/${id}`),
   create: (data) => identityClient.post('/users', data),
   update: (id, data) => identityClient.put(`/users/${id}`, data),
-  delete: (id) => identityClient.delete(`/users/${id}`)
+  updateProfile: (id, data) => identityClient.put(`/users/${id}`, data),
+  delete: (id) => identityClient.delete(`/users/${id}`),
+  getMentees: (mentorId) => identityClient.get(`/users/mentor/${mentorId}/mentees`)
 }
 
 // Modules API - Content Service
@@ -64,6 +66,11 @@ export const departmentsApi = {
   delete: (id) => identityClient.delete(`/departments/${id}`)
 }
 
+// Roles API - Identity Service
+export const rolesApi = {
+  getAll: () => identityClient.get('/roles')
+}
+
 // Action Logs API - Progress Service
 export const actionLogsApi = {
   getAll: (params) => progressClient.get('/actionlogs', { params }),
@@ -74,6 +81,28 @@ export const actionLogsApi = {
 export const rimsSyncApi = {
   syncUserByUid: (rimsUid) => identityClient.post(`/rimssync/sync-user/${rimsUid}`),
   syncUserByEmail: (email) => identityClient.post('/rimssync/sync-by-email', { email })
+}
+
+// Gamification API - Progress Service
+export const gamificationApi = {
+  getUserProfile: (userId) => progressClient.get(`/gamification/user/${userId}`)
+}
+
+// Checklists API - Progress Service
+export const checklistsApi = {
+  getModuleChecklist: (moduleId, userId) => progressClient.get(`/checklists/module/${moduleId}/user/${userId}`),
+  toggleItem: (data) => progressClient.post('/checklists/toggle', data),
+  create: (data) => progressClient.post('/checklists', data),
+  update: (id, data) => progressClient.put(`/checklists/${id}`, data),
+  delete: (id) => progressClient.delete(`/checklists/${id}`)
+}
+
+// FAQ API - Content Service
+export const faqApi = {
+  getAll: () => contentClient.get('/faq'),
+  create: (data) => contentClient.post('/faq', data),
+  update: (id, data) => contentClient.put(`/faq/${id}`, data),
+  delete: (id) => contentClient.delete(`/faq/${id}`)
 }
 
 

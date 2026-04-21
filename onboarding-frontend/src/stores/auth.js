@@ -3,7 +3,9 @@ import { ref, computed } from 'vue'
 import { usersApi } from '../api/services'
 
 export const useAuthStore = defineStore('auth', () => {
-  const currentUser = ref(null)
+  // Восстанавливаем пользователя из localStorage (если есть) на старте
+  const storedUser = localStorage.getItem('currentUser')
+  const currentUser = ref(storedUser ? JSON.parse(storedUser) : null)
   const isLoading = ref(false)
 
   const isAuthenticated = computed(() => currentUser.value !== null)
@@ -14,7 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const isNewEmployee = computed(() => hasRole('Новый сотрудник'))
-  const isMentor = computed(() => hasRole('Наставник'))
+  const isMentor = computed(() => hasRole('Наставник') || (currentUser.value && currentUser.value.hasMentees))
   const isHR = computed(() => hasRole('HR-специалист'))
   const isManager = computed(() => hasRole('Руководитель подразделения'))
   const isAdmin = computed(() => hasRole('Администратор системы'))
@@ -29,6 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
       
       currentUser.value = response.data
+      localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
       return currentUser.value
     } catch (error) {
       console.error('Login error:', error)
@@ -68,13 +71,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = () => {
     currentUser.value = null
+    localStorage.removeItem('currentUser')
   }
 
   const refreshUser = async () => {
     if (!currentUser.value) return
     try {
       const response = await usersApi.getById(currentUser.value.userId)
+      console.log('🔄 refreshUser - Server response:', response.data)
+      console.log('   - bio:', response.data?.bio)
+      console.log('   - telegramTag:', response.data?.telegramTag)
       currentUser.value = response.data
+      localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
+      console.log('✅ User refreshed and saved to localStorage')
     } catch (error) {
       console.error('Refresh user error:', error)
     }

@@ -22,6 +22,42 @@ namespace OnboardingSystem.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("OnboardingSystem.Entities.Achievement", b =>
+                {
+                    b.Property<int>("AchievementId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AchievementId"));
+
+                    b.Property<string>("ConditionKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("IconName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("AchievementId");
+
+                    b.HasIndex("ConditionKey")
+                        .IsUnique();
+
+                    b.ToTable("Achievements");
+                });
+
             modelBuilder.Entity("OnboardingSystem.Entities.ActionLog", b =>
                 {
                     b.Property<long>("LogId")
@@ -85,6 +121,35 @@ namespace OnboardingSystem.Migrations
                     b.ToTable("AnswerOptions");
                 });
 
+            modelBuilder.Entity("OnboardingSystem.Entities.ChecklistItem", b =>
+                {
+                    b.Property<int>("ChecklistItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChecklistItemId"));
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ModuleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("ChecklistItemId");
+
+                    b.HasIndex("ModuleId");
+
+                    b.ToTable("ChecklistItems");
+                });
+
             modelBuilder.Entity("OnboardingSystem.Entities.Department", b =>
                 {
                     b.Property<int>("DepartmentId")
@@ -111,6 +176,43 @@ namespace OnboardingSystem.Migrations
                         .IsUnique();
 
                     b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("OnboardingSystem.Entities.FaqEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Общее");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(getutcdate())");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FaqEntries");
                 });
 
             modelBuilder.Entity("OnboardingSystem.Entities.Module", b =>
@@ -259,6 +361,9 @@ namespace OnboardingSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
+                    b.Property<string>("Bio")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("DepartmentId")
                         .HasColumnType("int")
                         .HasColumnName("DepartmentID");
@@ -285,6 +390,9 @@ namespace OnboardingSystem.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
                     b.Property<int?>("MentorId")
                         .HasColumnType("int")
                         .HasColumnName("MentorID");
@@ -300,6 +408,12 @@ namespace OnboardingSystem.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("RimsLastSyncDate");
 
+                    b.Property<string>("TelegramTag")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalXP")
+                        .HasColumnType("int");
+
                     b.HasKey("UserId")
                         .HasName("PK__Users__1788CCAC41930BCF");
 
@@ -311,6 +425,65 @@ namespace OnboardingSystem.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("OnboardingSystem.Entities.UserAchievement", b =>
+                {
+                    b.Property<int>("UserAchievementId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserAchievementId"));
+
+                    b.Property<int>("AchievementId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AwardedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserAchievementId");
+
+                    b.HasIndex("AchievementId");
+
+                    b.HasIndex("UserId", "AchievementId")
+                        .IsUnique();
+
+                    b.ToTable("UserAchievements");
+                });
+
+            modelBuilder.Entity("OnboardingSystem.Entities.UserChecklistItem", b =>
+                {
+                    b.Property<int>("UserChecklistItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserChecklistItemId"));
+
+                    b.Property<int>("ChecklistItemId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserChecklistItemId");
+
+                    b.HasIndex("ChecklistItemId");
+
+                    b.HasIndex("UserId", "ChecklistItemId")
+                        .IsUnique();
+
+                    b.ToTable("UserChecklistItems");
                 });
 
             modelBuilder.Entity("OnboardingSystem.Entities.UserModuleProgress", b =>
@@ -395,6 +568,18 @@ namespace OnboardingSystem.Migrations
                     b.Navigation("Question");
                 });
 
+            modelBuilder.Entity("OnboardingSystem.Entities.ChecklistItem", b =>
+                {
+                    b.HasOne("OnboardingSystem.Entities.Module", "Module")
+                        .WithMany("ChecklistItems")
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_ChecklistItems_Modules");
+
+                    b.Navigation("Module");
+                });
+
             modelBuilder.Entity("OnboardingSystem.Entities.Module", b =>
                 {
                     b.HasOne("OnboardingSystem.Entities.Department", "Department")
@@ -456,6 +641,48 @@ namespace OnboardingSystem.Migrations
                     b.Navigation("Mentor");
                 });
 
+            modelBuilder.Entity("OnboardingSystem.Entities.UserAchievement", b =>
+                {
+                    b.HasOne("OnboardingSystem.Entities.Achievement", "Achievement")
+                        .WithMany("UserAchievements")
+                        .HasForeignKey("AchievementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_UserAchievements_Achievements");
+
+                    b.HasOne("OnboardingSystem.Entities.User", "User")
+                        .WithMany("UserAchievements")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_UserAchievements_Users");
+
+                    b.Navigation("Achievement");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OnboardingSystem.Entities.UserChecklistItem", b =>
+                {
+                    b.HasOne("OnboardingSystem.Entities.ChecklistItem", "ChecklistItem")
+                        .WithMany()
+                        .HasForeignKey("ChecklistItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_UserChecklistItems_ChecklistItems");
+
+                    b.HasOne("OnboardingSystem.Entities.User", "User")
+                        .WithMany("UserChecklistItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_UserChecklistItems_Users");
+
+                    b.Navigation("ChecklistItem");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("OnboardingSystem.Entities.UserModuleProgress", b =>
                 {
                     b.HasOne("OnboardingSystem.Entities.Module", "Module")
@@ -494,6 +721,11 @@ namespace OnboardingSystem.Migrations
                         .HasConstraintName("FK_UserRoles_Users");
                 });
 
+            modelBuilder.Entity("OnboardingSystem.Entities.Achievement", b =>
+                {
+                    b.Navigation("UserAchievements");
+                });
+
             modelBuilder.Entity("OnboardingSystem.Entities.Department", b =>
                 {
                     b.Navigation("Modules");
@@ -503,6 +735,8 @@ namespace OnboardingSystem.Migrations
 
             modelBuilder.Entity("OnboardingSystem.Entities.Module", b =>
                 {
+                    b.Navigation("ChecklistItems");
+
                     b.Navigation("Questions");
 
                     b.Navigation("TestAttempts");
@@ -522,6 +756,10 @@ namespace OnboardingSystem.Migrations
                     b.Navigation("InverseMentor");
 
                     b.Navigation("TestAttempts");
+
+                    b.Navigation("UserAchievements");
+
+                    b.Navigation("UserChecklistItems");
 
                     b.Navigation("UserModuleProgresses");
                 });

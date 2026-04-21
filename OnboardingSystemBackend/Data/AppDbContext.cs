@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Entities;
@@ -33,6 +33,16 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserModuleProgress> UserModuleProgresses { get; set; }
+    
+    public virtual DbSet<Achievement> Achievements { get; set; }
+    
+    public virtual DbSet<UserAchievement> UserAchievements { get; set; }
+    
+    public virtual DbSet<ChecklistItem> ChecklistItems { get; set; }
+    
+    public virtual DbSet<UserChecklistItem> UserChecklistItems { get; set; }
+    
+    public virtual DbSet<FaqEntry> FaqEntries { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -216,6 +226,70 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserModuleProgresses)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_UserModuleProgress_Users");
+        });
+
+        modelBuilder.Entity<Achievement>(entity =>
+        {
+            entity.HasKey(e => e.AchievementId);
+            entity.Property(e => e.Title).HasMaxLength(150);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.IconName).HasMaxLength(50);
+            entity.Property(e => e.ConditionKey).HasMaxLength(100);
+            entity.HasIndex(e => e.ConditionKey).IsUnique();
+        });
+
+        modelBuilder.Entity<UserAchievement>(entity =>
+        {
+            entity.HasKey(e => e.UserAchievementId);
+            entity.Property(e => e.AwardedAt).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Achievement)
+                .WithMany(p => p.UserAchievements)
+                .HasForeignKey(d => d.AchievementId)
+                .HasConstraintName("FK_UserAchievements_Achievements");
+
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.UserAchievements)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_UserAchievements_Users");
+                
+            entity.HasIndex(e => new { e.UserId, e.AchievementId }).IsUnique();
+        });
+
+        modelBuilder.Entity<ChecklistItem>(entity =>
+        {
+            entity.HasKey(e => e.ChecklistItemId);
+            entity.Property(e => e.Text).HasMaxLength(500);
+
+            entity.HasOne(d => d.Module)
+                .WithMany(p => p.ChecklistItems)
+                .HasForeignKey(d => d.ModuleId)
+                .HasConstraintName("FK_ChecklistItems_Modules");
+        });
+
+        modelBuilder.Entity<UserChecklistItem>(entity =>
+        {
+            entity.HasKey(e => e.UserChecklistItemId);
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.UserChecklistItems)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_UserChecklistItems_Users");
+
+            entity.HasOne(d => d.ChecklistItem)
+                .WithMany()
+                .HasForeignKey(d => d.ChecklistItemId)
+                .HasConstraintName("FK_UserChecklistItems_ChecklistItems");
+                
+            entity.HasIndex(e => new { e.UserId, e.ChecklistItemId }).IsUnique();
+        });
+
+        modelBuilder.Entity<FaqEntry>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Question).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Answer).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(50).HasDefaultValue("Общее");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
         });
 
         OnModelCreatingPartial(modelBuilder);

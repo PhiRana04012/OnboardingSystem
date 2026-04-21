@@ -34,6 +34,15 @@
         >
           Вопросы
         </button>
+        <button
+          @click="activeTab = 'faq'"
+          class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+          :class="activeTab === 'faq' 
+            ? 'border-primary-500 text-primary-600' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          FAQ
+        </button>
       </nav>
     </div>
 
@@ -201,6 +210,34 @@
       </div>
     </div>
 
+    <!-- FAQ Tab -->
+    <div v-if="activeTab === 'faq'" class="space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-900">Управление FAQ</h2>
+        <button @click="openFaqForm()" class="btn-primary">Добавить вопрос</button>
+      </div>
+
+      <div v-if="faqItems.length === 0 && !showFaqForm" class="card text-center py-12 text-gray-500">
+        Пока нет вопросов FAQ
+      </div>
+
+      <div v-else class="space-y-4">
+        <div v-for="item in faqItems" :key="item.id" class="card">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+               <h3 class="font-bold text-gray-900 mb-1">{{ item.question }}</h3>
+               <p class="text-sm text-gray-600 mb-2">{{ item.answer }}</p>
+               <span class="px-2 py-0.5 text-xs font-bold bg-blue-50 text-blue-600 rounded">{{ item.category || 'Общее' }}</span>
+            </div>
+            <div class="flex space-x-3 ml-4">
+              <button @click="openFaqForm(item)" class="text-primary-600 hover:text-primary-900">Редактировать</button>
+              <button @click="deleteFaqItem(item.id)" class="text-red-600 hover:text-red-900">Удалить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Модальное окно для Модуля -->
     <div v-if="showModuleForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
@@ -302,6 +339,23 @@
               </option>
             </select>
           </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Наставник (необязательно)</label>
+            <div class="mt-1 relative">
+              <input
+                v-model="mentorSearchQuery"
+                type="text"
+                placeholder="Поиск по ФИО..."
+                class="input block w-full mb-2"
+              />
+              <select v-model="userForm.mentorId" class="input block w-full">
+                <option :value="null">— Не назначен —</option>
+                <option v-for="mentor in filteredMentors" :key="mentor.userId" :value="mentor.userId">
+                  {{ mentor.fullName }}
+                </option>
+              </select>
+            </div>
+          </div>
           <div class="pt-4 flex justify-end space-x-3 border-t">
             <button type="button" @click="closeUserForm" class="btn-secondary">Отмена</button>
             <button type="submit" class="btn-primary">Сохранить</button>
@@ -357,12 +411,31 @@
         </form>
       </div>
     </div>
+
+    <!-- Модальное окно для FAQ -->
+    <div v-if="showFaqForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center p-6 border-b">
+           <h3 class="text-lg font-medium text-gray-900">{{ editingFaq ? 'Редактировать FAQ' : 'Добавить FAQ' }}</h3>
+           <button @click="closeFaqForm" class="text-gray-400 hover:text-gray-500"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+        </div>
+        <form @submit.prevent="saveFaq" class="p-6 space-y-4 overflow-y-auto">
+          <div><label class="block text-sm font-medium text-gray-700">Вопрос</label><input v-model="faqForm.question" type="text" required class="mt-1 input block w-full" /></div>
+          <div><label class="block text-sm font-medium text-gray-700">Ответ</label><textarea v-model="faqForm.answer" rows="3" required class="mt-1 input block w-full"></textarea></div>
+          <div class="grid grid-cols-2 gap-4">
+             <div><label class="block text-sm font-medium text-gray-700">Категория</label><input v-model="faqForm.category" type="text" class="mt-1 input block w-full" /></div>
+             <div><label class="block text-sm font-medium text-gray-700">Порядок</label><input v-model="faqForm.displayOrder" type="number" class="mt-1 input block w-full" /></div>
+          </div>
+          <div class="pt-4 flex justify-end space-x-3 border-t"><button type="button" @click="closeFaqForm" class="btn-secondary">Отмена</button><button type="submit" class="btn-primary" :disabled="isSavingFaq">Сохранить</button></div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import { modulesApi, usersApi, questionsApi, departmentsApi } from '../api/services'
+import { modulesApi, usersApi, questionsApi, departmentsApi, faqApi } from '../api/services'
 import QuillEditor from '../components/QuillEditor.vue'
 
 const activeTab = ref('modules')
@@ -389,12 +462,30 @@ const moduleForm = ref({
 // User Form State
 const showUserForm = ref(false)
 const editingUser = ref(null)
+const mentors = ref([])
+const mentorSearchQuery = ref('')
 const userForm = ref({
   fullName: '',
   email: '',
   passwordHash: '',
   role: 'user',
-  departmentId: null
+  departmentId: null,
+  mentorId: null
+})
+
+// Computed property для фильтрации наставников по отделу и поиску
+const filteredMentors = computed(() => {
+  return mentors.value.filter(mentor => {
+    // Фильтруем только наставников из того же отдела
+    const sameDepart = mentor.departmentId === userForm.value.departmentId
+    
+    // Фильтруем по поисковому запросу (ФИО)
+    const matchesSearch = mentor.fullName
+      .toLowerCase()
+      .includes(mentorSearchQuery.value.toLowerCase())
+    
+    return sameDepart && matchesSearch
+  })
 })
 
 // Question Form State
@@ -416,12 +507,22 @@ const hasCorrectAnswer = computed(() => {
   return questionForm.value.answerOptions.some(a => a.isCorrect)
 })
 
+// FAQ Form State
+const faqItems = ref([])
+const showFaqForm = ref(false)
+const editingFaq = ref(null)
+const isSavingFaq = ref(false)
+const faqForm = ref({ question: '', answer: '', category: 'Общее', displayOrder: 0 })
+
 onMounted(async () => {
   await Promise.all([
     loadModules(),
     loadUsers(),
-    loadDepartments()
+    loadDepartments(),
+    loadFaq()
   ])
+  // Загружаем список наставников (отфильтровываем пользователей с ролью наставника)
+  await loadPotentialMentors()
 })
 
 watch(selectedModuleForQuestions, async (newVal) => {
@@ -465,6 +566,16 @@ const loadDepartments = async () => {
     departments.value = response.data
   } catch (error) {
     console.error('Failed to load departments:', error)
+  }
+}
+
+const loadPotentialMentors = async () => {
+  try {
+    const response = await usersApi.getAll()
+    // Фильтруем пользователей которые могут быть наставниками (у них есть роль "Наставник")
+    mentors.value = response.data.filter(u => u.roles && u.roles.includes('Наставник'))
+  } catch (error) {
+    console.error('Failed to load mentors:', error)
   }
 }
 
@@ -526,12 +637,14 @@ const deleteModule = async (moduleId) => {
 const closeUserForm = () => {
   showUserForm.value = false
   editingUser.value = null
+  mentorSearchQuery.value = ''
   userForm.value = {
     fullName: '',
     email: '',
     passwordHash: '',
     role: 'user',
-    departmentId: null
+    departmentId: null,
+    mentorId: null
   }
 }
 
@@ -554,12 +667,14 @@ const saveUser = async () => {
 
 const editUser = (user) => {
   editingUser.value = user
+  mentorSearchQuery.value = ''
   userForm.value = {
     fullName: user.fullName || '',
     email: user.email || '',
     passwordHash: '', // Keep blank on edit
     role: user.role || 'user',
-    departmentId: user.departmentId || null
+    departmentId: user.departmentId || null,
+    mentorId: user.mentorId || null
   }
   showUserForm.value = true
 }
@@ -661,6 +776,46 @@ const deleteQuestion = async (questionId) => {
     console.error('Failed to delete question:', error)
     alert('Ошибка при удалении вопроса')
   }
+}
+
+// FAQ Logic
+const loadFaq = async () => {
+  try {
+    const res = await faqApi.getAll()
+    faqItems.value = res.data
+  } catch (err) {
+    console.error('Failed to load FAQ:', err)
+  }
+}
+
+const openFaqForm = (item = null) => {
+  if (item) {
+    editingFaq.value = item
+    faqForm.value = { question: item.question, answer: item.answer, category: item.category || 'Общее', displayOrder: item.displayOrder || 0 }
+  } else {
+    editingFaq.value = null
+    faqForm.value = { question: '', answer: '', category: 'Общее', displayOrder: 0 }
+  }
+  showFaqForm.value = true
+}
+
+const closeFaqForm = () => { showFaqForm.value = false; editingFaq.value = null; }
+
+const saveFaq = async () => {
+  try {
+    isSavingFaq.value = true
+    if (editingFaq.value) await faqApi.update(editingFaq.value.id, faqForm.value)
+    else await faqApi.create(faqForm.value)
+    closeFaqForm()
+    await loadFaq()
+  } catch (err) { alert('Ошибка при сохранении FAQ') }
+  finally { isSavingFaq.value = false }
+}
+
+const deleteFaqItem = async (id) => {
+  if (!confirm('Удалить этот вопрос?')) return
+  try { await faqApi.delete(id); await loadFaq() } 
+  catch (err) { alert('Ошибка при удалении') }
 }
 </script>
 
