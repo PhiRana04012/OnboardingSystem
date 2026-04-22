@@ -3,9 +3,9 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
       <div class="flex-1">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">Мой онбординг</h1>
-        <p class="text-lg text-gray-600 leading-relaxed">
-          Рады видеть тебя снова, <span class="font-semibold text-primary-600">{{ authStore.currentUser?.fullName }}</span>! 👋
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-50 dark:to-gray-300 bg-clip-text text-transparent mb-2">Мой онбординг</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+          Рады видеть тебя снова, <span class="font-semibold text-primary-600 dark:text-primary-400">{{ authStore.currentUser?.fullName }}</span>! 👋
         </p>
       </div>
       <div v-if="authStore.isMentor || authStore.isHR || authStore.isManager" class="flex-shrink-0">
@@ -18,12 +18,12 @@
 
     <!-- Loading State -->
     <div v-if="progressStore.isLoading" class="card text-center py-16">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-primary-600"></div>
-      <p class="mt-6 text-gray-600 font-medium text-lg">Загружаем твой прогресс...</p>
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-700 border-t-primary-600 dark:border-t-primary-400"></div>
+      <p class="mt-6 text-gray-600 dark:text-gray-400 font-medium text-lg">Загружаем твой прогресс...</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="progressStore.error" class="card border-l-4 border-red-500 bg-gradient-to-r from-red-50 to-orange-50 text-red-700 p-6">
+    <div v-else-if="progressStore.error" class="card border-l-4 border-red-500 dark:border-red-400 bg-gradient-to-r from-red-50 dark:from-red-900/20 to-orange-50 dark:to-orange-900/20 text-red-700 dark:text-red-300 p-6">
       <div class="flex gap-3 items-start">
         <span class="text-2xl flex-shrink-0">⚠️</span>
         <div>

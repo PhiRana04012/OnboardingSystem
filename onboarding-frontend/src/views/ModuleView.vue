@@ -18,7 +18,7 @@
             >
               ← Назад
             </button>
-            <h1 class="text-3xl font-bold text-gray-900">{{ module.title }}</h1>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ module.title }}</h1>
           </div>
           <p v-if="module.description" class="text-gray-600 mt-2">{{ module.description }}</p>
           <div class="flex items-center space-x-2 mt-3">

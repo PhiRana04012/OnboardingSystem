@@ -1,8 +1,8 @@
 <template>
   <div class="max-w-4xl mx-auto space-y-6">
     <div class="text-center space-y-2">
-      <h1 class="text-3xl font-bold text-gray-900">База знаний и FAQ</h1>
-      <p class="text-gray-600">Ответы на часто задаваемые вопросы для новых сотрудников</p>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">База знаний и FAQ</h1>
+      <p class="text-gray-600 dark:text-gray-300">Ответы на часто задаваемые вопросы для новых сотрудников</p>
     </div>
 
     <!-- Search -->
@@ -14,7 +14,7 @@
         class="input pl-10 h-12 shadow-sm"
       />
       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
@@ -27,10 +27,10 @@
     <div v-else class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <!-- Categories Sidebar -->
       <aside class="md:col-span-1 space-y-2">
-        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-2">Категории</h3>
+        <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 ml-2">Категории</h3>
         <button
           @click="selectedCategory = null"
-          :class="[!selectedCategory ? 'bg-primary-50 text-primary-700 font-bold border-l-4 border-primary-600' : 'text-gray-600 hover:bg-gray-50']"
+          :class="[!selectedCategory ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-bold border-l-4 border-primary-600 dark:border-primary-500' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800']"
           class="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all"
         >
           Все категории
@@ -39,7 +39,7 @@
           v-for="cat in faqStore.categories"
           :key="cat"
           @click="selectedCategory = cat"
-          :class="[selectedCategory === cat ? 'bg-primary-50 text-primary-700 font-bold border-l-4 border-primary-600' : 'text-gray-600 hover:bg-gray-50']"
+          :class="[selectedCategory === cat ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-bold border-l-4 border-primary-600 dark:border-primary-500' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800']"
           class="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all"
         >
           {{ cat }}
@@ -57,10 +57,10 @@
             @click="toggleItem(item.id)"
             class="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none group"
           >
-            <span class="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">{{ item.question }}</span>
+            <span class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{{ item.question }}</span>
             <svg 
-              class="w-5 h-5 text-gray-400 transition-transform duration-200"
-              :class="{ 'rotate-180 text-primary-600': openItems.includes(item.id) }"
+              class="w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform duration-200"
+              :class="{ 'rotate-180 text-primary-600 dark:text-primary-400': openItems.includes(item.id) }"
               fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -69,13 +69,13 @@
           
           <div 
             v-show="openItems.includes(item.id)"
-            class="px-6 pb-5 text-gray-600 text-sm border-t border-gray-50 pt-4"
+            class="px-6 pb-5 text-gray-600 dark:text-gray-300 text-sm border-t border-gray-50 dark:border-gray-700 pt-4"
           >
-            <div class="prose max-w-none" v-html="formatAnswer(item.answer)"></div>
+            <div class="prose dark:prose-invert max-w-none" v-html="formatAnswer(item.answer)"></div>
           </div>
         </div>
 
-        <div v-if="filteredFaq.length === 0" class="text-center py-12 text-gray-400 card border-dashed border-2">
+        <div v-if="filteredFaq.length === 0" class="text-center py-12 text-gray-400 dark:text-gray-500 card border-dashed border-2">
            Ничего не найдено по вашему запросу
         </div>
       </div>

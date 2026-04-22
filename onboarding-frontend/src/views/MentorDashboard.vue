@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-3xl font-bold text-gray-900">Мои подопечные</h1>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Мои подопечные</h1>
       <button @click="loadMentees" class="btn-secondary" :disabled="isLoading">
         Обновить
       </button>
@@ -9,17 +9,17 @@
 
     <!-- Общая статистика -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      <div class="card bg-gradient-to-br from-primary-50 to-white">
-        <h3 class="text-sm font-medium text-gray-500">Всего подопечных</h3>
-        <p class="text-3xl font-bold text-primary-700 mt-2">{{ mentees.length }}</p>
+      <div class="card bg-gradient-to-br from-primary-50 to-white dark:from-primary-900/30 dark:to-primary-900/10">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Всего подопечных</h3>
+        <p class="text-3xl font-bold text-primary-700 dark:text-primary-300 mt-2">{{ mentees.length }}</p>
       </div>
-      <div class="card bg-gradient-to-br from-yellow-50 to-white">
-        <h3 class="text-sm font-medium text-gray-500">В процессе</h3>
-        <p class="text-3xl font-bold text-yellow-600 mt-2">{{ inProcessCount }}</p>
+      <div class="card bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-900/30 dark:to-yellow-900/10">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">В процессе</h3>
+        <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-2">{{ inProcessCount }}</p>
       </div>
-      <div class="card bg-gradient-to-br from-green-50 to-white">
-        <h3 class="text-sm font-medium text-gray-500">Завершили</h3>
-        <p class="text-3xl font-bold text-green-600 mt-2">{{ completedCount }}</p>
+      <div class="card bg-gradient-to-br from-green-50 to-white dark:from-green-900/30 dark:to-green-900/10">
+        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Завершили</h3>
+        <p class="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">{{ completedCount }}</p>
       </div>
     </div>
 
@@ -28,10 +28,10 @@
       <p class="mt-4 text-gray-600">Загрузка информации...</p>
     </div>
 
-    <div v-else-if="mentees.length === 0" class="card text-center py-12 bg-white">
+    <div v-else-if="mentees.length === 0" class="card text-center py-12 bg-white dark:bg-gray-800">
       <div class="text-6xl mb-4">👥</div>
-      <h3 class="text-lg font-medium text-gray-900">У вас пока нет подопечных</h3>
-      <p class="text-gray-500 mt-2">Как только новичок будет прикреплен к вам, он появится здесь.</p>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">У вас пока нет подопечных</h3>
+      <p class="text-gray-500 dark:text-gray-400 mt-2">Как только новичок будет прикреплен к вам, он появится здесь.</p>
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -57,13 +57,13 @@
           </div>
         </div>
 
-        <div class="flex-1 space-y-3 mb-4 text-sm text-gray-600">
+        <div class="flex-1 space-y-3 mb-4 text-sm text-gray-600 dark:text-gray-400">
           <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+            <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
             <span class="truncate">{{ mentee.departmentName }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             <span>Нанят: {{ formatDate(mentee.hireDate) }}</span>
           </div>
           <div v-if="mentee.telegramTag" class="flex items-center gap-2">
@@ -73,14 +73,14 @@
         </div>
 
         <!-- Gamification stats view -->
-        <div class="mt-auto pt-4 border-t flex justify-between items-center bg-gray-50 -mx-6 -mb-6 p-4 rounded-b-xl">
+        <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700 -mx-6 -mb-6 p-4 rounded-b-xl">
            <div class="flex flex-col">
-             <span class="text-xs text-gray-500 font-medium">Уровень</span>
-             <span class="font-black text-primary-700 text-lg">{{ mentee.level }}</span>
+             <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Уровень</span>
+             <span class="font-black text-primary-700 dark:text-primary-400 text-lg">{{ mentee.level }}</span>
            </div>
            <div class="flex flex-col text-right">
-             <span class="text-xs text-gray-500 font-medium">Опыт</span>
-             <span class="font-bold text-gray-800">{{ mentee.totalXP }} XP</span>
+             <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Опыт</span>
+             <span class="font-bold text-gray-800 dark:text-gray-200">{{ mentee.totalXP }} XP</span>
            </div>
         </div>
       </div>

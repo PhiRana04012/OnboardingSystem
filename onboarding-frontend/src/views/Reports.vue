@@ -1,18 +1,18 @@
 <template>
   <div class="space-y-6">
     <div class="flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-gray-900">Отчёты</h1>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Отчёты</h1>
     </div>
 
     <!-- Tabs -->
-    <div class="border-b border-gray-200">
+    <div class="border-b border-gray-200 dark:border-gray-700">
       <nav class="-mb-px flex space-x-8">
         <button
           @click="activeTab = 'progress'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'progress' 
-            ? 'border-primary-500 text-primary-600' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            ? 'border-primary-500 text-primary-600 dark:text-primary-400' 
+            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
         >
           Прогресс онбординга
         </button>
@@ -20,8 +20,8 @@
           @click="activeTab = 'tests'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'tests' 
-            ? 'border-primary-500 text-primary-600' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            ? 'border-primary-500 text-primary-600 dark:text-primary-400' 
+            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
         >
           Результаты тестов
         </button>
@@ -30,8 +30,8 @@
           @click="activeTab = 'department'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'department' 
-            ? 'border-primary-500 text-primary-600' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            ? 'border-primary-500 text-primary-600 dark:text-primary-400' 
+            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
         >
           По подразделению
         </button>
@@ -42,7 +42,7 @@
     <div v-if="activeTab === 'progress'" class="space-y-4">
       <div class="card">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-semibold text-gray-900">Прогресс онбординга</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Прогресс онбординга</h2>
           <div class="flex items-center space-x-3">
             <select
               v-model="selectedUserId"

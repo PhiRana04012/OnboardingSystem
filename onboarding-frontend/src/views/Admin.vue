@@ -1,18 +1,18 @@
 <template>
   <div class="space-y-6">
     <div class="flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-gray-900">Администрирование</h1>
+      <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Администрирование</h1>
     </div>
 
     <!-- Tabs -->
-    <div class="border-b border-gray-200">
+    <div class="border-b border-gray-200 dark:border-gray-700">
       <nav class="-mb-px flex space-x-8">
         <button
           @click="activeTab = 'modules'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'modules' 
-            ? 'border-primary-500 text-primary-600' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            ? 'border-primary-500 text-primary-600 dark:text-primary-400' 
+            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
         >
           Модули
         </button>
@@ -20,8 +20,8 @@
           @click="activeTab = 'users'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'users' 
-            ? 'border-primary-500 text-primary-600' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            ? 'border-primary-500 text-primary-600 dark:text-primary-400' 
+            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
         >
           Пользователи
         </button>
@@ -29,8 +29,8 @@
           @click="activeTab = 'questions'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'questions' 
-            ? 'border-primary-500 text-primary-600' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            ? 'border-primary-500 text-primary-600 dark:text-primary-400' 
+            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
         >
           Вопросы
         </button>
@@ -38,8 +38,8 @@
           @click="activeTab = 'faq'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'faq' 
-            ? 'border-primary-500 text-primary-600' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            ? 'border-primary-500 text-primary-600 dark:text-primary-400' 
+            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
         >
           FAQ
         </button>
@@ -89,51 +89,51 @@
     <!-- Users Tab -->
     <div v-if="activeTab === 'users'" class="space-y-4">
       <div class="flex justify-between items-center">
-        <h2 class="text-xl font-semibold text-gray-900">Управление пользователями</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Управление пользователями</h2>
         <button @click="showUserForm = true" class="btn-primary">
           Создать пользователя
         </button>
       </div>
 
       <div class="card overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ФИО</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Подразделение</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Действия</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">ФИО</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Подразделение</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Статус</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Действия</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="user in users" :key="user.userId">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="user in users" :key="user.userId" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                 {{ user.fullName }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                 {{ user.email }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                 {{ user.departmentName }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
                   class="px-2 py-1 text-xs font-medium rounded-full"
                   :class="{
-                    'bg-green-100 text-green-800': user.onboardingStatus === 'Завершён',
-                    'bg-yellow-100 text-yellow-800': user.onboardingStatus === 'В процессе',
-                    'bg-gray-100 text-gray-800': user.onboardingStatus === 'Не начат'
+                    'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300': user.onboardingStatus === 'Завершён',
+                    'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300': user.onboardingStatus === 'В процессе',
+                    'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300': user.onboardingStatus === 'Не начат'
                   }"
                 >
                   {{ user.onboardingStatus }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button @click="editUser(user)" class="text-primary-600 hover:text-primary-900 mr-3">
+                <button @click="editUser(user)" class="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 mr-3 transition-colors">
                   Редактировать
                 </button>
-                <button @click="deleteUser(user.userId)" class="text-red-600 hover:text-red-900">
+                <button @click="deleteUser(user.userId)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">
                   Удалить
                 </button>
               </td>
@@ -240,9 +240,9 @@
 
     <!-- Модальное окно для Модуля -->
     <div v-if="showModuleForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <div class="flex justify-between items-center p-6 border-b">
-          <h3 class="text-lg font-medium text-gray-900">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col transition-colors">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
             {{ editingModule ? 'Редактировать модуль' : 'Создать модуль' }}
           </h3>
           <button @click="closeModuleForm" class="text-gray-400 hover:text-gray-500">
@@ -298,9 +298,9 @@
 
     <!-- Модальное окно для Пользователя -->
     <div v-if="showUserForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
-        <div class="flex justify-between items-center p-6 border-b">
-          <h3 class="text-lg font-medium text-gray-900">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col transition-colors">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
             {{ editingUser ? 'Редактировать пользователя' : 'Создать пользователя' }}
           </h3>
           <button @click="closeUserForm" class="text-gray-400 hover:text-gray-500">
@@ -366,9 +366,9 @@
 
     <!-- Модальное окно для Вопроса -->
     <div v-if="showQuestionForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <div class="flex justify-between items-center p-6 border-b">
-          <h3 class="text-lg font-medium text-gray-900">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col transition-colors">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
             {{ editingQuestion ? 'Редактировать вопрос' : 'Добавить вопрос' }} (модуль: {{ currentModuleName }})
           </h3>
           <button @click="closeQuestionForm" class="text-gray-400 hover:text-gray-500">
@@ -414,9 +414,9 @@
 
     <!-- Модальное окно для FAQ -->
     <div v-if="showFaqForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <div class="flex justify-between items-center p-6 border-b">
-           <h3 class="text-lg font-medium text-gray-900">{{ editingFaq ? 'Редактировать FAQ' : 'Добавить FAQ' }}</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col transition-colors">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+           <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ editingFaq ? 'Редактировать FAQ' : 'Добавить FAQ' }}</h3>
            <button @click="closeFaqForm" class="text-gray-400 hover:text-gray-500"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
         </div>
         <form @submit.prevent="saveFaq" class="p-6 space-y-4 overflow-y-auto">

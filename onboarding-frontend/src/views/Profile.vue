@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-900">Мой профиль</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Мой профиль</h1>
     </div>
 
     <div v-if="authStore.currentUser">

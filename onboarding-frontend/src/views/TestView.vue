@@ -3,23 +3,23 @@
     <!-- Loading State -->
     <div v-if="isLoading" class="card text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      <p class="mt-4 text-gray-600">Загрузка теста...</p>
+      <p class="mt-4 text-gray-600 dark:text-gray-400">Загрузка теста...</p>
     </div>
 
     <!-- Test Form -->
     <div v-else-if="questions.length > 0" class="space-y-6">
       <!-- Header -->
-      <div class="card bg-primary-50 border border-primary-200">
+      <div class="card bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 mb-2">Тест по модулю</h1>
-            <p class="text-gray-600">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Тест по модулю</h1>
+            <p class="text-gray-600 dark:text-gray-400">
               Ответьте на все вопросы. Проходной балл: {{ passingScore }}%
             </p>
           </div>
           <div class="text-right">
-            <p class="text-sm text-gray-600">Вопросов: {{ questions.length }}</p>
-            <p class="text-sm font-medium" :class="remainingAttempts === 0 ? 'text-red-600' : 'text-gray-600'">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Вопросов: {{ questions.length }}</p>
+            <p class="text-sm font-medium" :class="remainingAttempts === 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'">
               Осталось попыток: {{ remainingAttempts }}
             </p>
           </div>

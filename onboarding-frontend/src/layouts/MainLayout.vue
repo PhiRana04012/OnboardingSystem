@@ -1,16 +1,16 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex flex-col">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col transition-colors duration-300">
     <!-- Navigation -->
-    <nav class="bg-white/95 shadow-sm border-b border-gray-200/50 backdrop-blur-sm sticky top-0 z-50">
+    <nav class="bg-white/95 dark:bg-gray-800/95 shadow-sm border-b border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm sticky top-0 z-50 transition-colors duration-300">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 items-center">
           <!-- Logo -->
           <div class="flex items-center">
             <router-link to="/" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-              <div class="w-11 h-11 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center bg-gradient-to-br from-primary-50 to-white shadow-md p-0.5 hover:shadow-lg transition-shadow">
+              <div class="w-11 h-11 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gradient-to-br from-primary-50 to-white dark:from-gray-700 dark:to-gray-800 shadow-md p-0.5 hover:shadow-lg transition-shadow">
                 <img src="/image6.png" alt="Logo" class="w-full h-full object-contain" />
               </div>
-              <span class="text-xl font-bold text-gray-900 hidden sm:block">Онбординг</span>
+              <span class="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">Онбординг</span>
             </router-link>
           </div>
           
@@ -21,24 +21,39 @@
               :key="item.to"
               :to="item.to"
               v-show="item.show"
-              class="text-gray-600 hover:text-primary-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-primary-50"
-              active-class="text-primary-600 font-bold bg-primary-50"
+              class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-primary-50 dark:hover:bg-primary-900/20"
+              active-class="text-primary-600 dark:text-primary-400 font-bold bg-primary-50 dark:bg-primary-900/30"
             >
               {{ item.name }}
             </router-link>
             
             <div class="flex items-center space-x-4 pl-6 border-l border-gray-200">
               <div class="text-right hidden sm:block">
-                <p class="text-sm font-semibold text-gray-900">{{ authStore.currentUser?.fullName }}</p>
-                <p class="text-xs text-gray-500">{{ authStore.currentUser?.departmentName }}</p>
+                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ authStore.currentUser?.fullName }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ authStore.currentUser?.departmentName }}</p>
               </div>
               <router-link to="/profile" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-md hover:shadow-lg transition-all hover:scale-105"
                            :style="{ background: getAvatarGradient(authStore.currentUser?.fullName) }">
                 {{ authStore.currentUser?.fullName?.charAt(0) }}
               </router-link>
+              
+              <!-- Theme Toggle Button -->
+              <button
+                @click="themeStore.toggleTheme()"
+                class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                :title="themeStore.isDark ? 'Светлая тема' : 'Тёмная тема'"
+              >
+                <svg v-if="!themeStore.isDark" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+                <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l-2.12-2.12a1 1 0 00-1.414 0l-.707.707a1 1 0 001.414 1.414l2.12 2.12a1 1 0 001.414-1.414l-.707-.707zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zm5.657-9.193a1 1 0 00-1.414 0l-.707.707A1 1 0 005.05 3.536l.707-.707a1 1 0 011.414 0zM5 6a1 1 0 100-2H4a1 1 0 100 2h1z" clip-rule="evenodd" />
+                </svg>
+              </button>
+              
               <button
                 @click="handleLogout"
-                class="p-2 text-gray-400 hover:text-red-600 transition-colors hover:bg-red-50 rounded-lg"
+                class="p-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950 rounded-lg"
                 title="Выйти"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,10 +64,21 @@
           </div>
 
           <!-- Mobile menu button -->
-          <div class="md:hidden flex items-center">
+          <div class="md:hidden flex items-center space-x-2">
+            <button
+              @click="themeStore.toggleTheme()"
+              class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <svg v-if="!themeStore.isDark" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+              </svg>
+              <svg v-else class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l-2.12-2.12a1 1 0 00-1.414 0l-.707.707a1 1 0 001.414 1.414l2.12 2.12a1 1 0 001.414-1.414l-.707-.707zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zm5.657-9.193a1 1 0 00-1.414 0l-.707.707A1 1 0 005.05 3.536l.707-.707a1 1 0 011.414 0zM5 6a1 1 0 100-2H4a1 1 0 100 2h1z" clip-rule="evenodd" />
+              </svg>
+            </button>
             <button
               @click="isMobileMenuOpen = !isMobileMenuOpen"
-              class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+              class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path v-if="!isMobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -64,32 +90,32 @@
       </div>
 
       <!-- Mobile menu -->
-      <div v-show="isMobileMenuOpen" class="md:hidden bg-white border-t border-gray-200 shadow-xl">
+      <div v-show="isMobileMenuOpen" class="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-xl transition-colors duration-300">
         <div class="px-2 pt-2 pb-3 space-y-1">
           <router-link
             v-for="item in navItems"
             :key="item.to"
             :to="item.to"
             v-show="item.show"
-            class="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-            active-class="bg-primary-100 text-primary-600 font-bold"
+            class="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+            active-class="bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-bold"
             @click="isMobileMenuOpen = false"
           >
             {{ item.name }}
           </router-link>
         </div>
-        <div class="pt-4 pb-3 border-t border-gray-200 px-4 flex items-center justify-between">
+        <div class="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700 px-4 flex items-center justify-between">
           <div class="flex items-center space-x-3">
              <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
                   :style="{ background: getAvatarGradient(authStore.currentUser?.fullName) }">
                 {{ authStore.currentUser?.fullName?.charAt(0) }}
             </div>
             <div>
-              <p class="text-sm font-semibold text-gray-900">{{ authStore.currentUser?.fullName }}</p>
-              <p class="text-xs text-gray-500 text-left">{{ authStore.currentUser?.departmentName }}</p>
+              <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ authStore.currentUser?.fullName }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 text-left">{{ authStore.currentUser?.departmentName }}</p>
             </div>
           </div>
-          <button @click="handleLogout" class="text-red-600 font-bold text-sm hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">Выйти</button>
+          <button @click="handleLogout" class="text-red-600 dark:text-red-400 font-bold text-sm hover:bg-red-50 dark:hover:bg-red-900/30 px-3 py-2 rounded-lg transition-colors">Выйти</button>
         </div>
       </div>
     </nav>
@@ -103,18 +129,17 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { useThemeStore } from '../stores/theme'
 import { useRouter } from 'vue-router'
 import { getAvatarGradient } from '../utils/avatar'
 
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 const router = useRouter()
 const isMobileMenuOpen = ref(false)
 
 onMounted(() => {
-  // Принудительная очистка следов тёмной темы
-  document.documentElement.classList.remove('dark')
-  localStorage.removeItem('onboarding-theme')
-  localStorage.removeItem('theme')
+  themeStore.applyTheme()
 })
 
 const navItems = computed(() => [
