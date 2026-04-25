@@ -198,7 +198,7 @@
             <div
               v-for="answer in question.answerOptions"
               :key="answer.answerId"
-              class="flex items-center space-x-2 p-2 bg-gray-50 rounded"
+              class="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-700 rounded"
             >
               <span
                 v-if="answer.isCorrect"
@@ -206,7 +206,7 @@
               >
                 Правильный
               </span>
-              <span class="text-sm text-gray-700">{{ answer.answerText }}</span>
+              <span class="text-sm text-gray-700 dark:text-gray-200">{{ answer.answerText }}</span>
             </div>
           </div>
         </div>
@@ -466,9 +466,13 @@
               </button>
             </div>
             
-            <div v-for="(answer, index) in questionForm.answerOptions" :key="index" class="flex items-center space-x-3 bg-gray-50 p-3 rounded">
+            <div
+              v-for="(answer, index) in questionForm.answerOptions"
+              :key="index"
+              class="flex items-center space-x-3 bg-gray-50 dark:bg-gray-700 p-3 rounded"
+            >
               <input type="radio" :name="'correctAnswer'" :checked="answer.isCorrect" @change="setCorrectAnswer(index)" class="h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500" />
-              <input v-model="answer.answerText" type="text" placeholder="Текст ответа" required class="input flex-1" />
+              <input v-model="answer.answerText" type="text" placeholder="Текст ответа" required class="input flex-1 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400" />
               <button type="button" @click="removeAnswerOption(index)" v-if="questionForm.answerOptions.length > 2" class="text-red-500 hover:text-red-700">
                 <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -481,6 +485,45 @@
           <div class="pt-4 flex justify-end space-x-3 border-t">
             <button type="button" @click="closeQuestionForm" class="btn-secondary">Отмена</button>
             <button type="submit" class="btn-primary" :disabled="!hasCorrectAnswer || questionForm.answerOptions.length < 2">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Модальное окно для Практического задания -->
+    <div v-if="showChecklistForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col transition-colors">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+            {{ editingChecklistItem ? 'Редактировать практическое задание' : 'Добавить практическое задание' }}
+          </h3>
+          <button @click="closeChecklistForm" class="text-gray-400 hover:text-gray-500">
+            <span class="sr-only">Закрыть</span>
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form @submit.prevent="saveChecklistItem" class="p-6 space-y-4 overflow-y-auto">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Текст задания</label>
+            <textarea v-model="checklistForm.text" rows="3" required class="mt-1 input block w-full"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Порядок</label>
+              <input v-model.number="checklistForm.orderIndex" type="number" min="1" required class="mt-1 input block w-full" />
+            </div>
+            <div class="flex items-end">
+              <label class="inline-flex items-center h-10">
+                <input v-model="checklistForm.isRequired" type="checkbox" class="h-4 w-4 text-primary-600 border-gray-300 rounded" />
+                <span class="ml-2 text-sm text-gray-900">Обязательное задание</span>
+              </label>
+            </div>
+          </div>
+          <div class="pt-4 flex justify-end space-x-3 border-t">
+            <button type="button" @click="closeChecklistForm" class="btn-secondary">Отмена</button>
+            <button type="submit" class="btn-primary">Сохранить</button>
           </div>
         </form>
       </div>
@@ -509,7 +552,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import { modulesApi, usersApi, questionsApi, departmentsApi, faqApi } from '../api/services'
+import { modulesApi, usersApi, questionsApi, departmentsApi, faqApi, checklistsApi } from '../api/services'
 import QuillEditor from '../components/QuillEditor.vue'
 
 const activeTab = ref('modules')
@@ -519,6 +562,8 @@ const questions = ref([])
 const departments = ref([])
 
 const selectedModuleForQuestions = ref('')
+const selectedModuleForChecklists = ref('')
+const checklists = ref([])
 
 // Module Form State
 const showModuleForm = ref(false)
@@ -581,6 +626,15 @@ const hasCorrectAnswer = computed(() => {
   return questionForm.value.answerOptions.some(a => a.isCorrect)
 })
 
+// Checklist Form State
+const showChecklistForm = ref(false)
+const editingChecklistItem = ref(null)
+const checklistForm = ref({
+  text: '',
+  isRequired: true,
+  orderIndex: 1
+})
+
 // FAQ Form State
 const faqItems = ref([])
 const showFaqForm = ref(false)
@@ -604,6 +658,14 @@ watch(selectedModuleForQuestions, async (newVal) => {
     await loadQuestions(newVal)
   } else {
     questions.value = []
+  }
+})
+
+watch(selectedModuleForChecklists, async (newVal) => {
+  if (newVal) {
+    await loadChecklists(newVal)
+  } else {
+    checklists.value = []
   }
 })
 
@@ -631,6 +693,16 @@ const loadQuestions = async (moduleId) => {
     questions.value = response.data
   } catch (error) {
     console.error('Failed to load questions:', error)
+  }
+}
+
+const loadChecklists = async (moduleId) => {
+  try {
+    // Для админ-режима используется userId=0, чтобы получить пункты чек-листа без пользовательского прогресса
+    const response = await checklistsApi.getModuleChecklist(moduleId, 0)
+    checklists.value = response.data
+  } catch (error) {
+    console.error('Failed to load checklists:', error)
   }
 }
 
@@ -869,6 +941,89 @@ const deleteQuestion = async (questionId) => {
   } catch (error) {
     console.error('Failed to delete question:', error)
     alert('Ошибка при удалении вопроса')
+  }
+}
+
+const resetChecklistForm = () => {
+  checklistForm.value = {
+    text: '',
+    isRequired: true,
+    orderIndex: checklists.value.length + 1
+  }
+}
+
+const closeChecklistForm = () => {
+  showChecklistForm.value = false
+  editingChecklistItem.value = null
+  resetChecklistForm()
+}
+
+const openChecklistForm = (item = null) => {
+  if (!selectedModuleForChecklists.value) return
+
+  if (item) {
+    editingChecklistItem.value = item
+    checklistForm.value = {
+      text: item.text || '',
+      isRequired: !!item.isRequired,
+      orderIndex: item.orderIndex ?? 1
+    }
+  } else {
+    editingChecklistItem.value = null
+    resetChecklistForm()
+  }
+
+  showChecklistForm.value = true
+}
+
+const saveChecklistItem = async () => {
+  if (!selectedModuleForChecklists.value) {
+    alert('Выберите модуль перед сохранением задания')
+    return
+  }
+
+  if (!checklistForm.value.text.trim()) {
+    alert('Введите текст задания')
+    return
+  }
+
+  try {
+    const payload = {
+      moduleId: Number(selectedModuleForChecklists.value),
+      text: checklistForm.value.text.trim(),
+      isRequired: checklistForm.value.isRequired,
+      orderIndex: Number(checklistForm.value.orderIndex) || 1
+    }
+
+    if (editingChecklistItem.value) {
+      await checklistsApi.update(editingChecklistItem.value.checklistItemId, payload)
+    } else {
+      await checklistsApi.create(payload)
+    }
+
+    await loadChecklists(selectedModuleForChecklists.value)
+    closeChecklistForm()
+  } catch (error) {
+    console.error('Failed to save checklist item:', error)
+    alert('Ошибка при сохранении практического задания')
+  }
+}
+
+const editChecklistItem = (item) => {
+  openChecklistForm(item)
+}
+
+const deleteChecklistItem = async (checklistItemId) => {
+  if (!confirm('Вы уверены, что хотите удалить это практическое задание?')) return
+
+  try {
+    await checklistsApi.delete(checklistItemId)
+    if (selectedModuleForChecklists.value) {
+      await loadChecklists(selectedModuleForChecklists.value)
+    }
+  } catch (error) {
+    console.error('Failed to delete checklist item:', error)
+    alert('Ошибка при удалении практического задания')
   }
 }
 
