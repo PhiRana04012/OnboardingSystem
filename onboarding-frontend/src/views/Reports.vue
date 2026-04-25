@@ -67,51 +67,51 @@
 
         <div v-if="progressReport" class="space-y-4">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600">Статус</p>
-              <p class="text-lg font-semibold text-gray-900">{{ progressReport.onboardingStatus }}</p>
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-400">Статус</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ progressReport.onboardingStatus }}</p>
             </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600">Прогресс</p>
-              <p class="text-lg font-semibold text-primary-600">
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-400">Прогресс</p>
+              <p class="text-lg font-semibold text-primary-600 dark:text-primary-400">
                 {{ Math.round(progressReport.progressPercentage) }}%
               </p>
             </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600">Завершено модулей</p>
-              <p class="text-lg font-semibold text-gray-900">
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-400">Завершено модулей</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {{ progressReport.completedMandatoryModules }} / {{ progressReport.totalMandatoryModules }}
               </p>
             </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600">Дата начала</p>
-              <p class="text-lg font-semibold text-gray-900">
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-400">Дата начала</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {{ formatDate(progressReport.onboardingStartDate) }}
               </p>
             </div>
           </div>
 
           <div class="mt-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Модули</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Модули</h3>
             <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700/50">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Модуль</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Попыток</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Результат</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Дата завершения</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Модуль</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Статус</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Попыток</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Результат</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Дата завершения</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   <tr v-for="module in progressReport.moduleStatuses" :key="module.moduleId">
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
-                        <span class="text-sm font-medium text-gray-900">{{ module.moduleTitle }}</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ module.moduleTitle }}</span>
                         <span
                           v-if="module.isMandatory"
-                          class="ml-2 px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded"
+                          class="ml-2 px-2 py-1 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded"
                         >
                           Обязательный
                         </span>
@@ -119,17 +119,17 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <span
-                        class="px-2 py-1 text-xs font-medium rounded-full"
+                        class="px-2 py-1 text-xs font-medium rounded-full transition-colors"
                         :class="{
-                          'bg-green-100 text-green-800': module.status === 'Завершён',
-                          'bg-yellow-100 text-yellow-800': module.status === 'В процессе',
-                          'bg-gray-100 text-gray-800': module.status === 'Не начат'
+                          'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300': module.status === 'Завершён',
+                          'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300': module.status === 'В процессе',
+                          'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300': module.status === 'Не начат'
                         }"
                       >
                         {{ module.status }}
                       </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {{ module.attemptsCount }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -137,15 +137,15 @@
                         v-if="module.bestScore !== null"
                         class="text-sm font-medium"
                         :class="{
-                          'text-green-600': module.isPassed,
-                          'text-red-600': !module.isPassed
+                          'text-green-600 dark:text-green-400': module.isPassed,
+                          'text-red-600 dark:text-red-400': !module.isPassed
                         }"
                       >
                         {{ Math.round(module.bestScore) }}%
                       </span>
-                      <span v-else class="text-sm text-gray-400">—</span>
+                      <span v-else class="text-sm text-gray-400 dark:text-gray-500">—</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {{ formatDate(module.completionDate) }}
                     </td>
                   </tr>
@@ -161,7 +161,7 @@
     <div v-if="activeTab === 'tests'" class="space-y-4">
       <div class="card">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-semibold text-gray-900">Результаты тестов</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Результаты тестов</h2>
           <div class="flex space-x-3">
             <select
               v-model="testFilterUserId"
@@ -185,40 +185,40 @@
         </div>
 
         <div v-if="testResults.length > 0" class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Сотрудник</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Модуль</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Дата</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Попытка</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Результат</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Сотрудник</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Модуль</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Дата</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Попытка</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Результат</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Статус</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-for="result in testResults" :key="result.attemptId">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ result.fullName }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ result.moduleTitle }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ formatDate(result.attemptDate) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ result.attemptNumber }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ result.correctAnswers }} / {{ result.totalQuestions }} ({{ Math.round(result.score) }}%)
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
-                    class="px-2 py-1 text-xs font-medium rounded-full"
+                    class="px-2 py-1 text-xs font-medium rounded-full transition-colors"
                     :class="{
-                      'bg-green-100 text-green-800': result.isPassed,
-                      'bg-red-100 text-red-800': !result.isPassed
+                      'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300': result.isPassed,
+                      'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300': !result.isPassed
                     }"
                   >
                     {{ result.isPassed ? 'Сдано' : 'Не сдано' }}
@@ -227,7 +227,7 @@
                   <button 
                     v-if="!result.isPassed && (authStore.isAdmin || authStore.isHR)"
                     @click="resetUserAttempts(result.userId, result.moduleId)"
-                    class="ml-3 text-red-600 hover:text-red-900 text-xs font-medium underline"
+                    class="ml-3 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-xs font-medium underline"
                     title="Сбросить все попытки по этому модулю"
                   >
                     Сбросить
@@ -237,7 +237,7 @@
             </tbody>
           </table>
         </div>
-        <div v-else class="text-center py-8 text-gray-500">
+        <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
           Нет данных для отображения
         </div>
       </div>
@@ -247,7 +247,7 @@
     <div v-if="activeTab === 'department'" class="space-y-4">
       <div class="card">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-semibold text-gray-900">Отчёт по подразделению</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Отчёт по подразделению</h2>
           <div class="flex items-center space-x-3">
             <select
               v-model="selectedDepartmentId"
@@ -272,50 +272,50 @@
 
         <div v-if="departmentReport" class="space-y-4">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600">Всего сотрудников</p>
-              <p class="text-lg font-semibold text-gray-900">{{ departmentReport.totalUsers }}</p>
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-400">Всего сотрудников</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ departmentReport.totalUsers }}</p>
             </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600">В процессе</p>
-              <p class="text-lg font-semibold text-yellow-600">{{ departmentReport.usersInProgress }}</p>
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-400">В процессе</p>
+              <p class="text-lg font-semibold text-yellow-600 dark:text-yellow-400">{{ departmentReport.usersInProgress }}</p>
             </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600">Завершено</p>
-              <p class="text-lg font-semibold text-green-600">{{ departmentReport.usersCompleted }}</p>
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-400">Завершено</p>
+              <p class="text-lg font-semibold text-green-600 dark:text-green-400">{{ departmentReport.usersCompleted }}</p>
             </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600">Средний прогресс</p>
-              <p class="text-lg font-semibold text-primary-600">
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-400">Средний прогресс</p>
+              <p class="text-lg font-semibold text-primary-600 dark:text-primary-400">
                 {{ Math.round(departmentReport.averageProgressPercentage) }}%
               </p>
             </div>
           </div>
 
           <div class="mt-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Сотрудники</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Сотрудники</h3>
             <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700/50">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Сотрудник</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Прогресс</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Дата завершения</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Сотрудник</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Статус</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Прогресс</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Дата завершения</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   <tr v-for="user in departmentReport.users" :key="user.userId">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                       {{ user.fullName }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <span
-                        class="px-2 py-1 text-xs font-medium rounded-full"
+                        class="px-2 py-1 text-xs font-medium rounded-full transition-colors"
                         :class="{
-                          'bg-green-100 text-green-800': user.onboardingStatus === 'Завершён',
-                          'bg-yellow-100 text-yellow-800': user.onboardingStatus === 'В процессе',
-                          'bg-gray-100 text-gray-800': user.onboardingStatus === 'Не начат'
+                          'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300': user.onboardingStatus === 'Завершён',
+                          'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300': user.onboardingStatus === 'В процессе',
+                          'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300': user.onboardingStatus === 'Не начат'
                         }"
                       >
                         {{ user.onboardingStatus }}
@@ -323,16 +323,16 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
-                        <div class="w-24 bg-gray-200 rounded-full h-2 mr-2">
+                        <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
                           <div
-                            class="bg-primary-600 h-2 rounded-full"
+                            class="bg-primary-600 dark:bg-primary-500 h-2 rounded-full transition-all"
                             :style="{ width: `${user.progressPercentage}%` }"
                           ></div>
                         </div>
-                        <span class="text-sm text-gray-600">{{ Math.round(user.progressPercentage) }}%</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ Math.round(user.progressPercentage) }}%</span>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {{ formatDate(user.completionDate) }}
                     </td>
                   </tr>

@@ -3,7 +3,7 @@
     <!-- Loading State -->
     <div v-if="isLoading" class="card text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      <p class="mt-4 text-gray-600">Загрузка результатов...</p>
+      <p class="mt-4 text-gray-600 dark:text-gray-400">Загружка результатов...</p>
     </div>
 
     <!-- Results -->
@@ -12,8 +12,8 @@
       <div
         class="card"
         :class="{
-          'bg-green-50 border-2 border-green-200': result.isPassed,
-          'bg-red-50 border-2 border-red-200': !result.isPassed
+          'bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-700': result.isPassed,
+          'bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-700': !result.isPassed
         }"
       >
         <div class="text-center">
@@ -31,16 +31,16 @@
           <h1
             class="text-3xl font-bold mb-2"
             :class="{
-              'text-green-700': result.isPassed,
-              'text-red-700': !result.isPassed
+              'text-green-700 dark:text-green-400': result.isPassed,
+              'text-red-700 dark:text-red-400': !result.isPassed
             }"
           >
             {{ result.isPassed ? 'Тест сдан!' : 'Тест не сдан' }}
           </h1>
-          <p class="text-xl font-semibold text-gray-700 mb-4">
+          <p class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
             Ваш результат: {{ Math.round(result.score) }}%
           </p>
-          <div class="flex justify-center space-x-6 text-sm text-gray-600">
+          <div class="flex justify-center space-x-6 text-sm text-gray-600 dark:text-gray-400">
             <span>Правильных ответов: {{ result.correctAnswers }} / {{ result.totalQuestions }}</span>
             <span>Попытка: {{ result.attemptNumber }}</span>
           </div>
@@ -49,49 +49,49 @@
 
       <!-- Question Results -->
       <div v-if="result.questionResults && result.questionResults.length > 0" class="card">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Детали результатов</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Детали результатов</h2>
         <div class="space-y-4">
           <div
             v-for="(questionResult, index) in result.questionResults"
             :key="questionResult.questionId"
-            class="p-4 rounded-lg border-2"
+            class="p-4 rounded-lg border-2 transition-colors"
             :class="{
-              'bg-green-50 border-green-200': questionResult.isCorrect,
-              'bg-red-50 border-red-200': !questionResult.isCorrect
+              'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700': questionResult.isCorrect,
+              'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700': !questionResult.isCorrect
             }"
           >
             <div class="flex items-start justify-between mb-2">
-              <h3 class="font-semibold text-gray-900">
+              <h3 class="font-semibold text-gray-900 dark:text-gray-100">
                 Вопрос {{ index + 1 }}: {{ questionResult.questionText }}
               </h3>
               <span
-                class="px-3 py-1 rounded-full text-sm font-medium"
+                class="px-3 py-1 rounded-full text-sm font-medium transition-colors"
                 :class="{
-                  'bg-green-200 text-green-800': questionResult.isCorrect,
-                  'bg-red-200 text-red-800': !questionResult.isCorrect
+                  'bg-green-200 dark:bg-green-700 text-green-800 dark:text-green-200': questionResult.isCorrect,
+                  'bg-red-200 dark:bg-red-700 text-red-800 dark:text-red-200': !questionResult.isCorrect
                 }"
               >
                 {{ questionResult.isCorrect ? 'Правильно' : 'Неправильно' }}
               </span>
             </div>
-            <div v-if="!questionResult.isCorrect" class="mt-2 text-sm text-gray-600">
-              <p class="text-red-600">Ваш ответ был неправильным</p>
+            <div v-if="!questionResult.isCorrect" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <p class="text-red-600 dark:text-red-400">Ваш ответ был неправильным</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Actions -->
-      <div class="card bg-gray-50">
+      <div class="card bg-gray-50 dark:bg-gray-700/50">
         <div class="flex items-center justify-between">
           <div>
-            <p v-if="result.canRetry" class="text-gray-700 mb-2">
+            <p v-if="result.canRetry" class="text-gray-700 dark:text-gray-300 mb-2">
               У вас осталось {{ result.remainingAttempts }} попыток
             </p>
-            <p v-else-if="!result.isPassed" class="text-red-600 font-medium">
+            <p v-else-if="!result.isPassed" class="text-red-600 dark:text-red-400 font-medium">
               Все попытки исчерпаны. Свяжитесь с наставником или HR.
             </p>
-            <p v-else class="text-green-600 font-medium">
+            <p v-else class="text-green-600 dark:text-green-400 font-medium">
               Поздравляем! Модуль успешно пройден.
             </p>
           </div>
@@ -122,7 +122,7 @@
 
     <!-- Error State -->
     <div v-else class="card text-center py-12">
-      <p class="text-red-600 mb-4">Не удалось загрузить результаты</p>
+      <p class="text-red-600 dark:text-red-400 mb-4">Не удалось загружить результаты</p>
       <button @click="goToDashboard" class="btn-secondary">
         На главную
       </button>

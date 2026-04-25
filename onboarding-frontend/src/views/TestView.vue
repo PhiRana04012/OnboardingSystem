@@ -35,10 +35,10 @@
             class="card"
           >
             <div class="mb-4">
-              <h3 class="text-lg font-semibold text-gray-900 mb-1">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                 Вопрос {{ currentQuestionIndex + 1 }} из {{ questions.length }}
               </h3>
-              <p class="text-gray-700">{{ currentQuestion.questionText }}</p>
+              <p class="text-gray-700 dark:text-gray-300">{{ currentQuestion.questionText }}</p>
             </div>
 
             <div class="space-y-3">
@@ -47,8 +47,8 @@
                 :key="answer.answerId"
                 class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
                 :class="{
-                  'border-primary-500 bg-primary-50': selectedAnswers[currentQuestion.questionId] === answer.answerId,
-                  'border-gray-200 hover:border-gray-300': selectedAnswers[currentQuestion.questionId] !== answer.answerId
+                  'border-primary-500 bg-primary-50 dark:bg-primary-900/30': selectedAnswers[currentQuestion.questionId] === answer.answerId,
+                  'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600': selectedAnswers[currentQuestion.questionId] !== answer.answerId
                 }"
               >
                 <input
@@ -59,12 +59,12 @@
                   :disabled="remainingAttempts === 0"
                   class="mt-1 mr-3 h-4 w-4 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
-                <span class="flex-1 text-gray-700">{{ answer.answerText }}</span>
+                <span class="flex-1 text-gray-700 dark:text-gray-300">{{ answer.answerText }}</span>
               </label>
             </div>
             
             <!-- Navigation -->
-            <div class="mt-8 flex items-center justify-between border-t pt-4">
+            <div class="mt-8 flex items-center justify-between border-t dark:border-gray-700 pt-4">
                <div>
                   <button type="button" @click="prevQuestion" :disabled="currentQuestionIndex === 0" class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed">
                      &larr; Назад

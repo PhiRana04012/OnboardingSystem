@@ -43,6 +43,15 @@
         >
           FAQ
         </button>
+        <button
+          @click="activeTab = 'checklists'"
+          class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+          :class="activeTab === 'checklists' 
+            ? 'border-primary-500 text-primary-600 dark:text-primary-400' 
+            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
+        >
+          Практические задания
+        </button>
       </nav>
     </div>
 
@@ -207,6 +216,71 @@
       </div>
       <div v-else class="card text-center py-12 text-gray-500">
         Выберите модуль для просмотра вопросов
+      </div>
+    </div>
+
+    <!-- Checklists Tab -->
+    <div v-if="activeTab === 'checklists'" class="space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-900">Управление практическими заданиями</h2>
+        <div class="flex space-x-3">
+          <select v-model="selectedModuleForChecklists" class="input w-auto">
+            <option value="">Выберите модуль</option>
+            <option
+              v-for="module in modules"
+              :key="module.moduleId"
+              :value="module.moduleId"
+            >
+              {{ module.title }}
+            </option>
+          </select>
+          <button
+            v-if="selectedModuleForChecklists"
+            @click="openChecklistForm()"
+            class="btn-primary"
+          >
+            Добавить задание
+          </button>
+        </div>
+      </div>
+
+      <div v-if="selectedModuleForChecklists && checklists.length > 0" class="space-y-4">
+        <div
+          v-for="item in checklists"
+          :key="item.checklistItemId"
+          class="card"
+        >
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-gray-900">{{ item.text }}</h3>
+              <div class="mt-2 flex items-center space-x-2">
+                <span
+                  v-if="item.isRequired"
+                  class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded"
+                >
+                  Обязательное
+                </span>
+                <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
+                  Порядок: {{ item.orderIndex }}
+                </span>
+              </div>
+            </div>
+            <div class="flex space-x-3">
+              <button @click="editChecklistItem(item)" class="text-primary-600 hover:text-primary-900">
+                Редактировать
+              </button>
+              <button @click="deleteChecklistItem(item.checklistItemId)" class="text-red-600 hover:text-red-900">
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else-if="selectedModuleForChecklists" class="card text-center py-12 text-gray-500">
+        Нет практических заданий в этом модуле
+      </div>
+      <div v-else class="card text-center py-12 text-gray-500">
+        Выберите модуль для просмотра практических заданий
       </div>
     </div>
 

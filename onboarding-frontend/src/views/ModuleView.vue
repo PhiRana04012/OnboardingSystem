@@ -24,22 +24,30 @@
           <div class="flex items-center space-x-2 mt-3">
             <span
               v-if="module.isMandatory"
-              class="px-3 py-1 text-sm font-medium bg-red-100 text-red-800 rounded-full"
+              class="px-3 py-1 text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full"
             >
               Обязательный модуль
             </span>
             <span
               v-else
-              class="px-3 py-1 text-sm font-medium bg-primary-50 text-primary-700 rounded-full"
+              class="px-3 py-1 text-sm font-medium bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full"
             >
               Рекомендуемый модуль
             </span>
-            <span class="px-3 py-1 text-sm font-medium bg-gray-100 text-gray-800 rounded-full">
+            <span class="px-3 py-1 text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full">
               Проходной балл: {{ module.passingScore }}%
             </span>
           </div>
         </div>
       </div>
+
+      <!-- Module Roadmap -->
+      <ModuleRoadmap
+        :hasTest="hasTest"
+        :allRequiredChecked="allRequiredChecked"
+        :moduleStatus="moduleStatus"
+        :contentScrolled="contentScrolled"
+      />
 
       <!-- Content -->
       <div class="card">
@@ -50,8 +58,8 @@
       </div>
 
       <!-- Checklist Section -->
-      <div v-if="hasChecklist" class="card border-l-4 border-yellow-400 bg-yellow-50/30">
-        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+      <div v-if="hasChecklist" class="card border-l-4 border-yellow-400 dark:border-yellow-600 bg-yellow-50/30 dark:bg-yellow-900/10">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
           <span class="text-xl">📝</span>
           Практические задания
         </h3>
@@ -60,42 +68,42 @@
             v-for="item in checklistItems" 
             :key="item.checklistItemId"
             class="flex items-start gap-3 p-3 rounded-xl transition-all cursor-pointer select-none"
-            :class="item.isCompleted ? 'bg-green-100/50' : 'bg-white hover:bg-gray-50 border border-gray-100 shadow-sm'"
+            :class="item.isCompleted ? 'bg-green-100/50 dark:bg-green-900/20' : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/80 border border-gray-100 dark:border-gray-600 shadow-sm'"
             @click="toggleChecklistItem(item)"
           >
             <div 
               class="w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all"
-              :class="item.isCompleted ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 bg-white'"
+              :class="item.isCompleted ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-700'"
             >
               <svg v-if="item.isCompleted" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
             <div class="flex-1">
-              <p class="font-medium text-gray-800" :class="{ 'line-through text-gray-500': item.isCompleted }">
+              <p class="font-medium text-gray-800 dark:text-gray-200" :class="{ 'line-through text-gray-500 dark:text-gray-500': item.isCompleted }">
                 {{ item.text }}
               </p>
-              <span v-if="item.isRequired" class="text-[10px] uppercase tracking-wider font-bold text-yellow-600 bg-yellow-100 px-1.5 py-0.5 rounded mt-1 inline-block">Обязательно</span>
-              <span v-else class="text-[10px] uppercase tracking-wider font-bold text-gray-400 mt-1 inline-block">Дополнительно</span>
+              <span v-if="item.isRequired" class="text-[10px] uppercase tracking-wider font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30 px-1.5 py-0.5 rounded mt-1 inline-block">Обязательно</span>
+              <span v-else class="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 mt-1 inline-block">Дополнительно</span>
             </div>
           </div>
         </div>
-        <p v-if="!allRequiredChecked" class="mt-4 text-xs text-red-500 font-medium italic">
+        <p v-if="!allRequiredChecked" class="mt-4 text-xs text-red-600 dark:text-red-400 font-medium italic">
           * Завершение модуля доступно только после выполнения всех обязательных заданий.
         </p>
       </div>
 
       <!-- Actions -->
-      <div class="card bg-gray-50 border-t-4" :class="hasPassedBefore ? 'border-primary-500' : 'border-gray-200'">
+      <div class="card bg-gray-50 dark:bg-gray-700/50 border-t-4" :class="hasPassedBefore ? 'border-primary-500' : 'border-gray-200 dark:border-gray-700'">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            <p v-if="!hasTest" class="text-sm text-gray-600 font-medium">
+            <p v-if="!hasTest" class="text-sm text-gray-600 dark:text-gray-400 font-medium">
               Пожалуйста, подтвердите полное ознакомление с материалом.
             </p>
             <template v-else>
-               <p class="text-sm text-gray-800 font-medium font-bold">Тестирование по модулю</p>
-               <p class="text-sm text-gray-600 mt-1">Обязательно изучите материал выше, прежде чем приступать к проверке знаний.</p>
-               <p class="text-xs text-primary-600 mt-1 flex items-center gap-1 font-semibold">
+               <p class="text-sm text-gray-800 dark:text-gray-200 font-medium font-bold">Тестирование по модулю</p>
+               <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Обязательно изучите материал выше, прежде чем приступать к проверке знаний.</p>
+               <p class="text-xs text-primary-600 dark:text-primary-400 mt-1 flex items-center gap-1 font-semibold">
                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                  Всего вопросов в тесте: {{ module.questionCount }} 
                </p>
@@ -148,34 +156,34 @@
 
       <!-- Previous Attempts -->
       <div v-if="previousAttempts.length > 0" class="card">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Предыдущие попытки</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Предыдущие попытки</h2>
         <div class="space-y-3">
           <div
             v-for="attempt in previousAttempts"
             :key="attempt.attemptId"
-            class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+            class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg transition-colors"
           >
             <div>
-              <p class="font-medium text-gray-900">
+              <p class="font-medium text-gray-900 dark:text-gray-100">
                 Попытка {{ attempt.attemptNumber }}
               </p>
-              <p class="text-sm text-gray-600">
+              <p class="text-sm text-gray-600 dark:text-gray-400">
                 {{ formatDate(attempt.attemptDate) }}
               </p>
             </div>
             <div class="text-right">
               <p
                 :class="{
-                  'text-green-600 font-bold': attempt.isPassed,
-                  'text-red-600 font-bold': !attempt.isPassed
+                  'text-green-600 dark:text-green-400 font-bold': attempt.isPassed,
+                  'text-red-600 dark:text-red-400 font-bold': !attempt.isPassed
                 }"
               >
                 {{ Math.round(attempt.score) }}%
               </p>
               <p
                 :class="{
-                  'text-green-600 text-sm': attempt.isPassed,
-                  'text-red-600 text-sm': !attempt.isPassed
+                  'text-green-600 dark:text-green-400 text-sm': attempt.isPassed,
+                  'text-red-600 dark:text-red-400 text-sm': !attempt.isPassed
                 }"
               >
                 {{ attempt.isPassed ? 'Сдано' : 'Не сдано' }}
@@ -197,11 +205,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useProgressStore } from '../stores/progress'
 import { modulesApi, testAttemptsApi, checklistsApi } from '../api/services'
+import ModuleRoadmap from '../components/ModuleRoadmap.vue'
 import confetti from 'canvas-confetti'
 
 const route = useRoute()
@@ -210,6 +219,7 @@ const authStore = useAuthStore()
 const progressStore = useProgressStore()
 
 const module = ref(null)
+const contentScrolled = ref(false)
 const isLoading = ref(true)
 const isMarking = ref(false)
 const previousAttempts = ref([])
@@ -236,10 +246,18 @@ const moduleStatus = computed(() => {
 })
 
 onMounted(async () => {
-  await loadModule()
-  await loadAttempts()
-  await loadChecklist()
+  await loadModule()  // Load module first
+  await loadAttempts()  // Then load attempts
+  await loadChecklist()  // Then load checklist (module is now available)
+  
+  // Track scroll for content progress
+  window.addEventListener('scroll', handleScroll)
 })
+
+const handleScroll = () => {
+  const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
+  contentScrolled.value = scrollPercentage > 30 // Mark as scrolled if user scrolled 30%
+}
 
 const loadModule = async () => {
   try {
@@ -361,6 +379,10 @@ const formatDate = (dateString) => {
     minute: '2-digit'
   })
 }
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 

@@ -329,6 +329,26 @@
         <member name="M:OnboardingSystem.Migrations.AddFaqEntries.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="M:OnboardingSystem.Services.IKeycloakAdminService.CreateUserAsync(System.String,System.String,System.String,System.Collections.Generic.IList{System.String})">
+            <summary>
+            Создать пользователя в Keycloak и назначить ему роли
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IKeycloakAdminService.DeleteUserAsync(System.String)">
+            <summary>
+            Удалить пользователя из Keycloak по email
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IKeycloakAdminService.UpdateUserAsync(System.String,System.String,System.String)">
+            <summary>
+            Обновить email/имя пользователя в Keycloak
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IKeycloakAdminService.AssignRolesAsync(System.String,System.Collections.Generic.IList{System.String})">
+            <summary>
+            Назначить роли пользователю в Keycloak
+            </summary>
+        </member>
         <member name="T:OnboardingSystem.Services.IRimsIntegrationService">
             <summary>
             Интерфейс для интеграции с RIMS API
@@ -352,6 +372,13 @@
         <member name="M:OnboardingSystem.Services.IRimsIntegrationService.GetOrCreateDepartmentAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Получение или создание Department по названию из RIMS
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Services.KeycloakAdminService">
+            <summary>
+            Сервис для работы с Keycloak Admin REST API.
+            Позволяет создавать, удалять и обновлять пользователей в Keycloak
+            синхронно с созданием пользователей в нашей БД.
             </summary>
         </member>
         <member name="T:OnboardingSystem.Services.RimsIntegrationService">
