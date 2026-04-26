@@ -51,6 +51,11 @@ const routes = [
         component: () => import('../views/Profile.vue')
       },
       {
+        path: 'leaderboard',
+        name: 'Leaderboard',
+        component: () => import('../views/Leaderboard.vue')
+      },
+      {
         path: 'mentor',
         name: 'MentorDashboard',
         component: () => import('../views/MentorDashboard.vue'),
