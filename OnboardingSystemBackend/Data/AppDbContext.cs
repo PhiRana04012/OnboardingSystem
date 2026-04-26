@@ -23,6 +23,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Department> Departments { get; set; }
 
     public virtual DbSet<Module> Modules { get; set; }
+    
+    public virtual DbSet<ModuleDepartment> ModuleDepartments { get; set; }
 
     public virtual DbSet<Question> Questions { get; set; }
 
@@ -113,6 +115,24 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Department).WithMany(p => p.Modules)
                 .HasForeignKey(d => d.DepartmentId)
                 .HasConstraintName("FK_Modules_Departments");
+        });
+
+        modelBuilder.Entity<ModuleDepartment>(entity =>
+        {
+            entity.ToTable("ModuleDepartments");
+            entity.HasKey(e => new { e.ModuleId, e.DepartmentId });
+            entity.Property(e => e.ModuleId).HasColumnName("ModuleID");
+            entity.Property(e => e.DepartmentId).HasColumnName("DepartmentID");
+
+            entity.HasOne(d => d.Module)
+                .WithMany(p => p.ModuleDepartments)
+                .HasForeignKey(d => d.ModuleId)
+                .HasConstraintName("FK_ModuleDepartments_Modules");
+
+            entity.HasOne(d => d.Department)
+                .WithMany(p => p.ModuleDepartments)
+                .HasForeignKey(d => d.DepartmentId)
+                .HasConstraintName("FK_ModuleDepartments_Departments");
         });
 
         modelBuilder.Entity<Question>(entity =>

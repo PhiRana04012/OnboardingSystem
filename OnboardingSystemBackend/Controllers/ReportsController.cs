@@ -43,7 +43,10 @@ public class ReportsController : ControllerBase
 
         // Получаем модули для пользователя
         var userModules = await _context.Modules
-            .Where(m => m.DepartmentId == null || m.DepartmentId == user.DepartmentId)
+            .Where(m =>
+                (m.DepartmentId == null && !m.ModuleDepartments.Any()) ||
+                m.DepartmentId == user.DepartmentId ||
+                m.ModuleDepartments.Any(md => md.DepartmentId == user.DepartmentId))
             .ToListAsync();
 
         var progressList = await _context.UserModuleProgresses
@@ -195,7 +198,10 @@ public class ReportsController : ControllerBase
         var userIds = users.Select(u => u.UserId).ToList();
 
         var userModules = await _context.Modules
-            .Where(m => m.DepartmentId == null || m.DepartmentId == departmentId)
+            .Where(m =>
+                (m.DepartmentId == null && !m.ModuleDepartments.Any()) ||
+                m.DepartmentId == departmentId ||
+                m.ModuleDepartments.Any(md => md.DepartmentId == departmentId))
             .ToListAsync();
 
         var progressList = await _context.UserModuleProgresses

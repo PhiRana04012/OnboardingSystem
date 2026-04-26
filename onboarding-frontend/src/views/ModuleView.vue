@@ -43,10 +43,11 @@
 
       <!-- Module Roadmap -->
       <ModuleRoadmap
+        :hasTestBefore="hasPassedBefore"
         :hasTest="hasTest"
+        :isReadyForTest="isReadyForTest"
         :allRequiredChecked="allRequiredChecked"
         :moduleStatus="moduleStatus"
-        :contentScrolled="contentScrolled"
       />
 
       <!-- Content -->
@@ -205,7 +206,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useProgressStore } from '../stores/progress'
@@ -219,7 +220,6 @@ const authStore = useAuthStore()
 const progressStore = useProgressStore()
 
 const module = ref(null)
-const contentScrolled = ref(false)
 const isLoading = ref(true)
 const isMarking = ref(false)
 const previousAttempts = ref([])
@@ -249,15 +249,7 @@ onMounted(async () => {
   await loadModule()  // Load module first
   await loadAttempts()  // Then load attempts
   await loadChecklist()  // Then load checklist (module is now available)
-  
-  // Track scroll for content progress
-  window.addEventListener('scroll', handleScroll)
 })
-
-const handleScroll = () => {
-  const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
-  contentScrolled.value = scrollPercentage > 30 // Mark as scrolled if user scrolled 30%
-}
 
 const loadModule = async () => {
   try {
@@ -380,9 +372,6 @@ const formatDate = (dateString) => {
   })
 }
 
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
 </script>
 
 

@@ -91,6 +91,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  isReadyForTest: {
+    type: Boolean,
+    default: false
+  },
   allRequiredChecked: {
     type: Boolean,
     default: false
@@ -98,26 +102,27 @@ const props = defineProps({
   moduleStatus: {
     type: String,
     default: 'Не начат'
-  },
-  contentScrolled: {
-    type: Boolean,
-    default: false
   }
 })
 
 const steps = computed(() => {
+  const isModuleCompleted = props.moduleStatus === 'Завершён'
+  const hasPassedTestBefore = props.hasTestBefore
+
   const baseSteps = [
     {
       id: 1,
       title: 'Ознакомление',
       type: 'reading',
-      completed: props.contentScrolled || props.moduleStatus === 'Завершён'
+      completed: props.hasTest
+        ? props.isReadyForTest || hasPassedTestBefore || isModuleCompleted
+        : isModuleCompleted
     },
     {
       id: 2,
       title: 'Практические задания',
       type: 'practice',
-      completed: props.allRequiredChecked || props.moduleStatus === 'Завершён'
+      completed: props.allRequiredChecked || hasPassedTestBefore || isModuleCompleted
     }
   ]
 
@@ -126,7 +131,7 @@ const steps = computed(() => {
       id: 3,
       title: 'Тестирование',
       type: 'test',
-      completed: props.moduleStatus === 'Завершён'
+      completed: hasPassedTestBefore || isModuleCompleted
     })
   }
 

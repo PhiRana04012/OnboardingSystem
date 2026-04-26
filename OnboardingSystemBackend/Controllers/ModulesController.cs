@@ -29,12 +29,16 @@ public class ModulesController : ControllerBase
     {
         var query = _context.Modules
             .Include(m => m.Department)
+            .Include(m => m.ModuleDepartments)
+            .ThenInclude(md => md.Department)
             .Include(m => m.Questions)
             .AsQueryable();
 
         if (departmentId.HasValue)
         {
-            query = query.Where(m => m.DepartmentId == departmentId);
+            query = query.Where(m =>
+                m.DepartmentId == departmentId ||
+                m.ModuleDepartments.Any(md => md.DepartmentId == departmentId));
         }
 
         if (isMandatory.HasValue)
@@ -42,23 +46,9 @@ public class ModulesController : ControllerBase
             query = query.Where(m => m.IsMandatory == isMandatory.Value);
         }
 
-        var modules = await query
-            .Select(m => new ModuleDto
-            {
-                ModuleId = m.ModuleId,
-                Title = m.Title,
-                Description = m.Description,
-                Content = m.Content,
-                IsMandatory = m.IsMandatory,
-                DepartmentId = m.DepartmentId,
-                DepartmentName = m.Department != null ? m.Department.Name : null,
-                PassingScore = m.PassingScore,
-                MaxAttempts = m.MaxAttempts,
-                QuestionCount = m.Questions.Count
-            })
-            .ToListAsync();
+        var modules = await query.ToListAsync();
 
-        return Ok(modules);
+        return Ok(modules.Select(MapModuleToDto).ToList());
     }
 
     /// <summary>
@@ -71,6 +61,8 @@ public class ModulesController : ControllerBase
     {
         var module = await _context.Modules
             .Include(m => m.Department)
+            .Include(m => m.ModuleDepartments)
+            .ThenInclude(md => md.Department)
             .Include(m => m.Questions)
             .FirstOrDefaultAsync(m => m.ModuleId == id);
 
@@ -79,21 +71,7 @@ public class ModulesController : ControllerBase
             return NotFound();
         }
 
-        var moduleDto = new ModuleDto
-        {
-            ModuleId = module.ModuleId,
-            Title = module.Title,
-            Description = module.Description,
-            Content = module.Content,
-            IsMandatory = module.IsMandatory,
-            DepartmentId = module.DepartmentId,
-            DepartmentName = module.Department != null ? module.Department.Name : null,
-            PassingScore = module.PassingScore,
-            MaxAttempts = module.MaxAttempts,
-            QuestionCount = module.Questions.Count
-        };
-
-        return Ok(moduleDto);
+        return Ok(MapModuleToDto(module));
     }
 
     /// <summary>
@@ -115,10 +93,15 @@ public class ModulesController : ControllerBase
             Description = dto.Description,
             Content = dto.Content,
             IsMandatory = dto.IsMandatory,
-            DepartmentId = dto.DepartmentId,
             PassingScore = dto.PassingScore,
             MaxAttempts = dto.MaxAttempts
         };
+
+        var selectedDepartmentIds = NormalizeDepartmentIds(dto.DepartmentIds, dto.DepartmentId);
+        module.DepartmentId = selectedDepartmentIds.Count == 1 ? selectedDepartmentIds[0] : null;
+        module.ModuleDepartments = selectedDepartmentIds
+            .Select(id => new ModuleDepartment { DepartmentId = id })
+            .ToList();
 
         _context.Modules.Add(module);
         await _context.SaveChangesAsync();
@@ -127,24 +110,15 @@ public class ModulesController : ControllerBase
             .Reference(m => m.Department)
             .LoadAsync();
         await _context.Entry(module)
+            .Collection(m => m.ModuleDepartments)
+            .Query()
+            .Include(md => md.Department)
+            .LoadAsync();
+        await _context.Entry(module)
             .Collection(m => m.Questions)
             .LoadAsync();
 
-        var moduleDto = new ModuleDto
-        {
-            ModuleId = module.ModuleId,
-            Title = module.Title,
-            Description = module.Description,
-            Content = module.Content,
-            IsMandatory = module.IsMandatory,
-            DepartmentId = module.DepartmentId,
-            DepartmentName = module.Department != null ? module.Department.Name : null,
-            PassingScore = module.PassingScore,
-            MaxAttempts = module.MaxAttempts,
-            QuestionCount = module.Questions.Count
-        };
-
-        return CreatedAtAction(nameof(GetModule), new { id = module.ModuleId }, moduleDto);
+        return CreatedAtAction(nameof(GetModule), new { id = module.ModuleId }, MapModuleToDto(module));
     }
 
     /// <summary>
@@ -158,6 +132,8 @@ public class ModulesController : ControllerBase
     {
         var module = await _context.Modules
             .Include(m => m.Department)
+            .Include(m => m.ModuleDepartments)
+            .ThenInclude(md => md.Department)
             .Include(m => m.Questions)
             .FirstOrDefaultAsync(m => m.ModuleId == id);
 
@@ -170,27 +146,28 @@ public class ModulesController : ControllerBase
         if (dto.Description != null) module.Description = dto.Description;
         if (dto.Content != null) module.Content = dto.Content;
         if (dto.IsMandatory.HasValue) module.IsMandatory = dto.IsMandatory.Value;
-        if (dto.DepartmentId.HasValue) module.DepartmentId = dto.DepartmentId;
         if (dto.PassingScore.HasValue) module.PassingScore = dto.PassingScore.Value;
         if (dto.MaxAttempts.HasValue) module.MaxAttempts = dto.MaxAttempts.Value;
 
+        if (dto.DepartmentIds != null || dto.DepartmentId.HasValue)
+        {
+            var selectedDepartmentIds = NormalizeDepartmentIds(dto.DepartmentIds, dto.DepartmentId);
+            module.ModuleDepartments.Clear();
+            foreach (var depId in selectedDepartmentIds)
+            {
+                module.ModuleDepartments.Add(new ModuleDepartment
+                {
+                    ModuleId = module.ModuleId,
+                    DepartmentId = depId
+                });
+            }
+
+            module.DepartmentId = selectedDepartmentIds.Count == 1 ? selectedDepartmentIds[0] : null;
+        }
+
         await _context.SaveChangesAsync();
 
-        var moduleDto = new ModuleDto
-        {
-            ModuleId = module.ModuleId,
-            Title = module.Title,
-            Description = module.Description,
-            Content = module.Content,
-            IsMandatory = module.IsMandatory,
-            DepartmentId = module.DepartmentId,
-            DepartmentName = module.Department != null ? module.Department.Name : null,
-            PassingScore = module.PassingScore,
-            MaxAttempts = module.MaxAttempts,
-            QuestionCount = module.Questions.Count
-        };
-
-        return Ok(moduleDto);
+        return Ok(MapModuleToDto(module));
     }
 
     /// <summary>
@@ -211,6 +188,63 @@ public class ModulesController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    private static List<int> NormalizeDepartmentIds(List<int>? departmentIds, int? fallbackDepartmentId)
+    {
+        if (departmentIds != null)
+        {
+            return departmentIds
+                .Distinct()
+                .ToList();
+        }
+
+        if (fallbackDepartmentId.HasValue)
+        {
+            return new List<int> { fallbackDepartmentId.Value };
+        }
+
+        return new List<int>();
+    }
+
+    private static ModuleDto MapModuleToDto(Module module)
+    {
+        var relationDepartmentIds = module.ModuleDepartments
+            .Select(md => md.DepartmentId)
+            .Distinct()
+            .ToList();
+
+        var relationDepartmentNames = module.ModuleDepartments
+            .Select(md => md.Department?.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name!)
+            .Distinct()
+            .ToList();
+
+        if (!relationDepartmentIds.Any() && module.DepartmentId.HasValue)
+        {
+            relationDepartmentIds.Add(module.DepartmentId.Value);
+            if (!string.IsNullOrWhiteSpace(module.Department?.Name))
+            {
+                relationDepartmentNames.Add(module.Department.Name);
+            }
+        }
+
+        return new ModuleDto
+        {
+            ModuleId = module.ModuleId,
+            Title = module.Title,
+            Description = module.Description,
+            Content = module.Content,
+            IsMandatory = module.IsMandatory,
+            DepartmentId = module.DepartmentId,
+            DepartmentName = module.Department?.Name,
+            DepartmentIds = relationDepartmentIds,
+            DepartmentNames = relationDepartmentNames,
+            PassingScore = module.PassingScore,
+            MaxAttempts = module.MaxAttempts,
+            QuestionCount = module.Questions.Count
+        };
     }
 }
 

@@ -42,7 +42,10 @@ public class ProgressController : ControllerBase
 
         // Получаем все модули для пользователя (общие + по подразделению)
         var userModules = await _context.Modules
-            .Where(m => m.DepartmentId == null || m.DepartmentId == user.DepartmentId)
+            .Where(m =>
+                (m.DepartmentId == null && !m.ModuleDepartments.Any()) ||
+                m.DepartmentId == user.DepartmentId ||
+                m.ModuleDepartments.Any(md => md.DepartmentId == user.DepartmentId))
             .ToListAsync();
 
         var mandatoryModules = userModules.Where(m => m.IsMandatory).ToList();

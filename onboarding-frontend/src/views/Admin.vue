@@ -354,13 +354,34 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Подразделение (необязательно, если для всех)</label>
-            <select v-model="moduleForm.departmentId" class="mt-1 input block w-full">
-              <option :value="null">-- Все подразделения --</option>
-              <option v-for="dept in departments" :key="dept.departmentId" :value="dept.departmentId">
-                {{ dept.name }}
-              </option>
-            </select>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Подразделения (если не выбрано — модуль для всех)</label>
+            <input
+              v-model="moduleDepartmentSearchQuery"
+              type="text"
+              placeholder="Поиск подразделения..."
+              class="mt-2 input block w-full"
+            />
+            <div class="mt-2 space-y-2 max-h-44 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+              <label
+                v-for="dept in filteredModuleDepartments"
+                :key="dept.departmentId"
+                class="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-200"
+              >
+                <input
+                  v-model="moduleForm.departmentIds"
+                  type="checkbox"
+                  :value="dept.departmentId"
+                  class="h-4 w-4 text-primary-600 border-gray-300 rounded"
+                />
+                <span>{{ dept.name }}</span>
+              </label>
+              <p v-if="filteredModuleDepartments.length === 0" class="text-xs text-gray-500 dark:text-gray-400">
+                Подразделения не найдены
+              </p>
+            </div>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Выберите одно или несколько подразделений. Оставьте пустым, чтобы назначить модуль всем.
+            </p>
           </div>
           <div class="pt-4 flex justify-end space-x-3 border-t">
             <button type="button" @click="closeModuleForm" class="btn-secondary">Отмена</button>
@@ -568,6 +589,7 @@ const checklists = ref([])
 // Module Form State
 const showModuleForm = ref(false)
 const editingModule = ref(null)
+const moduleDepartmentSearchQuery = ref('')
 const moduleForm = ref({
   title: '',
   description: '',
@@ -575,7 +597,7 @@ const moduleForm = ref({
   isMandatory: false,
   passingScore: 70,
   maxAttempts: 0,
-  departmentId: null
+  departmentIds: []
 })
 
 // User Form State
@@ -605,6 +627,15 @@ const filteredMentors = computed(() => {
     
     return sameDepart && matchesSearch
   })
+})
+
+const filteredModuleDepartments = computed(() => {
+  const query = moduleDepartmentSearchQuery.value.trim().toLowerCase()
+  if (!query) return departments.value
+
+  return departments.value.filter(dept =>
+    (dept.name || '').toLowerCase().includes(query)
+  )
 })
 
 // Question Form State
@@ -729,6 +760,7 @@ const loadPotentialMentors = async () => {
 const closeModuleForm = () => {
   showModuleForm.value = false
   editingModule.value = null
+  moduleDepartmentSearchQuery.value = ''
   moduleForm.value = {
     title: '',
     description: '',
@@ -736,13 +768,16 @@ const closeModuleForm = () => {
     isMandatory: false,
     passingScore: 70,
     maxAttempts: 0,
-    departmentId: null
+    departmentIds: []
   }
 }
 
 const saveModule = async () => {
   try {
-    const payload = { ...moduleForm.value }
+    const payload = {
+      ...moduleForm.value,
+      departmentIds: moduleForm.value.departmentIds || []
+    }
     if (editingModule.value) {
       await modulesApi.update(editingModule.value.moduleId, payload)
     } else {
@@ -758,6 +793,7 @@ const saveModule = async () => {
 
 const editModule = (module) => {
   editingModule.value = module
+  moduleDepartmentSearchQuery.value = ''
   moduleForm.value = {
     title: module.title || '',
     description: module.description || '',
@@ -765,7 +801,9 @@ const editModule = (module) => {
     isMandatory: !!module.isMandatory,
     passingScore: module.passingScore !== undefined ? module.passingScore : 70,
     maxAttempts: module.maxAttempts || 0,
-    departmentId: module.departmentId || null
+    departmentIds: Array.isArray(module.departmentIds)
+      ? [...module.departmentIds]
+      : (module.departmentId ? [module.departmentId] : [])
   }
   showModuleForm.value = true
 }

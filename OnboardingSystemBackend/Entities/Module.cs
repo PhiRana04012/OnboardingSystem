@@ -23,6 +23,8 @@ public partial class Module
 
     public virtual Department? Department { get; set; }
 
+    public virtual ICollection<ModuleDepartment> ModuleDepartments { get; set; } = new List<ModuleDepartment>();
+
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
 
     public virtual ICollection<TestAttempt> TestAttempts { get; set; } = new List<TestAttempt>();

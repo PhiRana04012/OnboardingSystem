@@ -329,6 +329,18 @@
         <member name="M:OnboardingSystem.Migrations.AddFaqEntries.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:OnboardingSystem.Migrations.UpdateModel">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.UpdateModel.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.UpdateModel.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.UpdateModel.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="M:OnboardingSystem.Services.IKeycloakAdminService.CreateUserAsync(System.String,System.String,System.String,System.Collections.Generic.IList{System.String})">
             <summary>
             Создать пользователя в Keycloak и назначить ему роли
