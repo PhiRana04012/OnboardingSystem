@@ -1,25 +1,24 @@
 <template>
   <div class="space-y-6">
-    <section class="rounded-2xl p-6 md:p-8 text-white relative overflow-hidden bg-gradient-to-br from-indigo-600 via-primary-600 to-cyan-500 shadow-lg">
-      <div class="absolute -right-8 -top-8 text-white/10 text-[140px] font-black leading-none select-none">★</div>
+    <section class="rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-sm border border-primary-100/70 dark:border-primary-900/40 bg-gradient-to-br from-primary-50 via-white to-indigo-50 dark:from-gray-800 dark:via-gray-800 dark:to-primary-950/40">
+      <div class="absolute -right-8 -top-8 text-primary-200/40 dark:text-primary-300/10 text-[140px] font-black leading-none select-none">★</div>
       <div class="relative z-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 class="text-3xl md:text-4xl font-black">Таблица лидеров</h1>
-          <p class="text-indigo-50 mt-2 text-sm md:text-base">
+          <h1 class="text-3xl md:text-4xl font-black text-gray-900 dark:text-gray-100">Таблица лидеров</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-2 text-sm md:text-base">
             Рейтинг сотрудников по опыту, уровню и активности в онбординге.
           </p>
         </div>
         <button
           @click="fetchLeaderboard"
-          class="px-4 py-2 rounded-lg text-sm font-semibold bg-white/20 hover:bg-white/30 border border-white/30 transition-colors disabled:opacity-60"
+          class="px-4 py-2 rounded-lg text-sm font-semibold bg-white/80 text-gray-800 border border-gray-200 hover:bg-white transition-colors disabled:opacity-60 dark:bg-gray-700/70 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
           :disabled="isLoading"
         >
           {{ isLoading ? 'Обновляем...' : 'Обновить' }}
         </button>
       </div>
       <div class="relative z-10 mt-5 flex flex-wrap gap-3 text-xs">
-        <span class="px-3 py-1 rounded-full bg-white/20">Всего участников: {{ leaderboard.length }}</span>
-        <span class="px-3 py-1 rounded-full bg-white/20">После фильтра: {{ filteredLeaderboard.length }}</span>
+        <span class="px-3 py-1 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-200">Всего участников: {{ leaderboard.length }}</span>
       </div>
     </section>
 

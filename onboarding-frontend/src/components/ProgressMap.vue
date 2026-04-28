@@ -101,9 +101,15 @@
         >
           🏆 Поздравляем! Онбординг завершен!
         </div>
-        <div v-else class="bg-white border border-gray-200 text-gray-400 px-8 py-4 rounded-2xl font-medium tracking-wide shadow-sm">
-           Конец маршрута
-        </div>
+        <button
+          v-else
+          type="button"
+          class="btn-primary rounded-full py-4 px-10 inline-flex items-center gap-3 relative z-10 text-lg font-bold opacity-60 cursor-not-allowed"
+          disabled
+        >
+          <span class="text-xl">🏁</span>
+          <span>Конец маршрута</span>
+        </button>
       </div>
     </div>
 
