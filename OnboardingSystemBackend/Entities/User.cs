@@ -27,6 +27,10 @@ public partial class User
     
     public string? Bio { get; set; }
 
+    public bool IsActive { get; set; } = true;
+    public string? PasswordHash { get; set; }
+    public DateTime? LastLogin { get; set; }
+
     public DateTime? RimsLastSyncDate { get; set; }
 
     public int TotalXP { get; set; } = 0;

@@ -5,6 +5,7 @@ import { usersApi } from '../api/services'
 export const useAuthStore = defineStore('auth', () => {
   // Восстанавливаем пользователя из localStorage (если есть) на старте
   const storedUser = localStorage.getItem('currentUser')
+  const storedToken = localStorage.getItem('authToken')
   const currentUser = ref(storedUser ? JSON.parse(storedUser) : null)
   const isLoading = ref(false)
 
@@ -21,17 +22,22 @@ export const useAuthStore = defineStore('auth', () => {
   const isManager = computed(() => hasRole('Руководитель подразделения'))
   const isAdmin = computed(() => hasRole('Администратор системы'))
 
-  const login = async (userId) => {
+  const login = async (email, password) => {
     try {
       isLoading.value = true
-      const response = await usersApi.getById(userId)
+      const response = await usersApi.login(email, password)
       
-      if (!response.data) {
-        throw new Error('Пользователь не найден')
+      if (!response.data.success) {
+        throw new Error(response.data.errorMessage || 'Ошибка аутентификации')
       }
       
-      currentUser.value = response.data
+      // Сохраняем токен
+      localStorage.setItem('authToken', response.data.token)
+      
+      // Сохраняем пользователя
+      currentUser.value = response.data.user
       localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
+      
       return currentUser.value
     } catch (error) {
       console.error('Login error:', error)
@@ -45,6 +51,8 @@ export const useAuthStore = defineStore('auth', () => {
         if (error.response.data) {
           if (typeof error.response.data === 'string') {
             errorMessage = error.response.data
+          } else if (error.response.data.errorMessage) {
+            errorMessage = error.response.data.errorMessage
           } else if (error.response.data.message) {
             errorMessage = error.response.data.message
           } else if (error.response.data.title) {
@@ -72,6 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = () => {
     currentUser.value = null
     localStorage.removeItem('currentUser')
+    localStorage.removeItem('authToken')
   }
 
   const refreshUser = async () => {

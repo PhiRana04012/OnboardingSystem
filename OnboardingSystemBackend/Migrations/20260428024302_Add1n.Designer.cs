@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnboardingSystem.Data;
 
@@ -11,9 +12,11 @@ using OnboardingSystem.Data;
 namespace OnboardingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428024302_Add1n")]
+    partial class Add1n
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -403,15 +406,12 @@ namespace OnboardingSystem.Migrations
                     b.Property<DateOnly>("HireDate")
                         .HasColumnType("date");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<string>("JobTitle")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<DateTime?>("LastLogin")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("KeycloakUserId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Level")
                         .HasColumnType("int");
@@ -426,9 +426,6 @@ namespace OnboardingSystem.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasDefaultValue("Не начат");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("RimsLastSyncDate")
                         .HasColumnType("datetime2")

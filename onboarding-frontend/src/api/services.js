@@ -2,6 +2,7 @@ import { identityApi as identityClient, contentApi as contentClient, progressApi
 
 // Users API - Identity Service
 export const usersApi = {
+  login: (email, password) => identityClient.post('/users/login', { email, password }),
   getAll: () => identityClient.get('/users'),
   getById: (id) => identityClient.get(`/users/${id}`),
   create: (data) => identityClient.post('/users', data),

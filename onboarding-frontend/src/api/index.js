@@ -14,10 +14,14 @@ const createApiInstance = (baseURL) => {
     }
   })
 
-  // Request interceptor for adding auth token if needed
+  // Request interceptor for adding auth token
   instance.interceptors.request.use(
     (config) => {
-      // TODO: Add SSO token if needed
+      // Получаем токен из localStorage
+      const token = localStorage.getItem('authToken')
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
       return config
     },
     (error) => {

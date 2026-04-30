@@ -1,14 +1,18 @@
 using OnboardingSystem.Entities;
+using OnboardingSystem.Services;
 
 namespace OnboardingSystem.Data
 {
     public static class DbInitializer
     {
-        public static void Initialize(AppDbContext context)
+        public static void Initialize(AppDbContext context, PasswordHasher? passwordHasher = null)
         {
             context.Database.EnsureCreated();
 
             context.Database.EnsureCreated();
+
+            // Инициализируем PasswordHasher если не передан
+            passwordHasher ??= new PasswordHasher();
 
             // --- Роли (Roles) ---
             if (!context.Roles.Any())
@@ -63,7 +67,8 @@ namespace OnboardingSystem.Data
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-1)),
                         OnboardingStatus = "Завершен", // Локализация
                         JobTitle = "Старший Администратор",
-                        Department = itDept
+                        Department = itDept,
+                        PasswordHash = passwordHasher.HashPassword("admin1234567")
                     },
                     new User
                     {
@@ -72,7 +77,8 @@ namespace OnboardingSystem.Data
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-6)),
                         OnboardingStatus = "Завершен",
                         JobTitle = "HR Менеджер",
-                        Department = hrDept
+                        Department = hrDept,
+                        PasswordHash = passwordHasher.HashPassword("hr1234567")
                     },
                     new User
                     {
@@ -81,7 +87,8 @@ namespace OnboardingSystem.Data
                         HireDate = DateOnly.FromDateTime(DateTime.Now),
                         OnboardingStatus = "В процессе",
                         JobTitle = "Младший Разработчик",
-                        Department = itDept
+                        Department = itDept,
+                        PasswordHash = passwordHasher.HashPassword("new1234567")
                     },
                     new User
                     {
@@ -90,7 +97,8 @@ namespace OnboardingSystem.Data
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-3)),
                         OnboardingStatus = "Завершен",
                         JobTitle = "Старший Разработчик",
-                        Department = itDept
+                        Department = itDept,
+                        PasswordHash = passwordHasher.HashPassword("mMentor123")
                     },
                     new User
                     {
@@ -99,7 +107,8 @@ namespace OnboardingSystem.Data
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-2)),
                         OnboardingStatus = "Завершен",
                         JobTitle = "Ведущий Разработчик",
-                        Department = itDept
+                        Department = itDept,
+                        PasswordHash = passwordHasher.HashPassword("mMentor123")
                     },
                     new User
                     {
@@ -108,7 +117,8 @@ namespace OnboardingSystem.Data
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-4)),
                         OnboardingStatus = "Завершен",
                         JobTitle = "Архитектор систем",
-                        Department = itDept
+                        Department = itDept,
+                        PasswordHash = passwordHasher.HashPassword("mentor1234")
                     }
                 };
 

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Silent Check SSO</title>
+</head>
+<body>
+    <script>
+        // This is required by Keycloak for silent SSO check via iframe
+        // It will be used to check if the user is already logged in without user interaction
+        if (parent && parent !== window) {
+            parent.postMessage(location.href, location.origin);
+        }
+    </script>
+</body>
+</html>

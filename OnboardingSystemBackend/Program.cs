@@ -42,6 +42,11 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // Add Export Service
 builder.Services.AddScoped<IReportExportService, ReportExportService>();
 
+// Add Authentication Services
+builder.Services.AddScoped<PasswordHasher>();
+builder.Services.AddScoped<JwtTokenGenerator>();
+builder.Services.AddScoped<IAuthenticationProvider, LocalAuthProvider>();
+
 // Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -136,7 +141,8 @@ using (var scope = app.Services.CreateScope())
             }
 
             context.Database.Migrate();
-            DbInitializer.Initialize(context);
+            var passwordHasher = services.GetRequiredService<PasswordHasher>();
+            DbInitializer.Initialize(context, passwordHasher);
             logger.LogInformation("Database migration and seeding completed successfully.");
             break; // Success, exit loop
         }

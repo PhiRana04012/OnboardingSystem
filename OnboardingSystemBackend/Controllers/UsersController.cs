@@ -4,6 +4,7 @@ using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
 using OnboardingSystem.Entities;
 using OnboardingSystem.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OnboardingSystem.Controllers;
 
@@ -15,12 +16,16 @@ public class UsersController : ControllerBase
     private readonly AppDbContext _context;
     private readonly ILogger<UsersController> _logger;
     private readonly IEmailService _emailService;
+    private readonly IAuthenticationProvider _authProvider;
+    private readonly PasswordHasher _passwordHasher;
 
-    public UsersController(AppDbContext context, ILogger<UsersController> logger, IEmailService emailService)
+    public UsersController(AppDbContext context, ILogger<UsersController> logger, IEmailService emailService, IAuthenticationProvider authProvider, PasswordHasher passwordHasher)
     {
         _context = context;
         _logger = logger;
         _emailService = emailService;
+        _authProvider = authProvider;
+        _passwordHasher = passwordHasher;
     }
 
 
@@ -133,6 +138,12 @@ public class UsersController : ControllerBase
             JobTitle = dto.JobTitle,
             OnboardingStatus = "Не начат"
         };
+
+        // Установка пароля, если передан
+        if (!string.IsNullOrEmpty(dto.Password))
+        {
+            user.PasswordHash = _passwordHasher.HashPassword(dto.Password);
+        }
 
         if (dto.RoleIds.Any())
         {
@@ -296,6 +307,79 @@ public class UsersController : ControllerBase
             .ToListAsync();
 
         return Ok(mentees);
+    }
+
+    /// <summary>
+    /// Аутентифицировать пользователя по email и пароль
+    /// </summary>
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(LoginResponseDto), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(400)]
+    public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        // Используем провайдер аутентификации
+        var authResult = await _authProvider.AuthenticateAsync(dto.Email, dto.Password);
+
+        if (!authResult.Success)
+        {
+            return Unauthorized(new LoginResponseDto
+            {
+                Success = false,
+                ErrorMessage = authResult.ErrorMessage ?? "Ошибка аутентификации"
+            });
+        }
+
+        // Получаем полные данные пользователя
+        var user = await _context.Users
+            .Include(u => u.Department)
+            .Include(u => u.Mentor)
+            .Include(u => u.Roles)
+            .Include(u => u.InverseMentor)
+            .FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+        if (user == null)
+        {
+            return Unauthorized(new LoginResponseDto
+            {
+                Success = false,
+                ErrorMessage = "Пользователь не найден"
+            });
+        }
+
+        var userDto = new UserDto
+        {
+            UserId = user.UserId,
+            ExternalId = user.ExternalId,
+            FullName = user.FullName,
+            Email = user.Email,
+            DepartmentId = user.DepartmentId,
+            DepartmentName = user.Department?.Name ?? "Не указано",
+            MentorId = user.MentorId,
+            MentorName = user.Mentor != null ? user.Mentor.FullName : null,
+            HireDate = user.HireDate,
+            OnboardingStatus = user.OnboardingStatus,
+            JobTitle = user.JobTitle,
+            TelegramTag = user.TelegramTag,
+            Bio = user.Bio,
+            Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>(),
+            HasMentees = user.InverseMentor != null && user.InverseMentor.Any(),
+            TotalXP = user.TotalXP,
+            Level = user.Level
+        };
+
+        return Ok(new LoginResponseDto
+        {
+            Success = true,
+            Token = authResult.Token,
+            User = userDto
+        });
     }
 }
 

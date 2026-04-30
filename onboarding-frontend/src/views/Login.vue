@@ -25,20 +25,49 @@
 
       <form @submit.prevent="handleLogin" class="mt-8 space-y-6">
         <div>
-          <label for="userId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            ID пользователя
+          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Email
           </label>
           <input
-            id="userId"
-            v-model="userId"
-            type="number"
+            id="email"
+            v-model="email"
+            type="email"
             required
             class="input"
-            placeholder="Введите ваш ID"
+            placeholder="Введите ваш email"
           />
-          <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            Для демонстрации введите ID пользователя из базы данных
-          </p>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Пароль
+          </label>
+          <div class="relative">
+            <input
+              id="password"
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              required
+              class="input pr-12"
+              placeholder="Введите ваш пароль"
+            />
+            <button
+              type="button"
+              @click="showPassword = !showPassword"
+              class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              :title="showPassword ? 'Скрыть пароль' : 'Показать пароль'"
+              :aria-label="showPassword ? 'Скрыть пароль' : 'Показать пароль'"
+            >
+              <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z" />
+              </svg>
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.964 9.964 0 012.25-3.592M9.88 9.88a3 3 0 104.243 4.243" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.1 6.1A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.97 9.97 0 01-4.132 5.411M3 3l18 18" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div>
@@ -76,20 +105,22 @@ const router = useRouter()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
 
-const userId = ref('')
+const email = ref('')
+const password = ref('')
+const showPassword = ref(false)
 const isLoading = ref(false)
 const error = ref('')
 
 const handleLogin = async () => {
-  if (!userId.value) {
-    error.value = 'Пожалуйста, введите ID пользователя'
+  if (!email.value || !password.value) {
+    error.value = 'Пожалуйста, введите email и пароль'
     return
   }
 
   try {
     isLoading.value = true
     error.value = ''
-    await authStore.login(parseInt(userId.value))
+    await authStore.login(email.value, password.value)
     router.push('/')
   } catch (err) {
     console.error('Login error:', err)
@@ -97,21 +128,17 @@ const handleLogin = async () => {
     // More detailed error messages
     if (err.response) {
       const status = err.response.status
-      if (status === 404) {
-        error.value = 'Пользователь с таким ID не найден. Проверьте правильность ID.'
+      if (status === 401) {
+        error.value = 'Неверный email или пароль. Проверьте учётные данные.'
       } else if (status === 500) {
-        error.value = 'Ошибка сервера. Возможные причины:\n' +
-          '1. База данных не инициализирована\n' +
-          '2. Пользователь не имеет связанного подразделения\n' +
-          '3. Проблема с подключением к базе данных\n\n' +
-          'Проверьте логи сервера для подробностей.'
+        error.value = 'Ошибка сервера. Попробуйте позже.'
       } else {
         error.value = `Ошибка сервера (${status}). Попробуйте позже.`
       }
     } else if (err.request) {
       error.value = 'Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен.'
     } else {
-      error.value = 'Ошибка входа. Проверьте ID пользователя и попробуйте снова.'
+      error.value = err.message || 'Ошибка входа. Попробуйте снова.'
     }
   } finally {
     isLoading.value = false

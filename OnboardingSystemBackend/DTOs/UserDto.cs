@@ -32,6 +32,7 @@ public class CreateUserDto
     public string? ExternalId { get; set; }
     public string FullName { get; set; } = null!;
     public string Email { get; set; } = null!;
+    public string? Password { get; set; }
     public int DepartmentId { get; set; }
     public int? MentorId { get; set; }
     public DateOnly HireDate { get; set; }
