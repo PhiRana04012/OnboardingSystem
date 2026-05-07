@@ -98,6 +98,11 @@ export const checklistsApi = {
   delete: (id) => progressClient.delete(`/checklists/${id}`)
 }
 
+// AI Mentor API - Identity Service
+export const aiMentorApi = {
+  chat: (message) => identityClient.post('/aimentor/chat', { message })
+}
+
 // FAQ API - Content Service
 export const faqApi = {
   getAll: () => contentClient.get('/faq'),

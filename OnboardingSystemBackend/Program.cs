@@ -46,6 +46,12 @@ builder.Services.AddScoped<IReportExportService, ReportExportService>();
 builder.Services.AddScoped<PasswordHasher>();
 builder.Services.AddScoped<JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthenticationProvider, LocalAuthProvider>();
+builder.Services.AddHttpClient("AiMentor")
+    .ConfigureHttpClient(client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(300); // 5 minutes for AI processing
+    });
+builder.Services.AddScoped<IAiMentorService, AiMentorService>();
 
 // Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>

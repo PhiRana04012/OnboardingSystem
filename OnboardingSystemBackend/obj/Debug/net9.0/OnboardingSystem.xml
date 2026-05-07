@@ -257,6 +257,51 @@
             Получить список подопечных для наставника
             </summary>
         </member>
+        <member name="M:OnboardingSystem.Controllers.UsersController.Login(OnboardingSystem.DTOs.LoginDto)">
+            <summary>
+            Аутентифицировать пользователя по email и пароль
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.LoginDto">
+            <summary>
+            DTO для аутентификации пользователя
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.LoginDto.Email">
+            <summary>
+            Email пользователя
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.LoginDto.Password">
+            <summary>
+            Пароль пользователя
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.LoginResponseDto">
+            <summary>
+            DTO для результата аутентификации
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.LoginResponseDto.Success">
+            <summary>
+            Успешна ли аутентификация
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.LoginResponseDto.Token">
+            <summary>
+            JWT токен
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.LoginResponseDto.User">
+            <summary>
+            Данные пользователя
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.LoginResponseDto.ErrorMessage">
+            <summary>
+            Сообщение об ошибке (если есть)
+            </summary>
+        </member>
         <member name="T:OnboardingSystem.Migrations.InitialCreate">
             <inheritdoc />
         </member>
@@ -341,6 +386,70 @@
         <member name="M:OnboardingSystem.Migrations.UpdateModel.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:OnboardingSystem.Migrations.Add1n">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.Add1n.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.Add1n.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.Add1n.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddKeycloakIntegration">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddKeycloakIntegration.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddKeycloakIntegration.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddUserProperties">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddUserProperties.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddUserProperties.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddUserProperties.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Services.IAuthenticationProvider">
+            <summary>
+            Интерфейс для различных методов аутентификации
+            Позволяет легко переключаться между Local, Keycloak, AD и другими провайдерами
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthenticationProvider.AuthenticateAsync(System.String,System.String)">
+            <summary>
+            Аутентифицировать пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthenticationProvider.GetUserAsync(System.String)">
+            <summary>
+            Получить пользователя по внешнему ID
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthenticationProvider.ValidateTokenAsync(System.String)">
+            <summary>
+            Валидировать токен
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.Services.IAuthenticationProvider.ProviderName">
+            <summary>
+            Получить имя провайдера
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Services.AuthResult">
+            <summary>
+            Результат аутентификации
+            </summary>
+        </member>
         <member name="M:OnboardingSystem.Services.IKeycloakAdminService.CreateUserAsync(System.String,System.String,System.String,System.Collections.Generic.IList{System.String})">
             <summary>
             Создать пользователя в Keycloak и назначить ему роли
@@ -386,11 +495,72 @@
             Получение или создание Department по названию из RIMS
             </summary>
         </member>
+        <member name="T:OnboardingSystem.Services.JwtTokenGenerator">
+            <summary>
+            Генератор JWT токенов для аутентификации
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.JwtTokenGenerator.GenerateToken(System.Int32,System.String,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Генерировать JWT токен для пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.JwtTokenGenerator.ValidateToken(System.String)">
+            <summary>
+            Валидировать JWT токен
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.JwtTokenGenerator.GetClaimsFromToken(System.String)">
+            <summary>
+            Извлечь клеймы из токена без валидации (для отладки)
+            </summary>
+        </member>
         <member name="T:OnboardingSystem.Services.KeycloakAdminService">
             <summary>
             Сервис для работы с Keycloak Admin REST API.
             Позволяет создавать, удалять и обновлять пользователей в Keycloak
             синхронно с созданием пользователей в нашей БД.
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Services.LocalAuthProvider">
+            <summary>
+            Провайдер локальной аутентификации с хранением паролей в БД
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.LocalAuthProvider.AuthenticateAsync(System.String,System.String)">
+            <summary>
+            Аутентифицировать пользователя по email и пароль
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.LocalAuthProvider.GetUserAsync(System.String)">
+            <summary>
+            Получить пользователя по ID
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.LocalAuthProvider.ValidateTokenAsync(System.String)">
+            <summary>
+            Валидировать JWT токен
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Services.PasswordHasher">
+            <summary>
+            Хешер паролей с использованием BCrypt
+            BCrypt автоматически добавляет salt и сложность работает регулируется work factor
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.PasswordHasher.HashPassword(System.String)">
+            <summary>
+            Создать хеш пароля
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.PasswordHasher.VerifyPassword(System.String,System.String)">
+            <summary>
+            Проверить пароль против хеша
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.PasswordHasher.NeedsRehash(System.String)">
+            <summary>
+            Проверить нужно ли перехешировать пароль (если work factor изменился)
             </summary>
         </member>
         <member name="T:OnboardingSystem.Services.RimsIntegrationService">

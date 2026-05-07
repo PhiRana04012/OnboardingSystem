@@ -1,0 +1,24 @@
+PS C:\Users\Firan\ONBOARDING\OnboardingSystemBackend\Scripts> .\setup-backup-final.ps1
+OK - Script is running as administrator
+
+Configuration:
+  Task name: OnboardingSystem_DatabaseBackup
+  Run time: 02:00 (daily)
+  Script path: C:\Users\Firan\ONBOARDING\OnboardingSystemBackend\Scripts\backup-database.ps1
+  Backup folder: C:\Backups\OnboardingSystem
+
+Step 1: Checking backup script...
+OK - File found
+
+Step 2: Creating backup directory...
+OK - Directory created: C:\Backups\OnboardingSystem
+
+Step 3: Checking SQL Server Management Objects (SMO)...
+OK - SQL Server SMO is installed
+
+Step 4: Checking for existing task...
+OK - No existing task found
+
+Step 5: Creating new task in Task Scheduler...
+ERROR: Failed to create task: Не удается найти позиционный параметр, принимающий аргумент "False".
+PS C:\Users\Firan\ONBOARDING\OnboardingSystemBackend\Scripts>

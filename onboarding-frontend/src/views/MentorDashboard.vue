@@ -39,11 +39,11 @@
         <!-- Badge Status -->
         <div class="absolute top-0 right-0 px-3 py-1 rounded-bl-lg text-xs font-bold"
              :class="{
-               'bg-green-100 text-green-800': mentee.onboardingStatus === 'Завершён',
-               'bg-yellow-100 text-yellow-800': mentee.onboardingStatus === 'В процессе',
-               'bg-gray-100 text-gray-800': mentee.onboardingStatus === 'Не начат'
+               'bg-green-100 text-green-800': normalizeStatus(mentee.onboardingStatus) === 'completed',
+               'bg-yellow-100 text-yellow-800': normalizeStatus(mentee.onboardingStatus) === 'inProgress',
+               'bg-gray-100 text-gray-800': normalizeStatus(mentee.onboardingStatus) === 'notStarted'
              }">
-          {{ mentee.onboardingStatus }}
+          {{ getDisplayStatus(mentee.onboardingStatus) }}
         </div>
 
         <div class="flex items-center gap-4 mb-4 mt-2">
@@ -98,8 +98,29 @@ const authStore = useAuthStore()
 const mentees = ref([])
 const isLoading = ref(true)
 
-const inProcessCount = computed(() => mentees.value.filter(m => m.onboardingStatus === 'В процессе').length)
-const completedCount = computed(() => mentees.value.filter(m => m.onboardingStatus === 'Завершён').length)
+const normalizeStatus = (status) => {
+  const normalized = (status || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace('ё', 'е')
+
+  if (normalized === 'завершен') return 'completed'
+  if (normalized === 'в процессе') return 'inProgress'
+  if (normalized === 'не начат') return 'notStarted'
+  return 'unknown'
+}
+
+const getDisplayStatus = (status) => {
+  const normalized = normalizeStatus(status)
+  if (normalized === 'completed') return 'Завершён'
+  if (normalized === 'inProgress') return 'В процессе'
+  if (normalized === 'notStarted') return 'Не начат'
+  return status || 'Не указан'
+}
+
+const inProcessCount = computed(() => mentees.value.filter(m => normalizeStatus(m.onboardingStatus) === 'inProgress').length)
+const completedCount = computed(() => mentees.value.filter(m => normalizeStatus(m.onboardingStatus) === 'completed').length)
 
 onMounted(async () => {
   await loadMentees()

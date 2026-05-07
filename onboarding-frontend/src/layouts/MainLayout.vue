@@ -123,6 +123,25 @@
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
       <router-view />
     </main>
+
+    <!-- AI Chat Assistant -->
+    <div v-if="!isAiChatOpen" class="fixed bottom-6 right-6 z-50">
+      <button
+        @click="isAiChatOpen = true"
+        class="w-14 h-14 rounded-full bg-primary-600 text-white shadow-lg hover:bg-primary-700 transition-all duration-200 flex items-center justify-center hover:scale-110 hover:shadow-xl"
+        title="Открыть AI-помощника"
+      >
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16h6M5 20l1.5-1.5A8 8 0 1119 18.5L20.5 20z" />
+        </svg>
+      </button>
+    </div>
+
+    <div v-else class="fixed bottom-6 right-6 z-50 w-[340px] sm:w-[380px]">
+      <AiChatAssistant
+        @close="isAiChatOpen = false"
+      />
+    </div>
   </div>
 </template>
 
@@ -132,11 +151,13 @@ import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 import { useRouter } from 'vue-router'
 import { getAvatarGradient } from '../utils/avatar'
+import AiChatAssistant from '../components/AiChatAssistant.vue'
 
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
 const router = useRouter()
 const isMobileMenuOpen = ref(false)
+const isAiChatOpen = ref(false)
 
 onMounted(() => {
   themeStore.applyTheme()
