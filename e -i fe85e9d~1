@@ -1,0 +1,17 @@
+[33m74578b9[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m AI наставник
+[33mfe85e9d[m AI наставник
+[33mb15c288[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m добавлена авторизация jwt токеном
+[33m869906a[m сохранение данных
+[33m8339bc5[m добавлена таблица лидеров
+[33m86be4fb[m улучшение
+[33md5fade4[m практические задания
+[33mcce97a6[m исправление авторизации
+[33ma35ee1d[m добавлена тёмная тема
+[33mfe6f620[m исправлены баги с назначением наставника новичку
+[33mb6ac660[m добавлена геймификация
+[33m3a690b9[m feat: добавлена отправка писем (MailHog), экспорт отчетов (PDF/Excel) и функционал сброса проваленных тестов
+[33mdf29602[m  commit
+[33m2450b8a[m Initial commit: Onboarding System with Docker
+[33m518e232[m Initial commit: Onboarding System with Docker
+[33m3d627aa[m first commit2
+[33mbb5ad8c[m first commit
