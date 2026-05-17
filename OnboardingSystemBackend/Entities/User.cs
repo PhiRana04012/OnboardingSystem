@@ -21,7 +21,7 @@ public partial class User
 
     public string OnboardingStatus { get; set; } = null!;
 
-    public string? JobTitle { get; set; }
+    public int? JobTitleId { get; set; }
 
     public string? TelegramTag { get; set; }
     
@@ -54,4 +54,6 @@ public partial class User
     public virtual ICollection<UserChecklistItem> UserChecklistItems { get; set; } = new List<UserChecklistItem>();
 
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
+
+    public virtual JobTitle? JobTitle { get; set; }
 }

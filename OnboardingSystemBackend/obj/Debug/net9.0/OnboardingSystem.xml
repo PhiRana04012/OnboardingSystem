@@ -44,6 +44,21 @@
             Удалить пункт чек-листа
             </summary>
         </member>
+        <member name="T:OnboardingSystem.Controllers.ControllerExtensions">
+            <summary>
+            Extension методы для контроллеров
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ControllerExtensions.GetCurrentUserAsync(Microsoft.AspNetCore.Mvc.ControllerBase,OnboardingSystem.Data.AppDbContext)">
+            <summary>
+            Получить текущего пользователя из JWT Claims
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.ControllerExtensions.GetCurrentUserId(Microsoft.AspNetCore.Mvc.ControllerBase)">
+            <summary>
+            Получить ID текущего пользователя из JWT Claims
+            </summary>
+        </member>
         <member name="M:OnboardingSystem.Controllers.DepartmentsController.GetDepartments">
             <summary>
             Получить список всех подразделений
@@ -92,6 +107,16 @@
         <member name="M:OnboardingSystem.Controllers.GamificationController.GetUserProfile(System.Int32)">
             <summary>
             Получить профиль геймификации пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.JobTitlesController.GetJobTitles">
+            <summary>
+            Получить список всех должностей
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.JobTitlesController.GetJobTitle(System.Int32)">
+            <summary>
+            Получить должность по ID
             </summary>
         </member>
         <member name="M:OnboardingSystem.Controllers.ModulesController.GetModules(System.Nullable{System.Int32},System.Nullable{System.Boolean})">
@@ -262,6 +287,66 @@
             Аутентифицировать пользователя по email и пароль
             </summary>
         </member>
+        <member name="M:OnboardingSystem.Controllers.UsersController.SetPassword(OnboardingSystem.DTOs.SetPasswordDto)">
+            <summary>
+            Установить пароль по токену (публичный endpoint, не требует авторизации)
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.CreateUserDto">
+            <summary>
+            DTO для создания нового пользователя
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.CreateUserDto.ExternalId">
+            <summary>
+            Внешний ID пользователя (из внешней системы)
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.CreateUserDto.FullName">
+            <summary>
+            Полное имя пользователя
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.CreateUserDto.Email">
+            <summary>
+            Email пользователя
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.CreateUserDto.DepartmentId">
+            <summary>
+            ID подразделения
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.CreateUserDto.MentorId">
+            <summary>
+            ID наставника (опционально)
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.CreateUserDto.HireDate">
+            <summary>
+            Дата найма
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.CreateUserDto.JobTitleId">
+            <summary>
+            ID должности
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.CreateUserDto.Password">
+            <summary>
+            Пароль (опционально - если не передан, пользователь получит письмо с ссылкой для установки)
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.CreateUserDto.RoleIds">
+            <summary>
+            Список ID ролей для назначения пользователю
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.UpdateUserDto">
+            <summary>
+            DTO для обновления данных пользователя
+            </summary>
+        </member>
         <member name="T:OnboardingSystem.DTOs.LoginDto">
             <summary>
             DTO для аутентификации пользователя
@@ -300,6 +385,61 @@
         <member name="P:OnboardingSystem.DTOs.LoginResponseDto.ErrorMessage">
             <summary>
             Сообщение об ошибке (если есть)
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.SetPasswordDto">
+            <summary>
+            DTO для установки пароля по токену
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.SetPasswordDto.Token">
+            <summary>
+            Токен для установки пароля
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.SetPasswordDto.Password">
+            <summary>
+            Новый пароль
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.SetPasswordDto.ConfirmPassword">
+            <summary>
+            Подтверждение пароля
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.SetPasswordResponseDto">
+            <summary>
+            DTO для ответа при установке пароля
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Entities.PasswordResetToken">
+            <summary>
+            Токен для установки/сброса пароля
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.Entities.PasswordResetToken.Token">
+            <summary>
+            Уникальный токен (GUID)
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.Entities.PasswordResetToken.CreatedAt">
+            <summary>
+            Когда был создан токен
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.Entities.PasswordResetToken.ExpiresAt">
+            <summary>
+            Когда токен истекает (24 часа по умолчанию)
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.Entities.PasswordResetToken.IsUsed">
+            <summary>
+            Был ли уже использован
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.Entities.PasswordResetToken.UsedAt">
+            <summary>
+            Когда был использован
             </summary>
         </member>
         <member name="T:OnboardingSystem.Migrations.InitialCreate">
@@ -419,6 +559,51 @@
         <member name="M:OnboardingSystem.Migrations.AddUserProperties.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:OnboardingSystem.Migrations.email">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.email.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.email.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.email.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddJobTitles">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddJobTitles.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddJobTitles.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddJobTitles.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddHeader">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddHeader.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddHeader.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddHeader.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:OnboardingSystem.Migrations.AddDepartmentHead">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddDepartmentHead.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.AddDepartmentHead.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:OnboardingSystem.Services.IAuthenticationProvider">
             <summary>
             Интерфейс для различных методов аутентификации
@@ -448,6 +633,61 @@
         <member name="T:OnboardingSystem.Services.AuthResult">
             <summary>
             Результат аутентификации
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Services.IAuthorizationService">
+            <summary>
+            Сервис для проверки доступа пользователей к ресурсам
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.IsDepartmentHead(OnboardingSystem.Entities.User)">
+            <summary>
+            Проверяет, является ли пользователь начальником отдела
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.CanManageMentees(OnboardingSystem.Entities.User,System.Int32)">
+            <summary>
+            Проверяет, может ли пользователь управлять наставниками в отделе
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.CanViewDepartmentReports(OnboardingSystem.Entities.User,System.Int32)">
+            <summary>
+            Проверяет, может ли пользователь просматривать отчёты отдела
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.CanViewUser(OnboardingSystem.Entities.User,OnboardingSystem.Entities.User)">
+            <summary>
+            Проверяет, может ли пользователь просматривать данные пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.CanEditUser(OnboardingSystem.Entities.User,OnboardingSystem.Entities.User)">
+            <summary>
+            Проверяет, может ли пользователь редактировать данные пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.GetUserJobTitle(OnboardingSystem.Entities.User)">
+            <summary>
+            Получает должность пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.GetUserRoles(OnboardingSystem.Entities.User)">
+            <summary>
+            Получает роли пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.HasRole(OnboardingSystem.Entities.User,System.String)">
+            <summary>
+            Проверяет, имеет ли пользователь роль
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.CanManageDepartment(OnboardingSystem.Entities.User,System.Nullable{System.Int32})">
+            <summary>
+            Админ/HR — любой отдел; начальник отдела — только свой
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IAuthorizationService.CanManageModule(OnboardingSystem.Entities.User,OnboardingSystem.Entities.Module)">
+            <summary>
+            Управление модулями: админ/HR — все; начальник — только модули своего отдела
             </summary>
         </member>
         <member name="M:OnboardingSystem.Services.IKeycloakAdminService.CreateUserAsync(System.String,System.String,System.String,System.Collections.Generic.IList{System.String})">
@@ -561,6 +801,31 @@
         <member name="M:OnboardingSystem.Services.PasswordHasher.NeedsRehash(System.String)">
             <summary>
             Проверить нужно ли перехешировать пароль (если work factor изменился)
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Services.IPasswordResetService">
+            <summary>
+            Сервис для работы с токенами установки/сброса пароля
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IPasswordResetService.CreatePasswordSetupTokenAsync(System.Int32,System.TimeSpan)">
+            <summary>
+            Создать токен для установки пароля новому пользователю
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IPasswordResetService.ValidateTokenAsync(System.String)">
+            <summary>
+            Проверить валидность токена
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IPasswordResetService.SetPasswordWithTokenAsync(System.String,System.String,OnboardingSystem.Services.PasswordHasher)">
+            <summary>
+            Установить пароль по токену
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IPasswordResetService.RevokeUserTokensAsync(System.Int32)">
+            <summary>
+            Отозвать все токены пользователя
             </summary>
         </member>
         <member name="T:OnboardingSystem.Services.RimsIntegrationService">

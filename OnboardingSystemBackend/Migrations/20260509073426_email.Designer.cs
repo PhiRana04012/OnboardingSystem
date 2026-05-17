@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnboardingSystem.Data;
 
@@ -11,9 +12,11 @@ using OnboardingSystem.Data;
 namespace OnboardingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509073426_email")]
+    partial class email
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,10 +167,6 @@ namespace OnboardingSystem.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("ExternalID");
 
-                    b.Property<int?>("HeadUserId")
-                        .HasColumnType("int")
-                        .HasColumnName("HeadUserID");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -175,8 +174,6 @@ namespace OnboardingSystem.Migrations
 
                     b.HasKey("DepartmentId")
                         .HasName("PK__Departme__B2079BCD767D3C89");
-
-                    b.HasIndex("HeadUserId");
 
                     b.HasIndex(new[] { "Name" }, "UQ__Departme__737584F630BC325D")
                         .IsUnique();
@@ -219,33 +216,6 @@ namespace OnboardingSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FaqEntries");
-                });
-
-            modelBuilder.Entity("OnboardingSystem.Entities.JobTitle", b =>
-                {
-                    b.Property<int>("JobTitleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("JobTitleID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobTitleId"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("JobTitleId")
-                        .HasName("PK__JobTitle__C64C6E0DB3EE15E9");
-
-                    b.HasIndex(new[] { "Title" }, "UQ__JobTitle__A1D5E8A64E51E3C0")
-                        .IsUnique();
-
-                    b.ToTable("JobTitles");
                 });
 
             modelBuilder.Entity("OnboardingSystem.Entities.Module", b =>
@@ -481,9 +451,9 @@ namespace OnboardingSystem.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("JobTitleId")
-                        .HasColumnType("int")
-                        .HasColumnName("JobTitleID");
+                    b.Property<string>("JobTitle")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
@@ -519,8 +489,6 @@ namespace OnboardingSystem.Migrations
                         .HasName("PK__Users__1788CCAC41930BCF");
 
                     b.HasIndex("DepartmentId");
-
-                    b.HasIndex("JobTitleId");
 
                     b.HasIndex("MentorId");
 
@@ -683,17 +651,6 @@ namespace OnboardingSystem.Migrations
                     b.Navigation("Module");
                 });
 
-            modelBuilder.Entity("OnboardingSystem.Entities.Department", b =>
-                {
-                    b.HasOne("OnboardingSystem.Entities.User", "Head")
-                        .WithMany()
-                        .HasForeignKey("HeadUserId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("FK_Departments_Users_Head");
-
-                    b.Navigation("Head");
-                });
-
             modelBuilder.Entity("OnboardingSystem.Entities.Module", b =>
                 {
                     b.HasOne("OnboardingSystem.Entities.Department", "Department")
@@ -778,19 +735,12 @@ namespace OnboardingSystem.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Users_Departments");
 
-                    b.HasOne("OnboardingSystem.Entities.JobTitle", "JobTitle")
-                        .WithMany("Users")
-                        .HasForeignKey("JobTitleId")
-                        .HasConstraintName("FK_Users_JobTitles");
-
                     b.HasOne("OnboardingSystem.Entities.User", "Mentor")
                         .WithMany("InverseMentor")
                         .HasForeignKey("MentorId")
                         .HasConstraintName("FK_Users_Mentor");
 
                     b.Navigation("Department");
-
-                    b.Navigation("JobTitle");
 
                     b.Navigation("Mentor");
                 });
@@ -886,11 +836,6 @@ namespace OnboardingSystem.Migrations
 
                     b.Navigation("Modules");
 
-                    b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("OnboardingSystem.Entities.JobTitle", b =>
-                {
                     b.Navigation("Users");
                 });
 

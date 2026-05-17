@@ -41,6 +41,15 @@ public class AiMentorService : IAiMentorService
         var apiKey = _configuration["AiMentor:ApiKey"] ?? "";
         var maxContextChars = _configuration.GetValue("AiMentor:MaxContextChars", 12000);
 
+        _logger.LogInformation("AI Mentor config - BaseUrl: {BaseUrl}, Model: {Model}, HasApiKey: {HasKey}", 
+            baseUrl, model, !string.IsNullOrEmpty(apiKey));
+
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            _logger.LogError("AI Mentor API key is not configured");
+            throw new InvalidOperationException("API ключ для AI-сервиса не настроен");
+        }
+
         var knowledgeContext = await BuildKnowledgeContextAsync(maxContextChars, cancellationToken);
         var systemPrompt = BuildSystemPrompt(knowledgeContext);
 
@@ -71,13 +80,18 @@ public class AiMentorService : IAiMentorService
         
         try
         {
+            _logger.LogInformation("Sending AI Mentor request to {BaseUrl} with model {Model}", baseUrl, model);
+            
             using var response = await client.PostAsync("chat/completions", content, cancellationToken);
 
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            
+            _logger.LogInformation("AI Mentor response status: {Status}", response.StatusCode);
+            
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("AiMentor API error {Status}: {Body}", response.StatusCode, responseBody);
-                throw new InvalidOperationException("AI-сервис временно недоступен.");
+                throw new InvalidOperationException($"AI-сервис ошибка {response.StatusCode}: {responseBody}");
             }
 
             using var doc = JsonDocument.Parse(responseBody);
@@ -97,7 +111,17 @@ public class AiMentorService : IAiMentorService
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Failed to connect to AI service at {BaseUrl}", baseUrl);
-            throw new InvalidOperationException($"Не удалось подключиться к AI-сервису. Убедитесь что Ollama запущен на {baseUrl}");
+            throw new InvalidOperationException($"Не удалось подключиться к AI-сервису на {baseUrl}");
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Failed to parse AI Mentor response");
+            throw new InvalidOperationException("Не удалось обработать ответ AI-сервиса");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error in AI Mentor service");
+            throw;
         }
     }
 

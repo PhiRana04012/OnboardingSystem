@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnboardingSystem.Data;
 
@@ -11,9 +12,11 @@ using OnboardingSystem.Data;
 namespace OnboardingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260512065726_AddJobTitles")]
+    partial class AddJobTitles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,10 +167,6 @@ namespace OnboardingSystem.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("ExternalID");
 
-                    b.Property<int?>("HeadUserId")
-                        .HasColumnType("int")
-                        .HasColumnName("HeadUserID");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -175,8 +174,6 @@ namespace OnboardingSystem.Migrations
 
                     b.HasKey("DepartmentId")
                         .HasName("PK__Departme__B2079BCD767D3C89");
-
-                    b.HasIndex("HeadUserId");
 
                     b.HasIndex(new[] { "Name" }, "UQ__Departme__737584F630BC325D")
                         .IsUnique();
@@ -681,17 +678,6 @@ namespace OnboardingSystem.Migrations
                         .HasConstraintName("FK_ChecklistItems_Modules");
 
                     b.Navigation("Module");
-                });
-
-            modelBuilder.Entity("OnboardingSystem.Entities.Department", b =>
-                {
-                    b.HasOne("OnboardingSystem.Entities.User", "Head")
-                        .WithMany()
-                        .HasForeignKey("HeadUserId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("FK_Departments_Users_Head");
-
-                    b.Navigation("Head");
                 });
 
             modelBuilder.Entity("OnboardingSystem.Entities.Module", b =>

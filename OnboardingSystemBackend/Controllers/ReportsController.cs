@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
 using OnboardingSystem.Services;
+using IAppAuthorizationService = OnboardingSystem.Services.IAuthorizationService;
 
 namespace OnboardingSystem.Controllers;
 
@@ -14,12 +15,14 @@ public class ReportsController : ControllerBase
     private readonly AppDbContext _context;
     private readonly ILogger<ReportsController> _logger;
     private readonly IReportExportService _exportService;
+    private readonly IAppAuthorizationService _authorizationService;
 
-    public ReportsController(AppDbContext context, ILogger<ReportsController> logger, IReportExportService exportService)
+    public ReportsController(AppDbContext context, ILogger<ReportsController> logger, IReportExportService exportService, IAppAuthorizationService authorizationService)
     {
         _context = context;
         _logger = logger;
         _exportService = exportService;
+        _authorizationService = authorizationService;
     }
 
 
@@ -28,9 +31,11 @@ public class ReportsController : ControllerBase
     /// </summary>
     [HttpGet("onboarding-progress/{userId}")]
     [ProducesResponseType(typeof(OnboardingProgressReportDto), 200)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     public async Task<ActionResult<OnboardingProgressReportDto>> GetOnboardingProgressReport(int userId)
     {
+        var currentUser = await this.GetCurrentUserAsync(_context);
         var user = await _context.Users
             .Include(u => u.Department)
             .Include(u => u.Mentor)
@@ -39,6 +44,12 @@ public class ReportsController : ControllerBase
         if (user == null)
         {
             return NotFound();
+        }
+
+        // Проверяем доступ
+        if (currentUser != null && !_authorizationService.CanViewDepartmentReports(currentUser, user.DepartmentId))
+        {
+            return Forbid();
         }
 
         // Получаем модули для пользователя
@@ -130,6 +141,18 @@ public class ReportsController : ControllerBase
     [ProducesResponseType(typeof(List<TestResultsReportDto>), 200)]
     public async Task<ActionResult<List<TestResultsReportDto>>> GetTestResultsReport([FromQuery] int? userId, [FromQuery] int? moduleId)
     {
+        var currentUser = await this.GetCurrentUserAsync(_context);
+
+        if (userId.HasValue)
+        {
+            var targetUser = await _context.Users.FindAsync(userId.Value);
+            if (targetUser == null) return NotFound();
+            if (currentUser != null && !_authorizationService.CanViewDepartmentReports(currentUser, targetUser.DepartmentId))
+            {
+                return Forbid();
+            }
+        }
+
         var query = _context.TestAttempts
             .Include(t => t.User)
             .Include(t => t.Module)
@@ -143,6 +166,14 @@ public class ReportsController : ControllerBase
         if (moduleId.HasValue)
         {
             query = query.Where(t => t.ModuleId == moduleId.Value);
+        }
+
+        if (currentUser != null
+            && _authorizationService.IsDepartmentHead(currentUser)
+            && !_authorizationService.IsAdmin(currentUser)
+            && !_authorizationService.IsHr(currentUser))
+        {
+            query = query.Where(t => t.User.DepartmentId == currentUser.DepartmentId);
         }
 
         var attempts = await query
@@ -183,12 +214,18 @@ public class ReportsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<ActionResult<DepartmentReportDto>> GetDepartmentReport(int departmentId)
     {
+        var currentUser = await this.GetCurrentUserAsync(_context);
         var department = await _context.Departments
             .FirstOrDefaultAsync(d => d.DepartmentId == departmentId);
 
         if (department == null)
         {
             return NotFound();
+        }
+
+        if (currentUser != null && !_authorizationService.CanViewDepartmentReports(currentUser, departmentId))
+        {
+            return Forbid();
         }
 
         var users = await _context.Users

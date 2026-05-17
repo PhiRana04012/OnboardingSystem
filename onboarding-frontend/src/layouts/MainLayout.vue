@@ -167,9 +167,9 @@ const navItems = computed(() => [
   { name: 'Дашборд', to: '/', show: true },
   { name: 'Лидеры', to: '/leaderboard', show: true },
   { name: 'Справки', to: '/faq', show: true },
-  { name: 'Мои подопечные', to: '/mentor', show: authStore.isMentor || authStore.isAdmin },
-  { name: 'Отчёты', to: '/reports', show: authStore.isHR || authStore.isManager || authStore.isAdmin },
-  { name: 'Администрирование', to: '/admin', show: authStore.isAdmin || authStore.isHR }
+  { name: 'Мои подопечные', to: '/mentor', show: authStore.isMentor || authStore.canManageMentees || authStore.isAdmin },
+  { name: 'Отчёты', to: '/reports', show: authStore.canViewDepartmentReports },
+  { name: 'Администрирование', to: '/admin', show: authStore.canManageDepartment }
 ])
 
 const handleLogout = () => {

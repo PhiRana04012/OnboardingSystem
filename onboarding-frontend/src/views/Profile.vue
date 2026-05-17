@@ -16,7 +16,7 @@
           <!-- Инфо -->
           <div class="flex-1 text-center sm:text-left">
             <h2 class="text-2xl font-bold text-gray-900">{{ authStore.currentUser.fullName }}</h2>
-            <p class="text-gray-500 mt-1">{{ authStore.currentUser.jobTitle || 'Должность не указана' }}</p>
+            <p class="text-gray-500 mt-1">{{ jobTitleLabel }}</p>
             <p class="text-gray-400 text-sm">{{ authStore.currentUser.email }}</p>
             <div class="mt-3">
               <span class="inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase"
@@ -196,6 +196,7 @@ import { useAuthStore } from '../stores/auth'
 import { useGamificationStore } from '../stores/gamification'
 import { usersApi } from '../api/services'
 import { getAvatarGradient } from '../utils/avatar'
+import { formatJobTitle } from '../utils/jobTitle'
 
 const authStore = useAuthStore()
 const gamStore = useGamificationStore()
@@ -217,6 +218,10 @@ onMounted(async () => {
     // Загружаем профиль геймификации (XP, уровень, бейджи)
     await gamStore.fetchProfile(authStore.currentUser.userId)
   }
+})
+
+const jobTitleLabel = computed(() => {
+  return formatJobTitle(authStore.currentUser?.jobTitle) || 'Должность не указана'
 })
 
 const initials = computed(() => {

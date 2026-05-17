@@ -22,6 +22,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Department> Departments { get; set; }
 
+    public virtual DbSet<JobTitle> JobTitles { get; set; }
+
     public virtual DbSet<Module> Modules { get; set; }
     
     public virtual DbSet<ModuleDepartment> ModuleDepartments { get; set; }
@@ -45,6 +47,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<UserChecklistItem> UserChecklistItems { get; set; }
     
     public virtual DbSet<FaqEntry> FaqEntries { get; set; }
+    
+    public virtual DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -99,6 +103,13 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.ExternalId)
                 .HasMaxLength(100)
                 .HasColumnName("ExternalID");
+            entity.Property(e => e.HeadUserId).HasColumnName("HeadUserID");
+
+            entity.HasOne(d => d.Head)
+                .WithMany()
+                .HasForeignKey(d => d.HeadUserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Departments_Users_Head");
         });
 
         modelBuilder.Entity<Module>(entity =>
@@ -158,6 +169,17 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.RoleName).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<JobTitle>(entity =>
+        {
+            entity.HasKey(e => e.JobTitleId).HasName("PK__JobTitle__C64C6E0DB3EE15E9");
+
+            entity.HasIndex(e => e.Title, "UQ__JobTitle__A1D5E8A64E51E3C0").IsUnique();
+
+            entity.Property(e => e.JobTitleId).HasColumnName("JobTitleID");
+            entity.Property(e => e.Title).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+        });
+
         modelBuilder.Entity<TestAttempt>(entity =>
         {
             entity.HasKey(e => e.AttemptId).HasName("PK__TestAtte__891A68868F130401");
@@ -194,13 +216,17 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.OnboardingStatus)
                 .HasMaxLength(50)
                 .HasDefaultValue("Не начат");
-            entity.Property(e => e.JobTitle).HasMaxLength(255);
+            entity.Property(e => e.JobTitleId).HasColumnName("JobTitleID");
             entity.Property(e => e.RimsLastSyncDate).HasColumnName("RimsLastSyncDate");
 
             entity.HasOne(d => d.Department).WithMany(p => p.Users)
                 .HasForeignKey(d => d.DepartmentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Users_Departments");
+
+            entity.HasOne(d => d.JobTitle).WithMany(p => p.Users)
+                .HasForeignKey(d => d.JobTitleId)
+                .HasConstraintName("FK_Users_JobTitles");
 
             entity.HasOne(d => d.Mentor).WithMany(p => p.InverseMentor)
                 .HasForeignKey(d => d.MentorId)
@@ -310,6 +336,21 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Answer).IsRequired();
             entity.Property(e => e.Category).HasMaxLength(50).HasDefaultValue("Общее");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+        });
+
+        modelBuilder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasKey(e => e.TokenId);
+            entity.Property(e => e.Token).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+            entity.Property(e => e.IsUsed).HasDefaultValue(false);
+            entity.HasIndex(e => e.Token).IsUnique();
+            
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_PasswordResetTokens_Users");
         });
 
         OnModelCreatingPartial(modelBuilder);

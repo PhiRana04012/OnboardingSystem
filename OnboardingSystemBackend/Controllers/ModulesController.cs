@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
 using OnboardingSystem.Entities;
+using OnboardingSystem.Services;
+using IAppAuthorizationService = OnboardingSystem.Services.IAuthorizationService;
 
 namespace OnboardingSystem.Controllers;
 
@@ -13,11 +15,13 @@ public class ModulesController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<ModulesController> _logger;
+    private readonly IAppAuthorizationService _authorizationService;
 
-    public ModulesController(AppDbContext context, ILogger<ModulesController> logger)
+    public ModulesController(AppDbContext context, ILogger<ModulesController> logger, IAppAuthorizationService authorizationService)
     {
         _context = context;
         _logger = logger;
+        _authorizationService = authorizationService;
     }
 
     /// <summary>
@@ -27,6 +31,17 @@ public class ModulesController : ControllerBase
     [ProducesResponseType(typeof(List<ModuleDto>), 200)]
     public async Task<ActionResult<List<ModuleDto>>> GetModules([FromQuery] int? departmentId, [FromQuery] bool? isMandatory)
     {
+        var currentUser = await this.GetCurrentUserAsync(_context);
+
+        if (currentUser != null
+            && _authorizationService.IsDepartmentHead(currentUser)
+            && !_authorizationService.IsAdmin(currentUser)
+            && !_authorizationService.IsHr(currentUser)
+            )
+        {
+            departmentId = currentUser.DepartmentId;
+        }
+
         var query = _context.Modules
             .Include(m => m.Department)
             .Include(m => m.ModuleDepartments)
@@ -71,6 +86,12 @@ public class ModulesController : ControllerBase
             return NotFound();
         }
 
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        if (currentUser != null && !_authorizationService.CanManageModule(currentUser, module))
+        {
+            return Forbid();
+        }
+
         return Ok(MapModuleToDto(module));
     }
 
@@ -87,6 +108,21 @@ public class ModulesController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        var selectedDepartmentIds = NormalizeDepartmentIds(dto.DepartmentIds, dto.DepartmentId);
+
+        if (currentUser != null
+            && !_authorizationService.IsAdmin(currentUser)
+            && !_authorizationService.IsHr(currentUser))
+        {
+            if (!_authorizationService.IsDepartmentHead(currentUser)
+                || selectedDepartmentIds.Count != 1
+                || selectedDepartmentIds[0] != currentUser.DepartmentId)
+            {
+                return Forbid();
+            }
+        }
+
         var module = new Module
         {
             Title = dto.Title,
@@ -97,7 +133,6 @@ public class ModulesController : ControllerBase
             MaxAttempts = dto.MaxAttempts
         };
 
-        var selectedDepartmentIds = NormalizeDepartmentIds(dto.DepartmentIds, dto.DepartmentId);
         module.DepartmentId = selectedDepartmentIds.Count == 1 ? selectedDepartmentIds[0] : null;
         module.ModuleDepartments = selectedDepartmentIds
             .Select(id => new ModuleDepartment { DepartmentId = id })
@@ -142,6 +177,12 @@ public class ModulesController : ControllerBase
             return NotFound();
         }
 
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        if (currentUser != null && !_authorizationService.CanManageModule(currentUser, module))
+        {
+            return Forbid();
+        }
+
         if (dto.Title != null) module.Title = dto.Title;
         if (dto.Description != null) module.Description = dto.Description;
         if (dto.Content != null) module.Content = dto.Content;
@@ -152,6 +193,19 @@ public class ModulesController : ControllerBase
         if (dto.DepartmentIds != null || dto.DepartmentId.HasValue)
         {
             var selectedDepartmentIds = NormalizeDepartmentIds(dto.DepartmentIds, dto.DepartmentId);
+
+            if (currentUser != null
+                && !_authorizationService.IsAdmin(currentUser)
+                && !_authorizationService.IsHr(currentUser))
+            {
+                if (!_authorizationService.IsDepartmentHead(currentUser)
+                    || selectedDepartmentIds.Count != 1
+                    || selectedDepartmentIds[0] != currentUser.DepartmentId)
+                {
+                    return Forbid();
+                }
+            }
+
             module.ModuleDepartments.Clear();
             foreach (var depId in selectedDepartmentIds)
             {
@@ -178,10 +232,18 @@ public class ModulesController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> DeleteModule(int id)
     {
-        var module = await _context.Modules.FindAsync(id);
+        var module = await _context.Modules
+            .Include(m => m.ModuleDepartments)
+            .FirstOrDefaultAsync(m => m.ModuleId == id);
         if (module == null)
         {
             return NotFound();
+        }
+
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        if (currentUser != null && !_authorizationService.CanManageModule(currentUser, module))
+        {
+            return Forbid();
         }
 
         _context.Modules.Remove(module);

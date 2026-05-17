@@ -9,6 +9,12 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/auth/set-password',
+    name: 'SetPassword',
+    component: () => import('../views/SetPassword.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/',
     component: () => import('../layouts/MainLayout.vue'),
     meta: { requiresAuth: true },
@@ -37,13 +43,13 @@ const routes = [
         path: 'reports',
         name: 'Reports',
         component: () => import('../views/Reports.vue'),
-        meta: { roles: ['HR-специалист', 'Руководитель подразделения', 'Наставник', 'Администратор системы'] }
+        meta: { requiresReportsAccess: true }
       },
       {
         path: 'admin',
         name: 'Admin',
         component: () => import('../views/Admin.vue'),
-        meta: { roles: ['Администратор системы', 'HR-специалист'] }
+        meta: { requiresDepartmentManagement: true }
       },
       {
         path: 'profile',
@@ -88,17 +94,18 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  // Check role-based access
-  if (to.meta.roles) {
-    const hasAccess = to.meta.roles.some(role => authStore.hasRole(role))
-    if (!hasAccess) {
-      next({ name: 'Dashboard' })
-      return
-    }
+  if (to.meta.requiresReportsAccess && !authStore.canViewDepartmentReports) {
+    next({ name: 'Dashboard' })
+    return
+  }
+
+  if (to.meta.requiresDepartmentManagement && !authStore.canManageDepartment) {
+    next({ name: 'Dashboard' })
+    return
   }
 
   // Check mentor specific access
-  if (to.meta.requiresMentor && !authStore.isMentor && !authStore.isAdmin) {
+  if (to.meta.requiresMentor && !authStore.isMentor && !authStore.canManageMentees) {
     next({ name: 'Dashboard' })
     return
   }

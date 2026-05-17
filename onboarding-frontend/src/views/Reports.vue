@@ -26,7 +26,7 @@
           Результаты тестов
         </button>
         <button
-          v-if="authStore.isManager || authStore.isHR"
+          v-if="authStore.isManager || authStore.isHR || authStore.isDepartmentHead || authStore.isAdmin"
           @click="activeTab = 'department'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'department' 
@@ -168,7 +168,7 @@
               @change="loadTestResults"
               class="input w-auto"
             >
-              <option value="">Все сотрудники</option>
+              <option value="">{{ authStore.isDepartmentHead && !authStore.isFullAdmin ? 'Все сотрудники отдела' : 'Все сотрудники' }}</option>
               <option
                 v-for="user in users"
                 :key="user.userId"
@@ -253,6 +253,7 @@
               v-model="selectedDepartmentId"
               @change="loadDepartmentReport"
               class="input w-auto"
+              :disabled="authStore.isDepartmentHead && !authStore.isAdmin && !authStore.isHR"
             >
               <option value="">Выберите подразделение</option>
               <option
@@ -350,6 +351,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { reportsApi, usersApi, departmentsApi, testAttemptsApi } from '../api/services'
+import { filterUsersByAccess } from '../utils/usersAccess'
 
 const authStore = useAuthStore()
 
@@ -376,8 +378,8 @@ onMounted(async () => {
     }
   }
   
-  // Set default department for managers
-  if (authStore.isManager && authStore.currentUser?.departmentId) {
+  // Set default department for managers and department heads
+  if ((authStore.isManager || authStore.isDepartmentHead) && authStore.currentUser?.departmentId) {
     selectedDepartmentId.value = authStore.currentUser.departmentId.toString()
     await loadDepartmentReport()
   }
@@ -388,7 +390,7 @@ onMounted(async () => {
 const loadUsers = async () => {
   try {
     const response = await usersApi.getAll()
-    users.value = response.data
+    users.value = filterUsersByAccess(response.data, authStore)
   } catch (error) {
     console.error('Failed to load users:', error)
   }
@@ -397,7 +399,11 @@ const loadUsers = async () => {
 const loadDepartments = async () => {
   try {
     const response = await departmentsApi.getAll()
-    departments.value = response.data
+    let list = response.data
+    if (authStore.isDepartmentHead && !authStore.isAdmin && !authStore.isHR && authStore.currentUser?.departmentId) {
+      list = list.filter(d => d.departmentId === authStore.currentUser.departmentId)
+    }
+    departments.value = list
   } catch (error) {
     console.error('Failed to load departments:', error)
   }

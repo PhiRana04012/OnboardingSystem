@@ -1,4 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OnboardingSystem.Data;
 using OnboardingSystem.Services;
 using System.Reflection;
@@ -42,10 +45,35 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // Add Export Service
 builder.Services.AddScoped<IReportExportService, ReportExportService>();
 
+// JWT Bearer — токен с логина подставляется в User, фильтрация по ролям в контроллерах
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwtSettings["Key"];
+if (!string.IsNullOrWhiteSpace(jwtKey))
+{
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings["Issuer"],
+                ValidAudience = jwtSettings["Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                ClockSkew = TimeSpan.FromMinutes(1)
+            };
+        });
+    builder.Services.AddAuthorization();
+}
+
 // Add Authentication Services
 builder.Services.AddScoped<PasswordHasher>();
 builder.Services.AddScoped<JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthenticationProvider, LocalAuthProvider>();
+builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddHttpClient("AiMentor")
     .ConfigureHttpClient(client =>
     {
@@ -116,6 +144,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 // CORS must be before UseAuthorization and MapControllers
 app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

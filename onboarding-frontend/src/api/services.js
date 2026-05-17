@@ -9,7 +9,8 @@ export const usersApi = {
   update: (id, data) => identityClient.put(`/users/${id}`, data),
   updateProfile: (id, data) => identityClient.put(`/users/${id}`, data),
   delete: (id) => identityClient.delete(`/users/${id}`),
-  getMentees: (mentorId) => identityClient.get(`/users/mentor/${mentorId}/mentees`)
+  getMentees: (mentorId) => identityClient.get(`/users/mentor/${mentorId}/mentees`),
+  setPassword: (data) => identityClient.post('/users/set-password', data)
 }
 
 // Modules API - Content Service
@@ -67,6 +68,12 @@ export const departmentsApi = {
   delete: (id) => identityClient.delete(`/departments/${id}`)
 }
 
+// Job Titles API - Identity Service
+export const jobTitlesApi = {
+  getAll: () => identityClient.get('/jobtitles'),
+  getById: (id) => identityClient.get(`/jobtitles/${id}`)
+}
+
 // Roles API - Identity Service
 export const rolesApi = {
   getAll: () => identityClient.get('/roles')
@@ -98,7 +105,7 @@ export const checklistsApi = {
   delete: (id) => progressClient.delete(`/checklists/${id}`)
 }
 
-// AI Mentor API - Identity Service
+// AI Mentor API 
 export const aiMentorApi = {
   chat: (message) => identityClient.post('/aimentor/chat', { message })
 }

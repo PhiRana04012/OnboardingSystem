@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
 using OnboardingSystem.Entities;
+using OnboardingSystem.Services;
+using IAppAuthorizationService = OnboardingSystem.Services.IAuthorizationService;
 
 namespace OnboardingSystem.Controllers;
 
@@ -13,12 +15,19 @@ public class QuestionsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<QuestionsController> _logger;
+    private readonly IAppAuthorizationService _authorizationService;
 
-    public QuestionsController(AppDbContext context, ILogger<QuestionsController> logger)
+    public QuestionsController(AppDbContext context, ILogger<QuestionsController> logger, IAppAuthorizationService authorizationService)
     {
         _context = context;
         _logger = logger;
+        _authorizationService = authorizationService;
     }
+
+    private async Task<Module?> GetModuleWithDepartmentsAsync(int moduleId) =>
+        await _context.Modules
+            .Include(m => m.ModuleDepartments)
+            .FirstOrDefaultAsync(m => m.ModuleId == moduleId);
 
     /// <summary>
     /// Получить вопросы по модулю
@@ -27,6 +36,14 @@ public class QuestionsController : ControllerBase
     [ProducesResponseType(typeof(List<QuestionDto>), 200)]
     public async Task<ActionResult<List<QuestionDto>>> GetQuestionsByModule(int moduleId)
     {
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        var module = await GetModuleWithDepartmentsAsync(moduleId);
+        if (module == null) return NotFound();
+        if (currentUser != null && !_authorizationService.CanManageModule(currentUser, module))
+        {
+            return Forbid();
+        }
+
         var questions = await _context.Questions
             .Include(q => q.AnswerOptions)
             .Where(q => q.ModuleId == moduleId)
@@ -137,10 +154,16 @@ public class QuestionsController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var module = await _context.Modules.FindAsync(dto.ModuleId);
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        var module = await GetModuleWithDepartmentsAsync(dto.ModuleId);
         if (module == null)
         {
             return BadRequest("Модуль не найден");
+        }
+
+        if (currentUser != null && !_authorizationService.CanManageModule(currentUser, module))
+        {
+            return Forbid();
         }
 
         if (dto.AnswerOptions.Count < 2)
@@ -206,6 +229,14 @@ public class QuestionsController : ControllerBase
             return NotFound();
         }
 
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        var module = await GetModuleWithDepartmentsAsync(question.ModuleId);
+        if (module == null) return NotFound();
+        if (currentUser != null && !_authorizationService.CanManageModule(currentUser, module))
+        {
+            return Forbid();
+        }
+
         if (dto.QuestionText != null)
         {
             question.QuestionText = dto.QuestionText;
@@ -269,6 +300,14 @@ public class QuestionsController : ControllerBase
         if (question == null)
         {
             return NotFound();
+        }
+
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        var module = await GetModuleWithDepartmentsAsync(question.ModuleId);
+        if (module == null) return NotFound();
+        if (currentUser != null && !_authorizationService.CanManageModule(currentUser, module))
+        {
+            return Forbid();
         }
 
         _context.Questions.Remove(question);

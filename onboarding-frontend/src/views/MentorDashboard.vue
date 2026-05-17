@@ -53,7 +53,7 @@
           </div>
           <div>
             <h3 class="font-bold text-gray-900 line-clamp-1">{{ mentee.fullName }}</h3>
-            <p class="text-xs text-gray-500 line-clamp-1">{{ mentee.jobTitle || 'Должность не указана' }}</p>
+            <p class="text-xs text-gray-500 line-clamp-1">{{ formatJobTitle(mentee.jobTitle) || 'Должность не указана' }}</p>
           </div>
         </div>
 
@@ -93,6 +93,7 @@ import { ref, onMounted, computed } from 'vue'
 import { usersApi } from '../api/services'
 import { useAuthStore } from '../stores/auth'
 import { getAvatarGradient } from '../utils/avatar'
+import { formatJobTitle } from '../utils/jobTitle'
 
 const authStore = useAuthStore()
 const mentees = ref([])

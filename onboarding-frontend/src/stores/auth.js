@@ -17,10 +17,37 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const isNewEmployee = computed(() => hasRole('Новый сотрудник'))
-  const isMentor = computed(() => hasRole('Наставник') || (currentUser.value && currentUser.value.hasMentees))
+  // Наставник определяется по факту наличия подопечных, а не по роли.
+  const isMentor = computed(() => !!(currentUser.value && currentUser.value.hasMentees))
   const isHR = computed(() => hasRole('HR-специалист'))
   const isManager = computed(() => hasRole('Руководитель подразделения'))
   const isAdmin = computed(() => hasRole('Администратор системы'))
+  
+  // Начальник отдела - это пользователь с ролью "User" и должностью "DepartmentHead"
+  const isDepartmentHead = computed(() => {
+    if (!currentUser.value || hasRole('Администратор системы')) return false
+    if (!currentUser.value.jobTitle) return false
+    return currentUser.value.jobTitle.title === 'Начальник отдела' || 
+           currentUser.value.jobTitle.title === 'DepartmentHead'
+  })
+  
+  // Может ли пользователь управлять подопечными в своём отделе
+  const canManageMentees = computed(() => {
+    return isAdmin.value || isDepartmentHead.value
+  })
+  
+  // Может ли пользователь просматривать отчёты по отделу
+  const canViewDepartmentReports = computed(() => {
+    return isAdmin.value || isDepartmentHead.value || isHR.value
+  })
+
+  // Полный доступ (все подразделения): админ и HR
+  const isFullAdmin = computed(() => isAdmin.value || isHR.value)
+
+  // Управление отделом: начальник — свой отдел; админ/HR — все
+  const canManageDepartment = computed(() => {
+    return isFullAdmin.value || isDepartmentHead.value
+  })
 
   const login = async (email, password) => {
     try {
@@ -107,6 +134,11 @@ export const useAuthStore = defineStore('auth', () => {
     isHR,
     isManager,
     isAdmin,
+    isDepartmentHead,
+    canManageMentees,
+    canViewDepartmentReports,
+    isFullAdmin,
+    canManageDepartment,
     hasRole,
     login,
     logout,

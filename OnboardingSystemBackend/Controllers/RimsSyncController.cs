@@ -49,6 +49,9 @@ public class RimsSyncController : ControllerBase
                 .Reference(u => u.Mentor)
                 .LoadAsync(ct);
             await _context.Entry(user)
+                .Reference(u => u.JobTitle)
+                .LoadAsync(ct);
+            await _context.Entry(user)
                 .Collection(u => u.Roles)
                 .LoadAsync(ct);
 
@@ -64,7 +67,8 @@ public class RimsSyncController : ControllerBase
                 MentorName = user.Mentor != null ? user.Mentor.FullName : null,
                 HireDate = user.HireDate,
                 OnboardingStatus = user.OnboardingStatus,
-                JobTitle = user.JobTitle,
+                JobTitleId = user.JobTitleId,
+                JobTitle = user.JobTitle != null ? new JobTitleDto { JobTitleId = user.JobTitle.JobTitleId, Title = user.JobTitle.Title, Description = user.JobTitle.Description } : null,
                 Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>()
             };
 
@@ -115,6 +119,9 @@ public class RimsSyncController : ControllerBase
                 .Reference(u => u.Mentor)
                 .LoadAsync(ct);
             await _context.Entry(user)
+                .Reference(u => u.JobTitle)
+                .LoadAsync(ct);
+            await _context.Entry(user)
                 .Collection(u => u.Roles)
                 .LoadAsync(ct);
 
@@ -130,7 +137,8 @@ public class RimsSyncController : ControllerBase
                 MentorName = user.Mentor != null ? user.Mentor.FullName : null,
                 HireDate = user.HireDate,
                 OnboardingStatus = user.OnboardingStatus,
-                JobTitle = user.JobTitle,
+                JobTitleId = user.JobTitleId,
+                JobTitle = user.JobTitle != null ? new JobTitleDto { JobTitleId = user.JobTitle.JobTitleId, Title = user.JobTitle.Title, Description = user.JobTitle.Description } : null,
                 Roles = user.Roles?.Select(r => r.RoleName).ToList() ?? new List<string>()
             };
 

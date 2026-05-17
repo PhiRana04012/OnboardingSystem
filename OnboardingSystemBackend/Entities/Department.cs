@@ -11,9 +11,13 @@ public partial class Department
 
     public string? ExternalId { get; set; }
 
+    public int? HeadUserId { get; set; }
+
     public virtual ICollection<Module> Modules { get; set; } = new List<Module>();
 
     public virtual ICollection<ModuleDepartment> ModuleDepartments { get; set; } = new List<ModuleDepartment>();
 
     public virtual ICollection<User> Users { get; set; } = new List<User>();
+
+    public virtual User? Head { get; set; }
 }

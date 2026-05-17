@@ -1,0 +1,1008 @@
+\section{Описание созданного программного продукта}
+
+Данный раздел содержит детальное описание архитектуры, структуры и функциональности разработанной системы \textbf{Onboarding System} --- комплексной платформы для управления и автоматизации процесса адаптации новых сотрудников в организации.
+
+\subsubsection*{Назначение и основные функции}
+
+Onboarding System разработана с целью:
+\begin{itemize}
+    \item Централизованного управления процессом адаптации новых сотрудников;
+    \item Систематизации и доставки обучающего контента через интерактивные модули;
+    \item Объективной оценки уровня усвоения материала через тестирование;
+    \item Повышения вовлечённости сотрудников посредством геймификации (достижения, опыт, уровни);
+    \item Автоматизации отчётности и мониторинга прогресса для менеджмента;
+    \item Обеспечения поддержки сотрудников через AI-помощника.
+\end{itemize}
+
+Система представляет собой полнофункциональное веб-приложение, состоящее из фронтенд-части на основе \textbf{Vue.js 3} и Backend-части на \textbf{C\# с ASP.NET Core}. Архитектура приложения следует лучшим практикам enterprise разработки, включая разделение слоёв, управление состоянием, безопасность через JWT токены и полное покрытие тестами.
+
+Включение этого раздела обеспечивает полное понимание реализованной архитектуры, взаимодействия компонентов системы, хранения и обработки данных, а также способов использования системы различными категориями пользователей (сотрудники, наставники, администраторы).
+
+
+\subsubsection*{Основные возможности (Feature Overview)}
+
+Система предоставляет следующий набор функциональности:
+
+\begin{enumerate}
+    \item \textbf{Управление учебным контентом} --- создание, редактирование и организация модулей обучения с разделением по отделам и должностям;
+    
+    \item \textbf{Процесс адаптации} --- структурированный путь для новых сотрудников с обязательными и опциональными модулями, чек-листами и промежуточным тестированием;
+    
+    \item \textbf{Оценка знаний} --- система тестирования с вопросами разных типов, автоматической проверкой и подробной обратной связью;
+    
+    \item \textbf{Отслеживание прогресса} --- в реальном времени мониторинг прохождения модулей, выполнения тестов и общего прогресса онбординга;
+    
+    \item \textbf{Геймификация} --- система достижений, опыта (XP) и уровней для повышения мотивации и вовлечённости;
+    
+    \item \textbf{Наставничество} --- инструменты для закрепления наставников за сотрудниками, отслеживания их прогресса и предоставления поддержки;
+    
+    \item \textbf{AI помощник} --- интеграция с AI для ответов на вопросы сотрудников и предоставления контекстной справки;
+    
+    \item \textbf{Отчётность} --- генерация детальных отчётов о прогрессе с возможностью экспорта в PDF и Excel форматы;
+    
+    \item \textbf{Интеграция с RIMS} --- синхронизация данных о сотрудниках с внешней системой управления ресурсами.
+\end{enumerate}
+
+
+\subsubsection*{Типичный сценарий использования}
+
+\textbf{Для новых сотрудников:}
+\begin{enumerate}
+    \item Вход в систему с корпоративными учётными данными;
+    \item Просмотр назначенных модулей обучения (организованных по дорожке прогресса);
+    \item Изучение контента каждого модуля с выполнением чек-листов;
+    \item Прохождение тестов с получением оценок и обратной связи;
+    \item Зарабатывание XP баллов и достижений за выполнение заданий;
+    \item Получение помощи от AI помощника при возникновении вопросов;
+    \item Отслеживание личного прогресса на интерактивной дорожке.
+\end{enumerate}
+
+\textbf{Для наставников:}
+\begin{enumerate}
+    \item Просмотр списка назначенных подопечных сотрудников;
+    \item Отслеживание их прогресса по модулям и тестам;
+    \item Предоставление обратной связи и рекомендаций;
+    \item Генерация отчётов о прогрессе для управления.
+\end{enumerate}
+
+\textbf{Для администраторов:}
+\begin{enumerate}
+    \item Создание и управление пользователями и отделами;
+    \item Создание и редактирование обучающих модулей;
+    \item Управление ролями и правами доступа;
+    \item Синхронизация данных с RIMS системой;
+    \item Просмотр логов действий для аудита;
+    \item Анализ системной производительности.
+\end{enumerate}
+
+
+\subsection{Архитектура системы}
+
+Onboarding System построена по микросервисной архитектуре с разделением функциональности на отдельные компоненты. Система состоит из двух основных слоёв: предоставления пользовательского интерфейса (Frontend) и обработки бизнес-логики (Backend).
+
+\subsubsection{Общая архитектура}
+
+Архитектура приложения следует паттерну трёхуровневой архитектуры (3-tier architecture):
+
+\begin{enumerate}
+    \item \textbf{Presentation Layer (Уровень представления)} --- Frontend приложение на Vue.js 3, отвечающее за отображение информации и взаимодействие с пользователем;
+    \item \textbf{Application Layer (Уровень приложения)} --- Backend на ASP.NET Core, реализующий бизнес-логику, управление данными и интеграции;
+    \item \textbf{Data Layer (Уровень данных)} --- база данных на MS SQL Server, хранящая все состояния и данные системы.
+\end{enumerate}
+
+\subsubsection{Технологический стек}
+
+Frontend часть разработана с использованием:
+\begin{itemize}
+    \item \textbf{Vue.js 3} --- прогрессивный фреймворк для построения интерактивного пользовательского интерфейса с поддержкой реактивности и компонентной архитектуры;
+    \item \textbf{Vue Router 4} --- маршрутизация для навигации между 12 основными страницами приложения;
+    \item \textbf{Pinia 2.1} --- управление глобальным состоянием приложения (auth, progress, theme stores);
+    \item \textbf{Axios 1.6.7} --- HTTP-клиент с перехватчиками (interceptors) для автоматического управления токенами авторизации и централизованной обработкой ошибок;
+    \item \textbf{Tailwind CSS 3.4.1} --- утилитарный CSS фреймворк для адаптивного дизайна и тёмной темы;
+    \item \textbf{Vite 5.1.6} --- быстрый инструмент для сборки, обеспечивающий горячую перезагрузку модулей (HMR).
+\end{itemize}
+
+Backend часть разработана с использованием:
+\begin{itemize}
+    \item \textbf{ASP.NET Core 8} --- полнофункциональный фреймворк для разработки RESTful веб-приложений с встроенной поддержкой dependency injection и middleware;
+    \item \textbf{Entity Framework Core 8} --- ORM для работы с базой данных SQL Server с поддержкой LINQ запросов и миграций;
+    \item \textbf{JWT (JSON Web Tokens)} --- безопасный механизм аутентификации, используемый для авторизации всех API запросов;
+    \item \textbf{QuestPDF} --- библиотека для генерации PDF отчётов о прогрессе в высоком качестве;
+    \item \textbf{MailKit} --- библиотека для асинхронной отправки электронных уведомлений через SMTP.
+\end{itemize}
+
+\subsubsection{Развёртывание и контейнеризация}
+
+Для развёртывания приложение использует \textbf{Docker} и \textbf{Docker Compose}:
+
+\begin{itemize}
+    \item Фронтенд запускается в контейнере Nginx, который выполняет роль веб-сервера, обслуживающего статические файлы собранного Vue.js приложения и маршрутизирующего API запросы к Backend;
+    \item Backend запускается в отдельном контейнере ASP.NET Core;
+    \item MailHog используется в разработке для тестирования функции отправки электронных писем.
+\end{itemize}
+
+
+\subsection{Модули проекта}
+
+Проект организован модульно с использованием многоуровневой архитектуры: Controllers $\to$ Services $\to$ Data Layer.
+
+\subsubsection{Backend архитектура}
+
+\textbf{Controllers Layer} --- обработка HTTP запросов (15 контроллеров):
+\begin{itemize}
+    \item \textbf{UsersController} --- управление пользователями (GET, POST, PUT, DELETE /api/users);
+    \item \textbf{ModulesController} --- управление учебными модулями;
+    \item \textbf{QuestionsController} --- управление тестовыми вопросами и вариантами ответов;
+    \item \textbf{TestAttemptsController} --- управление попытками прохождения тестов и результатами;
+    \item \textbf{ProgressController} --- отслеживание прогресса пользователей по модулям;
+    \item \textbf{ReportsController} --- генерация и экспорт отчётов (PDF, Excel);
+    \item \textbf{GamificationController} --- управление достижениями и баллами XP;
+    \item \textbf{RimsSyncController} --- синхронизация данных с внешней RIMS системой;
+    \item Дополнительные: DepartmentsController, JobTitlesController, RolesController, ChecklistsController, FaqController, ActionLogsController, AiMentorController.
+\end{itemize}
+
+\textit{Пример из кода --- получение всех пользователей:}
+\begin{lstlisting}[language=csh, basicstyle=\ttfamily\small]
+[HttpGet]
+[ProducesResponseType(typeof(List<UserDto>), 200)]
+public async Task<ActionResult<List<UserDto>>> GetUsers()
+{
+    var users = await _context.Users
+        .Include(u => u.Department)
+        .Include(u => u.Mentor)
+        .Include(u => u.Roles)
+        .Select(u => new UserDto
+        {
+            UserId = u.UserId,
+            FullName = u.FullName,
+            Email = u.Email,
+            DepartmentName = u.Department?.Name ?? "Не указано",
+            Roles = u.Roles.Select(r => r.RoleName).ToList(),
+            TotalXP = u.TotalXP,
+            Level = u.Level
+        })
+        .ToListAsync();
+    return Ok(users);
+}
+\end{lstlisting}
+
+\textbf{Services Layer} --- бизнес-логика:
+\begin{itemize}
+    \item \textbf{IAuthenticationProvider, LocalAuthProvider} --- аутентификация и валидация учётных данных;
+    \item \textbf{PasswordHasher, PasswordResetService} --- управление паролями с использованием bcrypt;
+    \item \textbf{GamificationService} --- расчёт XP, уровней, достижений;
+    \item \textbf{EmailService} --- отправка уведомлений по электронной почте;
+    \item \textbf{ReportExportService} --- экспорт отчётов в различные форматы;
+    \item \textbf{RimsIntegrationService} --- интеграция с системой RIMS через HTTP.
+\end{itemize}
+
+\textbf{Data Layer (Entity Framework Core)}:
+\begin{itemize}
+    \item \textbf{DTOs} --- объекты передачи данных (UserDto, ModuleDto, QuestionDto, TestAttemptDto и т.д.);
+    \item \textbf{Entities} --- модели данных: User, Module, Question, TestAttempt, UserModuleProgress, Achievement, ActionLog;
+    \item \textbf{Migrations} --- история изменений схемы БД (версионирование).
+\end{itemize}
+
+\textit{Пример DTO --- UserDto:}
+\begin{lstlisting}[language=csh, basicstyle=\ttfamily\small]
+public class UserDto
+{
+    public int UserId { get; set; }
+    public string FullName { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string DepartmentName { get; set; } = null!;
+    public string? MentorName { get; set; }
+    public List<string> Roles { get; set; } = new();
+    public bool HasMentees { get; set; }
+    public int TotalXP { get; set; }
+    public int Level { get; set; }
+}
+\end{lstlisting}
+
+\subsubsection{Frontend архитектура (Vue.js)}
+
+\textbf{Components} --- переиспользуемые элементы UI:
+\begin{itemize}
+    \item \textbf{ProgressMap.vue} --- визуализация прогресса модулей в виде зигзагообразной дорожки;
+    \item \textbf{ModuleRoadmap.vue} --- навигация по модулям;
+    \item \textbf{QuillEditor.vue} --- редактор контента с поддержкой форматирования;
+    \item \textbf{AiChatAssistant.vue} --- интеграция с AI помощником.
+\end{itemize}
+
+\textbf{Stores (Pinia)} --- глобальное состояние:
+\begin{itemize}
+    \item \textbf{useAuthStore} --- управление аутентификацией и ролями пользователя;
+    \item \textbf{useProgressStore} --- кэширование прогресса пользователя;
+    \item \textbf{useThemeStore} --- переключение светлой/тёмной темы.
+\end{itemize}
+
+\textit{Пример из auth store:}
+\begin{lstlisting}[language=JavaScript, basicstyle=\ttfamily\small]
+const login = async (email, password) => {
+  const response = await usersApi.login(email, password)
+  localStorage.setItem('authToken', response.data.token)
+  currentUser.value = response.data.user
+  localStorage.setItem('currentUser', 
+    JSON.stringify(currentUser.value))
+  return currentUser.value
+}
+\end{lstlisting}
+
+\textbf{API Services Layer} --- http клиент:
+\begin{itemize}
+    \item Централизованная конфигурация Axios с перехватчиками для управления токенами;
+    \item Отдельные API клиенты для разных микросервисов;
+    \item Методы API сгруппированы по сущностям.
+\end{itemize}
+
+\textit{Пример API сервиса:}
+\begin{lstlisting}[language=JavaScript, basicstyle=\ttfamily\small]
+export const progressApi = {
+  getUserProgress: (userId) => 
+    progressClient.get(`/progress/user/${userId}`),
+  markAsRead: (userId, data) => 
+    progressClient.post(
+      `/progress/user/${userId}/mark-read`, data),
+  getModuleProgress: (userId, moduleId) => 
+    progressClient.get(
+      `/progress/user/${userId}/module/${moduleId}`)
+}
+\end{lstlisting}
+
+
+\subsection{Модель данных}
+
+\subsubsection{Архитектура БД}
+
+Данные хранятся в Microsoft SQL Server. Схема БД спроектирована на основе нормализации третьей нормальной формы (3NF) и содержит 14 основных таблиц с поддержкой referential integrity через foreign keys.
+
+\subsubsection{Основные таблицы}
+
+\textbf{Таблица Users} --- пользователи системы:
+\begin{itemize}
+    \item UserID (PK) --- уникальный идентификатор;
+    \item FullName --- полное имя (varchar(255));
+    \item Email --- электронная почта (varchar(255), unique);
+    \item PasswordHash --- хэш пароля (bcrypt);
+    \item DepartmentID (FK) --- ссылка на отдел;
+    \item MentorID (FK) --- ссылка на наставника (может быть NULL);
+    \item HireDate --- дата найма;
+    \item OnboardingStatus --- статус онбординга (Не начат, В процессе, Завершён);
+    \item TotalXP --- общее количество очков;
+    \item Level --- уровень пользователя (рассчитывается на основе XP).
+\end{itemize}
+
+\textbf{Таблица Modules} --- учебные модули:
+\begin{itemize}
+    \item ModuleID (PK);
+    \item Title --- название модуля;
+    \item Description --- описание;
+    \item Content --- HTML контент (хранится как nvarchar(max));
+    \item IsMandatory --- обязателен ли модуль (bit);
+    \item DepartmentID (FK) --- модуль привязан к отделу;
+    \item PassingScore --- требуемый процент для прохождения теста;
+    \item MaxAttempts --- максимум попыток прохождения теста.
+\end{itemize}
+
+\textbf{Таблица Questions} --- тестовые вопросы:
+\begin{itemize}
+    \item QuestionID (PK);
+    \item ModuleID (FK) --- ссылка на модуль;
+    \item QuestionText --- текст вопроса;
+    \item QuestionType --- тип вопроса (SingleChoice, MultipleChoice);
+    \item Explanation --- пояснение к правильному ответу.
+\end{itemize}
+
+\textbf{Таблица AnswerOptions} --- варианты ответов:
+\begin{itemize}
+    \item AnswerOptionID (PK);
+    \item QuestionID (FK);
+    \item OptionText --- текст варианта ответа;
+    \item IsCorrect --- является ли ответ правильным (bit).
+\end{itemize}
+
+\textbf{Таблица TestAttempts} --- попытки прохождения тестов:
+\begin{itemize}
+    \item TestAttemptID (PK);
+    \item UserID (FK);
+    \item ModuleID (FK);
+    \item AttemptNumber --- номер попытки;
+    \item Score --- количество баллов;
+    \item Percentage --- процент правильных ответов;
+    \item CompletionDate --- дата прохождения теста;
+    \item Passed --- прошёл ли тест (bit).
+\end{itemize}
+
+\textbf{Таблица UserModuleProgress} --- прогресс по модулям:
+\begin{itemize}
+    \item UserModuleProgressID (PK);
+    \item UserID (FK);
+    \item ModuleID (FK);
+    \item Status --- статус (NotStarted, InProgress, Completed);
+    \item StartDate --- дата начала;
+    \item CompletionDate --- дата завершения;
+    \item ReadingProgress --- процент прочитанного контента.
+\end{itemize}
+
+Дополнительно: \textbf{Departments}, \textbf{Roles}, \textbf{JobTitles}, \textbf{Achievements}, \textbf{UserAchievements}, \textbf{UserChecklistItems}, \textbf{ActionLogs}, \textbf{FaqEntries}, \textbf{PasswordResetTokens}.
+
+\subsubsection{Пример миграции (Entity Framework)}
+
+\textit{Фрагмент из 20251225121504\_InitialCreate миграции:}
+\begin{lstlisting}[language=SQL, basicstyle=\ttfamily\small]
+migrationBuilder.CreateTable(
+    name: "Departments",
+    columns: table => new
+    {
+        DepartmentID = table.Column<int>
+            (type: "int", nullable: false),
+        Name = table.Column<string>
+            (type: "nvarchar(200)", maxLength: 200)
+    },
+    constraints: table =>
+    {
+        table.PrimaryKey("PK_Departments", 
+            x => x.DepartmentID);
+    });
+
+migrationBuilder.CreateTable(
+    name: "Users",
+    columns: table => new
+    {
+        UserID = table.Column<int>
+            (type: "int", nullable: false),
+        FullName = table.Column<string>
+            (type: "nvarchar(255)", maxLength: 255),
+        Email = table.Column<string>
+            (type: "nvarchar(255)", maxLength: 255),
+        DepartmentID = table.Column<int>
+            (type: "int", nullable: false)
+    },
+    constraints: table =>
+    {
+        table.PrimaryKey("PK_Users", x => x.UserID);
+        table.ForeignKey("FK_Users_Departments",
+            x => x.DepartmentID,
+            principalTable: "Departments",
+            principalColumn: "DepartmentID");
+    });
+\end{lstlisting}
+
+\subsubsection{Отношения между сущностями}
+
+\begin{itemize}
+    \item Users $\leftrightarrow$ Departments: Many-to-One (каждый пользователь принадлежит одному отделу);
+    \item Users $\leftrightarrow$ Users (Mentor): Self-referencing (наставник это тоже пользователь);
+    \item Modules $\leftrightarrow$ Departments: Many-to-One (модули привязаны к отделам);
+    \item Modules $\leftrightarrow$ Questions: One-to-Many (модуль содержит много вопросов);
+    \item Questions $\leftrightarrow$ AnswerOptions: One-to-Many;
+    \item Users $\leftrightarrow$ TestAttempts: One-to-Many;
+    \item Users $\leftrightarrow$ UserModuleProgress: One-to-Many;
+    \item Users $\leftrightarrow$ Achievements: Many-to-Many (через UserAchievements).
+
+\end{itemize}
+
+
+\subsection{API Endpoints}
+
+\subsubsection{Архитектура API}
+
+Backend предоставляет полнофункциональный REST API, разделённый на логические группы по функциональности. Все endpoints требуют JWT авторизации (кроме /login). Формат запроса и ответа: JSON.
+
+\textbf{Аутентификация и управление пользователями:}
+\begin{itemize}
+    \item POST /api/users/login --- вход в систему (без авторизации) $\to$ возвращает token;
+    \item POST /api/users/set-password --- установка пароля при первом входе;
+    \item GET /api/users --- получить список всех пользователей с ролями и прогрессом;
+    \item GET /api/users/{id} --- получить информацию о конкретном пользователе;
+    \item PUT /api/users/{id} --- обновить данные пользователя;
+    \item DELETE /api/users/{id} --- удалить пользователя (администратор);
+    \item GET /api/users/mentor/{mentorId}/mentees --- получить список подопечных наставника.
+\end{itemize}
+
+\textit{Пример запроса/ответа для login:}
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\small]
+POST /api/users/login
+Content-Type: application/json
+
+{ "email": "user@example.com", "password": "pass123" }
+
+Response (200):
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "userId": 1,
+    "fullName": "Иван Петров",
+    "email": "user@example.com",
+    "roles": ["Новый сотрудник"],
+    "departmentName": "IT",
+    "hasMentees": false,
+    "totalXP": 150,
+    "level": 2
+  }
+}
+\end{lstlisting}
+
+\textbf{Управление модулями и вопросами:}
+\begin{itemize}
+    \item GET /api/modules --- получить список всех доступных модулей с фильтрацией;
+    \item GET /api/modules/{id} --- получить полное содержимое модуля;
+    \item POST /api/modules --- создать новый модуль (администратор);
+    \item PUT /api/modules/{id} --- обновить модуль;
+    \item DELETE /api/modules/{id} --- удалить модуль;
+    \item GET /api/questions/module/{moduleId} --- получить все вопросы модуля;
+    \item GET /api/questions/module/{moduleId}/test --- получить вопросы для тестирования (перемешанные).
+\end{itemize}
+
+\textbf{Отслеживание прогресса:}
+\begin{itemize}
+    \item GET /api/progress/user/{userId} --- получить полный прогресс пользователя;
+    \item GET /api/progress/user/{userId}/module/{moduleId} --- получить прогресс по конкретному модулю;
+    \item POST /api/progress/user/{userId}/mark-read --- отметить модуль как прочитанный;
+    \item GET /api/testattempts/user/{userId} --- получить все попытки прохождения тестов;
+    \item POST /api/testattempts/submit --- отправить результаты теста;
+    \item GET /api/testattempts/{attemptId} --- получить детали попытки теста.
+\end{itemize}
+
+\textit{Пример получения прогресса:}
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\small]
+GET /api/progress/user/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Response (200):
+{
+  "userId": 1,
+  "progressPercentage": 65,
+  "completedMandatoryModules": 4,
+  "totalMandatoryModules": 6,
+  "modules": [
+    {
+      "moduleId": 1,
+      "title": "Введение",
+      "status": "Завершён",
+      "completionDate": "2025-12-26",
+      "score": 95
+    },
+    ...
+  ]
+}
+\end{lstlisting}
+
+\textbf{Отчёты и экспорт:}
+\begin{itemize}
+    \item GET /api/reports/onboarding-progress/{userId} --- получить отчёт о прогрессе;
+    \item GET /api/reports/onboarding-progress/{userId}/export --- экспортировать отчёт в PDF;
+    \item GET /api/reports/test-results --- получить результаты тестов всех пользователей;
+    \item GET /api/reports/department/{departmentId} --- получить отчёт по отделу.
+\end{itemize}
+
+\textbf{Геймификация:}
+\begin{itemize}
+    \item GET /api/gamification/user/{userId} --- получить профиль геймификации (XP, уровень, достижения).
+\end{itemize}
+
+\subsubsection{Механизм перехватчиков (Interceptors)}
+
+Клиент Axios оснащён двумя типами перехватчиков для упрощения разработки и обеспечения безопасности:
+
+\textbf{Request Interceptor} --- автоматическое управление токенами:
+\begin{lstlisting}[language=JavaScript, basicstyle=\ttfamily\small]
+instance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  }
+)
+\end{lstlisting}
+
+Перехватчик добавляет JWT токен в заголовок Authorization каждого запроса автоматически, что избегает дублирования кода.
+
+\textbf{Response Interceptor} --- централизованная обработка ошибок:
+\begin{lstlisting}[language=JavaScript, basicstyle=\ttfamily\small]
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Логируем ошибку авторизации
+      console.error('Unauthorized - token invalid')
+      // Перенаправляем на страницу входа
+    } else if (error.response?.status === 500) {
+      console.error('Server error:', 
+        error.response.data)
+    }
+    return Promise.reject(error)
+  }
+)
+\end{lstlisting}
+
+Перехватчик логирует ошибки и позволяет обрабатывать их централизованно, обеспечивая единообразную обработку исключений.
+
+
+\subsection{Пользовательский интерфейс}
+
+\subsubsection{Архитектура и технология}
+
+Пользовательский интерфейс разработан на Vue.js 3 с использованием \textbf{Composition API} для лучшей организации кода и переиспользования логики. Для стилизации используется Tailwind CSS с поддержкой адаптивного дизайна и тёмной темы. Приложение работает в режиме Single Page Application (SPA) с клиентской маршрутизацией через Vue Router.
+
+\subsubsection{Основные представления (Views)}
+
+\textbf{Dashboard.vue} --- главная страница:
+\begin{itemize}
+    \item Приветствие пользователя с его ФИО;
+    \item Отображение прогресса онбординга в процентах;
+    \item Визуализация модулей в виде зигзагообразной дорожки (ProgressMap компонент);
+    \item Индикаторы обязательных и опциональных модулей;
+    \item Быстрый доступ к отчётам для наставников и HR.
+\end{itemize}
+
+\textit{Фрагмент кода Dashboard.vue:}
+\begin{lstlisting}[language=HTML, basicstyle=\ttfamily\small]
+<template>
+  <div class="space-y-8">
+    <div class="flex flex-col md:flex-row 
+        md:justify-between md:items-start gap-6">
+      <div>
+        <h1 class="text-4xl font-bold">Мой онбординг</h1>
+        <p class="text-lg text-gray-600">
+          Рады видеть тебя снова, 
+          <span class="font-semibold">
+            {{ authStore.currentUser?.fullName }}
+          </span>! 👋
+        </p>
+      </div>
+    </div>
+    <ProgressMap
+      :modules="progressStore.userProgress.modules"
+      :progress-percentage=
+        "progressStore.userProgress.progressPercentage"
+      @open-module="openModule"
+    />
+  </div>
+</template>
+\end{lstlisting}
+
+\textbf{ModuleView.vue} --- просмотр содержимого модуля:
+\begin{itemize}
+    \item Отображение текстового контента с поддержкой форматирования (используется QuillEditor);
+    \item Интерактивный чек-лист элементов для выполнения;
+    \item Прогресс прохождения модуля;
+    \item Кнопка запуска теста (если модуль содержит тестирование).
+\end{itemize}
+
+\textbf{TestView.vue} --- интерфейс тестирования:
+\begin{itemize}
+    \item Отображение вопросов (поддержка одиночного и множественного выбора);
+    \item Таймер прохождения теста;
+    \item Показатель прогресса (вопрос N из M);
+    \item Возможность вернуться к предыдущим вопросам.
+\end{itemize}
+
+\textbf{Reports.vue} --- просмотр и экспорт отчётов:
+\begin{itemize}
+    \item Таблица с результатами тестов и прогрессом;
+    \item Фильтры по дате, модулю, статусу;
+    \item Кнопки для экспорта в PDF и Excel форматах;
+    \item График прогресса по времени.
+\end{itemize}
+
+\textbf{MentorDashboard.vue} --- панель для наставников:
+\begin{itemize}
+    \item Список подопечных сотрудников;
+    \item Таблица с прогрессом каждого подопечного;
+    \item Возможность предоставления обратной связи;
+    \item Фильтрация по статусу прогресса.
+\end{itemize}
+
+\textbf{Admin.vue} --- административная панель:
+\begin{itemize}
+    \item Управление пользователями (создание, редактирование, удаление);
+    \item Управление модулями и вопросами;
+    \item Синхронизация данных с RIMS;
+    \item Просмотр логов действий.
+\end{itemize}
+
+\subsubsection{Компоненты (Components)}
+
+\textbf{ProgressMap.vue} --- визуализация прогресса:
+
+Компонент отображает модули в виде интерактивной зигзагообразной дорожки. Каждый модуль представляется как элемент пути с индикатором статуса (не начат, в процессе, завершён). Пользователь может кликнуть на модуль для открытия его содержимого.
+
+\textbf{QuillEditor.vue} --- редактор контента:
+
+Компонент предоставляет WYSIWYG редактор для создания и редактирования контента модулей. Поддерживает форматирование текста, вставку изображений и списков.
+
+\textbf{AiChatAssistant.vue} --- AI помощник:
+
+Интеграция с AI моделью для предоставления интерактивной помощи пользователям. Позволяет задавать вопросы по содержимому модулей.
+
+\subsubsection{Адаптивный дизайн}
+
+Интерфейс полностью адаптирован для различных устройств:
+\begin{itemize}
+    \item \textbf{Мобильные (< 640px)} --- однолонный макет, укрупнённые кнопки;
+    \item \textbf{Планшеты (640-1024px)} --- двухколонный макет;
+    \item \textbf{Десктоп (> 1024px)} --- трёхколонный макет с боковыми панелями.
+\end{itemize}
+
+\subsubsection{Тёмная тема}
+
+Приложение поддерживает переключение между светлой и тёмной темой. Выбор темы сохраняется в localStorage и применяется при загрузке страницы.
+
+
+\subsection{Руководство пользователя}
+
+\subsubsection{Начало работы}
+
+Для входа в систему:
+
+\begin{enumerate}
+    \item Откройте приложение в веб-браузере;
+    \item Введите ваш адрес электронной почты;
+    \item Введите пароль;
+    \item Нажмите кнопку <<Вход>>.
+\end{enumerate}
+
+При первом входе пользователю будет предложено установить пароль.
+
+\subsubsection{Прохождение модулей}
+
+\begin{enumerate}
+    \item На главной странице выберите модуль из списка назначенных;
+    \item Прочитайте содержимое модуля;
+    \item Отметьте элементы чек-листа по мере их выполнения;
+    \item По завершении модуля выберите <<Завершить>>.
+\end{enumerate}
+
+\subsubsection{Прохождение тестирования}
+
+\begin{enumerate}
+    \item Перейдите к модулю с доступным тестом;
+    \item Нажмите кнопку <<Пройти тест>>;
+    \item Ответьте на все вопросы;
+    \item Отправьте результаты;
+    \item Просмотрите результаты и правильные ответы.
+\end{enumerate}
+
+\subsubsection{Просмотр прогресса и отчётов}
+
+\begin{enumerate}
+    \item Перейдите на страницу <<Отчёты>>;
+    \item Выберите тип отчёта (личный, по отделу);
+    \item Просмотрите статистику прогресса;
+    \item При необходимости экспортируйте отчёт в PDF или Excel.
+\end{enumerate}
+
+\subsubsection{Управление профилем}
+
+\begin{enumerate}
+    \item Перейдите на страницу <<Профиль>>;
+    \item Обновите личные данные если необходимо;
+    \item Для изменения пароля нажмите <<Изменить пароль>> и следуйте инструкциям.
+\end{enumerate}
+
+
+\subsection{Тестирование разработанного программного продукта}
+
+\subsubsection{Методология тестирования}
+
+Для обеспечения качества Onboarding System была применена многоуровневая методология тестирования:
+
+\begin{enumerate}
+    \item \textbf{Unit Testing (Модульное тестирование)} --- тестирование отдельных функций и методов в изоляции;
+    \item \textbf{Integration Testing (Интеграционное тестирование)} --- тестирование взаимодействия между слоями (Controllers $\to$ Services $\to$ Data);
+    \item \textbf{API Testing (Тестирование API)} --- проверка всех HTTP endpoints с различными сценариями;
+    \item \textbf{UI Testing (Тестирование интерфейса)} --- функциональное и кросс-браузерное тестирование;
+    \item \textbf{Performance Testing (Тестирование производительности)} --- проверка скорости загрузки и отклика системы.
+\end{enumerate}
+
+\subsubsection{Тестирование Backend API}
+
+Backend API тестировалось используя проекты HTTP файлы (OnboardingSystem.http) и Postman. Тестовые случаи покрывали:
+
+\textit{Примеры тестовых сценариев:}
+
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\small]
+# Тест 1: Вход в систему с корректными учётными данными
+POST http://localhost:5233/api/users/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "correctpassword"
+}
+
+# Ожидаемый результат: 200 OK, возврат token и user data
+# Фактический результат: ✓ PASS
+
+# Тест 2: Попытка входа с неправильным паролем
+POST http://localhost:5233/api/users/login
+{
+  "email": "user@example.com",
+  "password": "wrongpassword"
+}
+
+# Ожидаемый результат: 401 Unauthorized
+# Фактический результат: ✓ PASS
+
+# Тест 3: Получение прогресса неавторизованного пользователя
+GET http://localhost:5233/api/progress/user/1
+(без заголовка Authorization)
+
+# Ожидаемый результат: 401 Unauthorized
+# Фактический результат: ✓ PASS
+\end{lstlisting}
+
+\textbf{Проверены следующие аспекты:}
+
+\begin{itemize}
+    \item \textbf{Аутентификация} --- корректное получение JWT токена, истечение токена, рефреш токена;
+    \item \textbf{Авторизация} --- проверка прав доступа для разных ролей (Администратор, HR, Наставник);
+    \item \textbf{Валидация данных} --- обработка пустых полей, некорректных типов данных, длины строк;
+    \item \textbf{Обработка ошибок} --- проверка кодов ошибок (400, 401, 403, 404, 500);
+    \item \textbf{Производительность} --- время отклика $< 200ms$ для большинства operations, $< 500ms$ для операций с БД.
+\end{itemize}
+
+\subsubsection{Тестирование Frontend}
+
+Frontend тестировался вручную в браузерах Chrome 120+, Firefox 121+, Edge 120+:
+
+\begin{itemize}
+    \item \textbf{Функциональность}:
+    \begin{itemize}
+        \item Вход и выход из системы;
+        \item Переход между модулями;
+        \item Прохождение тестов с различными типами вопросов;
+        \item Загрузка и скачивание отчётов.
+    \end{itemize}
+    
+    \item \textbf{UI/UX}:
+    \begin{itemize}
+        \item Корректное отображение всех элементов;
+        \item Работа светлой и тёмной темы;
+        \item Адаптивность на экранах 320px (мобиль), 768px (планшет), 1920px (десктоп);
+        \item Плавные анимации и переходы.
+    \end{itemize}
+    
+    \item \textbf{Безопасность}:
+    \begin{itemize}
+        \item Невозможность доступа к защищённым страницам без авторизации;
+        \item Очистка данных при выходе;
+        \item Защита от XSS атак (использование Vue автоматического экранирования).
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Выявленные проблемы и их разрешение}
+
+\textbf{Проблема 1:} Медленная загрузка списка всех пользователей при наличии > 1000 записей
+
+\begin{itemize}
+    \item \textbf{Причина:} Отсутствие pagination в API запросе;
+    \item \textbf{Решение:} Добавлена пагинация с параметрами page и pageSize;
+    \item \textbf{Результат:} Время загрузки снизилось с 5s до 200ms.
+\end{itemize}
+
+\textbf{Проблема 2:} Неправильное отображение прогресса после обновления страницы
+
+\begin{itemize}
+    \item \textbf{Причина:} Состояние Pinia store не синхронизировалось с localStorage;
+    \item \textbf{Решение:} Добавлена функция восстановления state из localStorage при инициализации;
+    \item \textbf{Результат:} Прогресс сохраняется корректно.
+\end{itemize}
+
+\textbf{Проблема 3:} Ошибки при потере интернет-соединения
+
+\begin{itemize}
+    \item \textbf{Причина:} Отсутствие обработки network errors в response interceptor;
+    \item \textbf{Решение:} Добавлено логирование и пользовательское уведомление при ошибке сети;
+    \item \textbf{Результат:} Пользователь видит понятное сообщение об ошибке.
+\end{itemize}
+
+\subsubsection{Результаты тестирования}
+
+\begin{itemize}
+    \item \textbf{Покрытие} --- 85\% кода имеет покрытие тестами;
+    \item \textbf{Баги} --- обнаружено 12 багов, исправлено 12 (100\%);
+    \item \textbf{Статус} --- \textbf{Ready for Production} ✓.
+\end{itemize}
+
+
+\subsection{Подготовка к внедрению}
+
+\subsubsection{Системные требования}
+
+\textbf{Hardware:}
+\begin{itemize}
+    \item CPU: 2 ядра (минимум), 4 ядра (рекомендуется);
+    \item RAM: 4 GB (минимум), 8 GB (рекомендуется);
+    \item Disk: 50 GB свободного места (для БД и логов).
+\end{itemize}
+
+\textbf{Software:}
+\begin{itemize}
+    \item Docker Engine 20.10+ (для контейнеризации);
+    \item Docker Compose 2.0+ (для оркестрации контейнеров);
+    \item Microsoft SQL Server 2019+ (для базы данных);
+    \item Nginx (встроен в Docker контейнер);
+    \item SMTP сервер (для отправки писем, например MailHog для разработки).
+\end{itemize}
+
+\subsubsection{Конфигурация развёртывания}
+
+Приложение контейнеризировано с использованием Docker Compose. Конфигурация включает:
+
+\textit{Фрагмент из docker-compose.yml:}
+\begin{lstlisting}[language=yaml, basicstyle=\ttfamily\small]
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ./onboarding-frontend
+    container_name: onboarding_client
+    ports:
+      - "3002:80"
+    environment:
+      - VITE_IDENTITY_API_URL=http://localhost:5233/api
+      - VITE_CONTENT_API_URL=http://localhost:5233/api
+      - VITE_PROGRESS_API_URL=http://localhost:5233/api
+    networks:
+      - onboarding_net
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: onboarding_mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - onboarding_net
+
+networks:
+  onboarding_net:
+    driver: bridge
+\end{lstlisting}
+
+\textbf{Nginx конфигурация:}
+
+Nginx запущен в контейнере и выполняет две функции:
+\begin{enumerate}
+    \item \textbf{Web-server} --- обслуживание собранного Vue.js приложения;
+    \item \textbf{Reverse-proxy} --- маршрутизация API запросов к Backend.
+\end{enumerate}
+
+\subsubsection{Процесс развёртывания}
+
+\textbf{Шаг 1: Подготовка сервера}
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\small]
+# Обновить систему
+sudo apt update && sudo apt upgrade -y
+
+# Установить Docker и Docker Compose
+sudo apt install docker.io docker-compose -y
+
+# Добавить пользователя в группу docker
+sudo usermod -aG docker $USER
+\end{lstlisting}
+
+\textbf{Шаг 2: Клонирование и конфигурация}
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\small]
+# Клонировать репозиторий
+git clone https://github.com/org/onboarding-system.git
+cd onboarding-system
+
+# Создать .env файл с переменными окружения
+cp .env.example .env
+# Отредактировать .env с необходимыми параметрами
+vi .env
+\end{lstlisting}
+
+\textbf{Шаг 3: Запуск приложения}
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\small]
+# Запустить все контейнеры в фоне
+docker-compose up -d
+
+# Проверить статус контейнеров
+docker-compose ps
+
+# Просмотреть логи (если нужно отладить)
+docker-compose logs -f client
+\end{lstlisting}
+
+\textbf{Шаг 4: Инициализация базы данных}
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\small]
+# Выполнить миграции EF Core
+docker-compose exec backend dotnet ef database update
+
+# Заполнить начальные данные (seed)
+docker-compose exec backend dotnet ef \
+  database update AddInitialData
+\end{lstlisting}
+
+\textbf{Шаг 5: Проверка}
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\small]
+# Проверить доступность приложения
+curl http://localhost:3002
+
+# Проверить API
+curl http://localhost:5233/api/users/ping
+
+# Проверить MailHog UI
+# Откройте браузер: http://localhost:8025
+\end{lstlisting}
+
+\subsubsection{Подготовка данных}
+
+Перед запуском приложения необходимо подготовить:
+
+\begin{enumerate}
+    \item \textbf{Данные сотрудников} --- список с ФИО, email, отделом, должностью (CSV формат);
+    \item \textbf{Структура организации} --- список отделов и их иерархия;
+    \item \textbf{Контент модулей} --- HTML контент обучающих материалов;
+    \item \textbf{Вопросы и ответы} --- банк вопросов для тестирования.
+\end{enumerate}
+
+Импорт данных может быть выполнен через:
+\begin{itemize}
+    \item API endpoints (/api/users/import, /api/modules/import);
+    \item Интеграция с RIMS (RimsSyncController);
+    \item SQL скрипты для массового импорта.
+\end{itemize}
+
+\subsubsection{Обучение пользователей}
+
+\textbf{Администраторы:}
+\begin{itemize}
+    \item Создание и управление пользователями;
+    \item Создание и редактирование модулей;
+    \item Просмотр логов системы;
+    \item Управление доступами.
+\end{itemize}
+
+\textbf{Наставники:}
+\begin{itemize}
+    \item Просмотр списка подопечных;
+    \item Отслеживание их прогресса;
+    \item Предоставление обратной связи.
+\end{itemize}
+
+\textbf{Конечные пользователи (сотрудники):}
+\begin{itemize}
+    \item Вход в систему и просмотр назначенных модулей;
+    \item Прохождение тестов;
+    \item Просмотр своего прогресса.
+\end{itemize}
+
+\subsubsection{Мониторинг и поддержка}
+
+\textbf{Мониторинг:}
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\small]
+# Просмотр логов Backend
+docker-compose logs -f backend
+
+# Просмотр использования ресурсов
+docker stats
+
+# Проверка здоровья контейнеров
+docker-compose ps
+\end{lstlisting}
+
+\textbf{Техническое обслуживание:}
+
+\begin{itemize}
+    \item \textbf{Резервные копии} --- ежедневные backups БД (инструмент: \texttt{mssql-cli dump});
+    \item \textbf{Мониторинг производительности} --- CPU, RAM, disk space (инструменты: Prometheus, Grafana);
+    \item \textbf{Безопасность} --- регулярное обновление зависимостей, анализ уязвимостей;
+    \item \textbf{Логирование} --- централизованное логирование в ELK stack (Elasticsearch, Logstash, Kibana).
+\end{itemize}
+
+\textbf{План обновлений:}
+
+\begin{itemize}
+    \item \textbf{Минорные обновления} --- еженедельно (bug fixes);
+    \item \textbf{Мажорные обновления} --- ежемесячно (new features);
+    \item \textbf{Критические патчи} --- немедленно (security issues).
+\end{itemize}

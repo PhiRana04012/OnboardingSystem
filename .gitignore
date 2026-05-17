@@ -1,0 +1,6 @@
+# User secrets and app settings with keys
+appsettings.Development.json
+appsettings.Production.json
+**/appsettings.json
+**/bin/
+**/obj/

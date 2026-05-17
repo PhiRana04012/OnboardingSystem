@@ -204,7 +204,7 @@ public class RimsIntegrationService : IRimsIntegrationService
                 FullName = rimsPerson.Caption,
                 Email = email,
                 DepartmentId = department.DepartmentId,
-                JobTitle = rimsPerson.JobTitle,
+                JobTitleId = null, // TODO: получить и найти соответствующую должность из RIMS если доступно
                 HireDate = DateOnly.FromDateTime(DateTime.Now), // TODO: получить из RIMS если доступно
                 OnboardingStatus = "Не начат",
                 RimsLastSyncDate = DateTime.UtcNow
@@ -222,7 +222,7 @@ public class RimsIntegrationService : IRimsIntegrationService
                 user.Email = email;
             }
             user.DepartmentId = department.DepartmentId;
-            user.JobTitle = rimsPerson.JobTitle;
+            // user.JobTitleId = null; // TODO: получить и найти соответствующую должность из RIMS если доступно
             user.RimsLastSyncDate = DateTime.UtcNow;
 
             _logger.LogInformation("Обновлён пользователь из RIMS: {FullName} ({Uid})", user.FullName, rimsUid);

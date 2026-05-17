@@ -1,7 +1,9 @@
 <template>
   <div class="space-y-6">
     <div class="flex justify-between items-center">
-      <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Администрирование</h1>
+      <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
+        {{ authStore.isDepartmentHead && !authStore.isFullAdmin ? 'Управление отделом' : 'Администрирование' }}
+      </h1>
     </div>
 
     <!-- Tabs -->
@@ -35,6 +37,7 @@
           Вопросы
         </button>
         <button
+          v-if="authStore.isFullAdmin"
           @click="activeTab = 'faq'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'faq' 
@@ -44,6 +47,7 @@
           FAQ
         </button>
         <button
+          v-if="authStore.isFullAdmin"
           @click="activeTab = 'checklists'"
           class="py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="activeTab === 'checklists' 
@@ -59,7 +63,7 @@
     <div v-if="activeTab === 'modules'" class="space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="text-xl font-semibold text-gray-900">Управление модулями</h2>
-        <button @click="showModuleForm = true" class="btn-primary">
+        <button @click="openCreateModule" class="btn-primary">
           Создать модуль
         </button>
       </div>
@@ -99,7 +103,7 @@
     <div v-if="activeTab === 'users'" class="space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Управление пользователями</h2>
-        <button @click="showUserForm = true" class="btn-primary">
+        <button v-if="authStore.isFullAdmin" @click="showUserForm = true" class="btn-primary">
           Создать пользователя
         </button>
       </div>
@@ -142,7 +146,11 @@
                 <button @click="editUser(user)" class="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 mr-3 transition-colors">
                   Редактировать
                 </button>
-                <button @click="deleteUser(user.userId)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">
+                <button
+                  v-if="authStore.isFullAdmin"
+                  @click="deleteUser(user.userId)"
+                  class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
+                >
                   Удалить
                 </button>
               </td>
@@ -220,7 +228,7 @@
     </div>
 
     <!-- Checklists Tab -->
-    <div v-if="activeTab === 'checklists'" class="space-y-4">
+    <div v-if="activeTab === 'checklists' && authStore.isFullAdmin" class="space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="text-xl font-semibold text-gray-900">Управление практическими заданиями</h2>
         <div class="flex space-x-3">
@@ -285,7 +293,7 @@
     </div>
 
     <!-- FAQ Tab -->
-    <div v-if="activeTab === 'faq'" class="space-y-4">
+    <div v-if="activeTab === 'faq' && authStore.isFullAdmin" class="space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="text-xl font-semibold text-gray-900">Управление FAQ</h2>
         <button @click="openFaqForm()" class="btn-primary">Добавить вопрос</button>
@@ -353,7 +361,7 @@
               <input v-model="moduleForm.maxAttempts" type="number" min="0" required class="mt-1 input block w-full" />
             </div>
           </div>
-          <div>
+          <div v-if="authStore.isFullAdmin">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Подразделения (если не выбрано — модуль для всех)</label>
             <input
               v-model="moduleDepartmentSearchQuery"
@@ -383,6 +391,9 @@
               Выберите одно или несколько подразделений. Оставьте пустым, чтобы назначить модуль всем.
             </p>
           </div>
+          <p v-else class="text-sm text-gray-600 dark:text-gray-400">
+            Модуль будет привязан к отделу: <strong>{{ authStore.currentUser?.departmentName }}</strong>
+          </p>
           <div class="pt-4 flex justify-end space-x-3 border-t">
             <button type="button" @click="closeModuleForm" class="btn-secondary">Отмена</button>
             <button type="submit" class="btn-primary">Сохранить</button>
@@ -406,34 +417,46 @@
           </button>
         </div>
         <form @submit.prevent="saveUser" class="p-6 space-y-4 overflow-y-auto">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">ФИО</label>
-            <input v-model="userForm.fullName" type="text" required class="mt-1 input block w-full" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Email (Логин)</label>
-            <input v-model="userForm.email" type="email" required class="mt-1 input block w-full" />
-          </div>
-          <div v-if="!editingUser">
-            <label class="block text-sm font-medium text-gray-700">Пароль</label>
-            <input v-model="userForm.passwordHash" type="password" required class="mt-1 input block w-full" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Роль</label>
-            <select v-model="userForm.role" required class="mt-1 input block w-full">
-              <option value="user">Пользователь</option>
-              <option value="admin">Администратор</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Подразделение</label>
-            <select v-model="userForm.departmentId" class="mt-1 input block w-full" required>
-              <option disabled :value="null">Выберите подразделение</option>
-              <option v-for="dept in departments" :key="dept.departmentId" :value="dept.departmentId">
-                {{ dept.name }}
-              </option>
-            </select>
-          </div>
+          <template v-if="authStore.isDepartmentHead && !authStore.isFullAdmin">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Сотрудник: <strong>{{ userForm.fullName }}</strong> ({{ userForm.email }})
+            </p>
+          </template>
+          <template v-else>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">ФИО</label>
+              <input v-model="userForm.fullName" type="text" required class="mt-1 input block w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Email (Логин)</label>
+              <input v-model="userForm.email" type="email" required class="mt-1 input block w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Должность</label>
+              <select v-model="userForm.jobTitleId" class="mt-1 input block w-full">
+                <option :value="null">Не выбрана</option>
+                <option v-for="jt in jobTitles" :key="jt.jobTitleId" :value="jt.jobTitleId">
+                  {{ jt.title }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Роль</label>
+              <select v-model="userForm.role" required class="mt-1 input block w-full">
+                <option value="user">Пользователь</option>
+                <option value="admin">Администратор</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Подразделение</label>
+              <select v-model="userForm.departmentId" class="mt-1 input block w-full" required>
+                <option disabled :value="null">Выберите подразделение</option>
+                <option v-for="dept in departments" :key="dept.departmentId" :value="dept.departmentId">
+                  {{ dept.name }}
+                </option>
+              </select>
+            </div>
+          </template>
           <div>
             <label class="block text-sm font-medium text-gray-700">Наставник (необязательно)</label>
             <div class="mt-1 relative">
@@ -573,14 +596,18 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import { modulesApi, usersApi, questionsApi, departmentsApi, faqApi, checklistsApi } from '../api/services'
+import { modulesApi, usersApi, questionsApi, departmentsApi, faqApi, checklistsApi, jobTitlesApi, rolesApi } from '../api/services'
+import { filterUsersByAccess } from '../utils/usersAccess'
 import QuillEditor from '../components/QuillEditor.vue'
+import { useAuthStore } from '../stores/auth'
 
+const authStore = useAuthStore()
 const activeTab = ref('modules')
 const modules = ref([])
 const users = ref([])
 const questions = ref([])
 const departments = ref([])
+const jobTitles = ref([])
 
 const selectedModuleForQuestions = ref('')
 const selectedModuleForChecklists = ref('')
@@ -603,15 +630,17 @@ const moduleForm = ref({
 // User Form State
 const showUserForm = ref(false)
 const editingUser = ref(null)
+const roles = ref([])
 const mentors = ref([])
 const mentorSearchQuery = ref('')
 const userForm = ref({
   fullName: '',
   email: '',
   passwordHash: '',
-  role: 'user',
+  jobTitleId: null,
   departmentId: null,
-  mentorId: null
+  mentorId: null,
+  role: 'user'
 })
 
 // Computed property для фильтрации наставников по отделу и поиску
@@ -674,13 +703,17 @@ const isSavingFaq = ref(false)
 const faqForm = ref({ question: '', answer: '', category: 'Общее', displayOrder: 0 })
 
 onMounted(async () => {
-  await Promise.all([
+  const loaders = [
     loadModules(),
     loadUsers(),
     loadDepartments(),
-    loadFaq()
-  ])
-  // Загружаем список наставников (отфильтровываем пользователей с ролью наставника)
+    loadRoles(),
+    loadJobTitles()
+  ]
+  if (authStore.isFullAdmin) {
+    loaders.push(loadFaq())
+  }
+  await Promise.all(loaders)
   await loadPotentialMentors()
 })
 
@@ -712,7 +745,7 @@ const loadModules = async () => {
 const loadUsers = async () => {
   try {
     const response = await usersApi.getAll()
-    users.value = response.data
+    users.value = filterUsersByAccess(response.data, authStore)
   } catch (error) {
     console.error('Failed to load users:', error)
   }
@@ -740,21 +773,57 @@ const loadChecklists = async (moduleId) => {
 const loadDepartments = async () => {
   try {
     const response = await departmentsApi.getAll()
-    departments.value = response.data
+    let list = response.data
+    if (authStore.isDepartmentHead && !authStore.isFullAdmin && authStore.currentUser?.departmentId) {
+      list = list.filter(d => d.departmentId === authStore.currentUser.departmentId)
+    }
+    departments.value = list
   } catch (error) {
     console.error('Failed to load departments:', error)
+  }
+}
+
+const loadRoles = async () => {
+  try {
+    const response = await rolesApi.getAll()
+    roles.value = response.data
+  } catch (error) {
+    console.error('Failed to load roles:', error)
+  }
+}
+
+const loadJobTitles = async () => {
+  try {
+    const response = await jobTitlesApi.getAll()
+    jobTitles.value = response.data
+  } catch (error) {
+    console.error('Failed to load job titles:', error)
   }
 }
 
 const loadPotentialMentors = async () => {
   try {
     const response = await usersApi.getAll()
-    // Загружаем всех пользователей как потенциальных наставников
-    // Фильтрация по отделу происходит в компоненте выбора
-    mentors.value = response.data
+    mentors.value = filterUsersByAccess(response.data, authStore)
   } catch (error) {
     console.error('Failed to load mentors:', error)
   }
+}
+
+const openCreateModule = () => {
+  editingModule.value = null
+  moduleForm.value = {
+    title: '',
+    description: '',
+    content: '',
+    isMandatory: false,
+    passingScore: 70,
+    maxAttempts: 0,
+    departmentIds: authStore.isDepartmentHead && !authStore.isFullAdmin && authStore.currentUser?.departmentId
+      ? [authStore.currentUser.departmentId]
+      : []
+  }
+  showModuleForm.value = true
 }
 
 const closeModuleForm = () => {
@@ -774,9 +843,13 @@ const closeModuleForm = () => {
 
 const saveModule = async () => {
   try {
+    let departmentIds = moduleForm.value.departmentIds || []
+    if (authStore.isDepartmentHead && !authStore.isFullAdmin && authStore.currentUser?.departmentId) {
+      departmentIds = [authStore.currentUser.departmentId]
+    }
     const payload = {
       ...moduleForm.value,
-      departmentIds: moduleForm.value.departmentIds || []
+      departmentIds
     }
     if (editingModule.value) {
       await modulesApi.update(editingModule.value.moduleId, payload)
@@ -828,6 +901,7 @@ const closeUserForm = () => {
     email: '',
     passwordHash: '',
     role: 'user',
+    jobTitleId: null,
     departmentId: null,
     mentorId: null
   }
@@ -835,6 +909,16 @@ const closeUserForm = () => {
 
 const saveUser = async () => {
   try {
+    if (authStore.isDepartmentHead && !authStore.isFullAdmin) {
+      if (!editingUser.value) return
+      await usersApi.update(editingUser.value.userId, {
+        mentorId: userForm.value.mentorId || null
+      })
+      await loadUsers()
+      closeUserForm()
+      return
+    }
+
     // Получаем ID роли на основе выбранной роли
     let roleIds = []
     if (userForm.value.role === 'admin') {
@@ -849,11 +933,12 @@ const saveUser = async () => {
       departmentId: userForm.value.departmentId,
       mentorId: userForm.value.mentorId || null,
       roleIds: roleIds,
-      hireDate: new Date().toISOString().split('T')[0] // Текущая дата в формате YYYY-MM-DD
+      hireDate: new Date().toISOString().split('T')[0], // Текущая дата в формате YYYY-MM-DD
+      jobTitleId: userForm.value.jobTitleId ?? null
     }
     
     if (!editingUser.value && userForm.value.passwordHash) {
-      payload.passwordHash = userForm.value.passwordHash
+      payload.password = userForm.value.passwordHash
     }
     
     if (editingUser.value) {
@@ -870,12 +955,16 @@ const saveUser = async () => {
 }
 
 const editUser = (user) => {
+  if (authStore.isDepartmentHead && !authStore.isFullAdmin && user.departmentId !== authStore.currentUser?.departmentId) {
+    return
+  }
   editingUser.value = user
   mentorSearchQuery.value = ''
   userForm.value = {
     fullName: user.fullName || '',
     email: user.email || '',
     passwordHash: '', // Keep blank on edit
+    jobTitleId: user.jobTitleId ?? null,
     role: user.role || 'user',
     departmentId: user.departmentId || null,
     mentorId: user.mentorId || null

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Entities;
 using OnboardingSystem.Services;
 
@@ -45,6 +46,26 @@ namespace OnboardingSystem.Data
                 context.Departments.AddRange(departments);
                 context.SaveChanges();
             }
+
+            // --- Должности (JobTitles) ---
+            if (!context.JobTitles.Any())
+            {
+                var jobTitles = new JobTitle[]
+                {
+                    new JobTitle { Title = "Специалист", Description = "Базовая должность специалиста" },
+                    new JobTitle { Title = "Специалист 2 категории", Description = "Специалист 2 категории" },
+                    new JobTitle { Title = "Специалист 1 категории", Description = "Специалист 1 категории" },
+                    new JobTitle { Title = "Ведущий специалист", Description = "Ведущий специалист" },
+                    new JobTitle { Title = "Главный специалист", Description = "Главный специалист" },
+                    new JobTitle { Title = "Начальник отдела", Description = "Начальник отдела / DepartmentHead" }
+                };
+
+                foreach (var jt in jobTitles)
+                {
+                    context.JobTitles.Add(jt);
+                }
+                context.SaveChanges();
+            }
             
             // --- Пользователи (Users) ---
             if (!context.Users.Any())
@@ -55,8 +76,13 @@ namespace OnboardingSystem.Data
                 var adminRole = context.Roles.First(r => r.RoleName == "Администратор системы");
                 var hrRole = context.Roles.First(r => r.RoleName == "HR-специалист");
                 var empRole = context.Roles.First(r => r.RoleName == "Новый сотрудник");
-
                 var mentorRole = context.Roles.First(r => r.RoleName == "Наставник");
+
+                var specialistJT = context.JobTitles.First(jt => jt.Title == "Специалист");
+                var specialist2JT = context.JobTitles.First(jt => jt.Title == "Специалист 2 категории");
+                var specialist1JT = context.JobTitles.First(jt => jt.Title == "Специалист 1 категории");
+                var leadingJT = context.JobTitles.First(jt => jt.Title == "Ведущий специалист");
+                var chiefJT = context.JobTitles.First(jt => jt.Title == "Главный специалист");
 
                 var users = new List<User>
                 {
@@ -65,8 +91,8 @@ namespace OnboardingSystem.Data
                         FullName = "Системный Администратор",
                         Email = "admin@example.com",
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-1)),
-                        OnboardingStatus = "Завершен", // Локализация
-                        JobTitle = "Старший Администратор",
+                        OnboardingStatus = "Завершен",
+                        JobTitleId = leadingJT.JobTitleId,
                         Department = itDept,
                         PasswordHash = passwordHasher.HashPassword("admin1234567")
                     },
@@ -76,7 +102,7 @@ namespace OnboardingSystem.Data
                         Email = "hr@example.com",
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-6)),
                         OnboardingStatus = "Завершен",
-                        JobTitle = "HR Менеджер",
+                        JobTitleId = specialist1JT.JobTitleId,
                         Department = hrDept,
                         PasswordHash = passwordHasher.HashPassword("hr1234567")
                     },
@@ -86,7 +112,7 @@ namespace OnboardingSystem.Data
                         Email = "new@example.com",
                         HireDate = DateOnly.FromDateTime(DateTime.Now),
                         OnboardingStatus = "В процессе",
-                        JobTitle = "Младший Разработчик",
+                        JobTitleId = specialistJT.JobTitleId,
                         Department = itDept,
                         PasswordHash = passwordHasher.HashPassword("new1234567")
                     },
@@ -96,7 +122,7 @@ namespace OnboardingSystem.Data
                         Email = "mentor1@example.com",
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-3)),
                         OnboardingStatus = "Завершен",
-                        JobTitle = "Старший Разработчик",
+                        JobTitleId = specialist1JT.JobTitleId,
                         Department = itDept,
                         PasswordHash = passwordHasher.HashPassword("mMentor123")
                     },
@@ -106,7 +132,7 @@ namespace OnboardingSystem.Data
                         Email = "mentor2@example.com",
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-2)),
                         OnboardingStatus = "Завершен",
-                        JobTitle = "Ведущий Разработчик",
+                        JobTitleId = leadingJT.JobTitleId,
                         Department = itDept,
                         PasswordHash = passwordHasher.HashPassword("mMentor123")
                     },
@@ -116,7 +142,7 @@ namespace OnboardingSystem.Data
                         Email = "mentor3@example.com",
                         HireDate = DateOnly.FromDateTime(DateTime.Now.AddYears(-4)),
                         OnboardingStatus = "Завершен",
-                        JobTitle = "Архитектор систем",
+                        JobTitleId = chiefJT.JobTitleId,
                         Department = itDept,
                         PasswordHash = passwordHasher.HashPassword("mentor1234")
                     }
@@ -125,13 +151,22 @@ namespace OnboardingSystem.Data
                 context.Users.AddRange(users);
                 context.SaveChanges();
 
+                // Перезагружаем пользователей из БД (важно для правильной работы с ролями!)
+                context.ChangeTracker.Clear();
+                var adminUser = context.Users.Include(u => u.Roles).First(u => u.Email == "admin@example.com");
+                var hrUser = context.Users.Include(u => u.Roles).First(u => u.Email == "hr@example.com");
+                var newEmployeeUser = context.Users.Include(u => u.Roles).First(u => u.Email == "new@example.com");
+                var mentor1 = context.Users.Include(u => u.Roles).First(u => u.Email == "mentor1@example.com");
+                var mentor2 = context.Users.Include(u => u.Roles).First(u => u.Email == "mentor2@example.com");
+                var mentor3 = context.Users.Include(u => u.Roles).First(u => u.Email == "mentor3@example.com");
+
                 // Присвоение ролей
-                users[0].Roles.Add(adminRole);
-                users[1].Roles.Add(hrRole);
-                users[2].Roles.Add(empRole);
-                users[3].Roles.Add(mentorRole);
-                users[4].Roles.Add(mentorRole);
-                users[5].Roles.Add(mentorRole);
+                adminUser.Roles.Add(adminRole);
+                hrUser.Roles.Add(hrRole);
+                newEmployeeUser.Roles.Add(empRole);
+                mentor1.Roles.Add(mentorRole);
+                mentor2.Roles.Add(mentorRole);
+                mentor3.Roles.Add(mentorRole);
                 context.SaveChanges();
             }
 
