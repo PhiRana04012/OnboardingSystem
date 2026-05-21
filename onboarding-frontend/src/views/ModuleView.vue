@@ -241,14 +241,23 @@ const hasPassedBefore = computed(() => {
 })
 
 const moduleStatus = computed(() => {
-  const mod = progressStore.modules.find(m => m.moduleId === module.value?.moduleId)
+  const modules = progressStore.userProgress?.modules
+  if (!modules?.length) return 'Не начат'
+  const mod = modules.find(m => m.moduleId === module.value?.moduleId)
   return mod ? mod.status : 'Не начат'
 })
 
 onMounted(async () => {
-  await loadModule()  // Load module first
-  await loadAttempts()  // Then load attempts
-  await loadChecklist()  // Then load checklist (module is now available)
+  if (authStore.currentUser?.userId) {
+    try {
+      await progressStore.fetchUserProgress(authStore.currentUser.userId)
+    } catch (e) {
+      console.warn('Could not load user progress for module view', e)
+    }
+  }
+  await loadModule()
+  await loadAttempts()
+  await loadChecklist()
 })
 
 const loadModule = async () => {

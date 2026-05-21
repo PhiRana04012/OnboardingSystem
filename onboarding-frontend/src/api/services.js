@@ -10,6 +10,7 @@ export const usersApi = {
   updateProfile: (id, data) => identityClient.put(`/users/${id}`, data),
   delete: (id) => identityClient.delete(`/users/${id}`),
   getMentees: (mentorId) => identityClient.get(`/users/mentor/${mentorId}/mentees`),
+  assignMentees: (mentorId, data) => identityClient.post(`/users/mentor/${mentorId}/assign-mentees`, data),
   setPassword: (data) => identityClient.post('/users/set-password', data)
 }
 
@@ -110,6 +111,14 @@ export const aiMentorApi = {
   chat: (message) => identityClient.post('/aimentor/chat', { message })
 }
 
+// Notifications API - Identity Service
+export const notificationsApi = {
+  getRecent: (params) => identityClient.get('/notifications', { params }),
+  getUnreadCount: () => identityClient.get('/notifications/unread-count'),
+  markAsRead: (id) => identityClient.post(`/notifications/${id}/read`),
+  markAllAsRead: () => identityClient.post('/notifications/read-all')
+}
+
 // FAQ API - Content Service
 export const faqApi = {
   getAll: () => contentClient.get('/faq'),
@@ -118,6 +127,14 @@ export const faqApi = {
   delete: (id) => contentClient.delete(`/faq/${id}`)
 }
 
+// Analytics API - Identity Service
+export const analyticsApi = {
+  getDashboard: (userId) => identityClient.get(`/analytics/dashboard/${userId}`),
+  getProgressAnalysis: (userId) => identityClient.get(`/analytics/progress-analysis/${userId}`),
+  getLearningPath: (userId, strategy = 'balanced') => identityClient.get(`/analytics/learning-path/${userId}`, { params: { strategy } }),
+  getNextModule: (userId) => identityClient.get(`/analytics/next-module/${userId}`),
+  getAreasAnalysis: (userId) => identityClient.get(`/analytics/areas/${userId}`)
+}
 
 
 

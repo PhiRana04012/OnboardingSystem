@@ -51,6 +51,8 @@ public partial class User
 
     public virtual ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
 
+    public virtual ICollection<XpGrantLog> XpGrantLogs { get; set; } = new List<XpGrantLog>();
+
     public virtual ICollection<UserChecklistItem> UserChecklistItems { get; set; } = new List<UserChecklistItem>();
 
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();

@@ -282,6 +282,10 @@ namespace OnboardingSystem.Data
                 context.SaveChanges();
             }
 
+            EnsureAchievement(context, "RECOVERY", "Второе дыхание", "Улучшить результат теста после нескольких попыток.", "💪");
+            EnsureAchievement(context, "STREAK_3", "Стабильность", "Заниматься обучением 3 дня подряд.", "🔥");
+            EnsureAchievement(context, "COMEBACK", "Снова в деле", "Вернуться к обучению после перерыва.", "🔄");
+
             // --- Checklist Items ---
             if (!context.ChecklistItems.Any())
             {
@@ -304,7 +308,7 @@ namespace OnboardingSystem.Data
             {
                 var faqEntries = new FaqEntry[]
                 {
-                    new FaqEntry { Question = "Где я могу найти свой график работы?", Answer = "Ваш индивидуальный график работы указан в трудовом договоре и доступен в личном кабинете в разделе 'Профиль'. Стандартный график для офиса: с 9:00 до 18:00.", Category = "Общее", DisplayOrder = 1 },
+                    new FaqEntry { Question = "Где я могу найти свой график работы?", Answer = "Ваш индивидуальный график работы указан в трудовом договоре и доступен в личном кабинете в разделе 'Профиль'. Стандартный график для офиса: с 8:00 до 17:15.", Category = "Общее", DisplayOrder = 1 },
                     new FaqEntry { Question = "Как оформить отпуск?", Answer = "Отпуск оформляется через портал самообслуживания не менее чем за 2 недели. Сначала согласуйте даты с вашим руководителем.", Category = "HR", DisplayOrder = 2 },
                     new FaqEntry { Question = "Что делать, если сломался ноутбук?", Answer = "Немедленно создайте заявку в Service Desk или напишите в чат технической поддержки в Telegram.", Category = "Техника", DisplayOrder = 3 },
                     new FaqEntry { Question = "Где находится столовая?", Answer = "Столовая расположена на 2-м этаже бизнес-центра. Часы работы: с 12:00 до 16:00.", Category = "Офис", DisplayOrder = 4 },
@@ -313,6 +317,19 @@ namespace OnboardingSystem.Data
                 context.FaqEntries.AddRange(faqEntries);
                 context.SaveChanges();
             }
+        }
+
+        private static void EnsureAchievement(AppDbContext context, string key, string title, string description, string icon)
+        {
+            if (context.Achievements.Any(a => a.ConditionKey == key)) return;
+            context.Achievements.Add(new Achievement
+            {
+                Title = title,
+                Description = description,
+                IconName = icon,
+                ConditionKey = key
+            });
+            context.SaveChanges();
         }
     }
 }

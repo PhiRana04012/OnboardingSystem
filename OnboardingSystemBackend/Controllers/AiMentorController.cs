@@ -35,7 +35,10 @@ public class AiMentorController : ControllerBase
 
         try
         {
-            var reply = await _aiMentorService.AskAsync(request.Message, cancellationToken);
+            var reply = await _aiMentorService.AskAsync(
+                request.Message,
+                includeKnowledgeContext: true,
+                cancellationToken);
             return Ok(new AiMentorChatResponseDto
             {
                 Success = true,

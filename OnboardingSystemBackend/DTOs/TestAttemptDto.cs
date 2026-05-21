@@ -39,6 +39,8 @@ public class TestResultDto
     public bool IsPassed { get; set; }
     public bool CanRetry { get; set; }
     public int RemainingAttempts { get; set; }
+    public int XpAwarded { get; set; }
+    public string? XpReason { get; set; }
     public List<QuestionResultDto> QuestionResults { get; set; } = new();
 }
 

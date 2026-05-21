@@ -52,6 +52,12 @@ const routes = [
         meta: { requiresDepartmentManagement: true }
       },
       {
+        path: 'mentor-assignment',
+        name: 'MentorAssignment',
+        component: () => import('../views/MentorAssignment.vue'),
+        meta: { requiresDepartmentManagement: true }
+      },
+      {
         path: 'profile',
         name: 'Profile',
         component: () => import('../views/Profile.vue')

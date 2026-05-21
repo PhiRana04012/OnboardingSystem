@@ -22,8 +22,18 @@ public class UsersController : ControllerBase
     private readonly IPasswordResetService _passwordResetService;
     private readonly IConfiguration _configuration;
     private readonly IAppAuthorizationService _authorizationService;
+    private readonly INotificationService _notificationService;
 
-    public UsersController(AppDbContext context, ILogger<UsersController> logger, IEmailService emailService, IAuthenticationProvider authProvider, PasswordHasher passwordHasher, IPasswordResetService passwordResetService, IConfiguration configuration, IAppAuthorizationService authorizationService)
+    public UsersController(
+        AppDbContext context,
+        ILogger<UsersController> logger,
+        IEmailService emailService,
+        IAuthenticationProvider authProvider,
+        PasswordHasher passwordHasher,
+        IPasswordResetService passwordResetService,
+        IConfiguration configuration,
+        IAppAuthorizationService authorizationService,
+        INotificationService notificationService)
     {
         _context = context;
         _logger = logger;
@@ -33,6 +43,7 @@ public class UsersController : ControllerBase
         _passwordResetService = passwordResetService;
         _configuration = configuration;
         _authorizationService = authorizationService;
+        _notificationService = notificationService;
     }
 
 
@@ -292,7 +303,19 @@ public class UsersController : ControllerBase
             if (dto.ExternalId != null) user.ExternalId = dto.ExternalId;
             if (dto.FullName != null) user.FullName = dto.FullName;
             if (dto.Email != null) user.Email = dto.Email;
-            if (dto.DepartmentId.HasValue) user.DepartmentId = dto.DepartmentId.Value;
+            if (dto.DepartmentId.HasValue) 
+            {
+                // Если отдел меняется, проверяем наставника
+                if (user.DepartmentId != dto.DepartmentId.Value && user.MentorId.HasValue)
+                {
+                    var currentMentor = await _context.Users.FindAsync(user.MentorId.Value);
+                    if (currentMentor != null && currentMentor.DepartmentId != dto.DepartmentId.Value)
+                    {
+                        user.MentorId = null; // Очищаем наставника из другого отдела
+                    }
+                }
+                user.DepartmentId = dto.DepartmentId.Value;
+            }
             if (dto.MentorId.HasValue) user.MentorId = dto.MentorId;
             if (dto.HireDate.HasValue) user.HireDate = dto.HireDate.Value;
             if (dto.OnboardingStatus != null) user.OnboardingStatus = dto.OnboardingStatus;
@@ -428,6 +451,7 @@ public class UsersController : ControllerBase
 
         var mentees = await _context.Users
             .Include(u => u.Department)
+            .Include(u => u.JobTitle)
             .Include(u => u.Roles)
             .Where(u => u.MentorId == mentorId)
             .Select(u => new
@@ -435,8 +459,9 @@ public class UsersController : ControllerBase
                 UserId = u.UserId,
                 FullName = u.FullName,
                 Email = u.Email,
+                DepartmentId = u.DepartmentId,
                 DepartmentName = u.Department != null ? u.Department.Name : "Не указано",
-                JobTitle = u.JobTitle,
+                JobTitle = u.JobTitle != null ? u.JobTitle.Title : "Не указано",
                 HireDate = u.HireDate,
                 OnboardingStatus = u.OnboardingStatus,
                 TelegramTag = u.TelegramTag,
@@ -590,6 +615,102 @@ public class UsersController : ControllerBase
         {
             Success = true,
             Message = "Пароль успешно установлен. Теперь вы можете авторизироваться."
+        });
+    }
+
+    /// <summary>
+    /// Массовое назначение подопечных наставнику
+    /// </summary>
+    [HttpPost("mentor/{mentorId}/assign-mentees")]
+    [ProducesResponseType(typeof(object), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    public async Task<ActionResult> AssignMentees(int mentorId, [FromBody] AssignMenteesDto dto)
+    {
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        if (currentUser == null)
+        {
+            return Unauthorized();
+        }
+
+        var mentor = await _context.Users
+            .Include(u => u.Department)
+            .FirstOrDefaultAsync(u => u.UserId == mentorId);
+
+        if (mentor == null)
+        {
+            return NotFound(new { message = "Наставник не найден" });
+        }
+
+        // Проверка прав: только админы, HR, или руководитель отдела наставника могут назначать подопечных
+        var isAdmin = _authorizationService.IsAdmin(currentUser);
+        var isHr = _authorizationService.IsHr(currentUser);
+        var isDepartmentHead = _authorizationService.IsDepartmentHead(currentUser) 
+            && currentUser.DepartmentId == mentor.DepartmentId;
+
+        if (!isAdmin && !isHr && !isDepartmentHead)
+        {
+            return Forbid();
+        }
+
+        // Получаем всех пользователей из того же отдела
+        var mentees = await _context.Users
+            .Where(u => u.DepartmentId == mentor.DepartmentId && u.UserId != mentorId)
+            .ToListAsync();
+
+        if (mentees.Count == 0)
+        {
+            return BadRequest(new { message = "В отделе нет других сотрудников для назначения" });
+        }
+
+        // Валидируем переданные ID подопечных
+        var validMenteeIds = dto.MenteeIds.Where(id => mentees.Any(m => m.UserId == id)).ToList();
+
+        // Используем ExecuteUpdateAsync для избежания race condition
+        // Сначала очищаем всех подопечных этого отдела (кроме указанных в validMenteeIds)
+        var userIdsToUpdate = mentees.Select(m => m.UserId).ToList();
+        await _context.Users
+            .Where(u => u.DepartmentId == mentor.DepartmentId && u.UserId != mentorId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.MentorId, (int?)null));
+
+        // Затем назначаем новых подопечных атомарно
+        if (validMenteeIds.Any())
+        {
+            await _context.Users
+                .Where(u => validMenteeIds.Contains(u.UserId))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.MentorId, mentorId));
+        }
+
+        if (validMenteeIds.Count > 0)
+        {
+            await _notificationService.SendAsync(
+                mentorId,
+                NotificationTypes.MenteeAssigned,
+                "Назначены подопечные",
+                $"Вам назначено подопечных: {validMenteeIds.Count}.",
+                "/mentor");
+
+            foreach (var menteeId in validMenteeIds)
+            {
+                await _notificationService.SendAsync(
+                    menteeId,
+                    NotificationTypes.MentorAssigned,
+                    "Назначен наставник",
+                    $"Ваш наставник: {mentor.FullName}.",
+                    "/profile");
+            }
+        }
+
+        _logger.LogInformation($"✅ Для наставника {mentor.FullName} назначено {validMenteeIds.Count} подопечных");
+
+        return Ok(new
+        {
+            message = $"Успешно назначено {validMenteeIds.Count} подопечных",
+            assignedCount = validMenteeIds.Count,
+            totalMentees = validMenteeIds.Count
         });
     }
 }

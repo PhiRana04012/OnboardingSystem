@@ -11,9 +11,12 @@ export const useGamificationStore = defineStore('gamification', {
   getters: {
     levelProgress: (state) => {
       if (!state.profile) return 0
+      if (state.profile.levelProgressPercent != null)
+        return state.profile.levelProgressPercent
       const currentLevelBaseXP = (state.profile.level - 1) * 100
       const xpInCurrentLevel = state.profile.totalXP - currentLevelBaseXP
       const xpNeeded = state.profile.nextLevelXP - currentLevelBaseXP
+      if (xpNeeded <= 0) return 100
       return Math.min(100, Math.max(0, (xpInCurrentLevel / xpNeeded) * 100))
     }
   },

@@ -50,6 +50,10 @@ public partial class AppDbContext : DbContext
     
     public virtual DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
+    public virtual DbSet<XpGrantLog> XpGrantLogs { get; set; }
+
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         // Connection string is configured in Program.cs via DI
@@ -338,6 +342,22 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
         });
 
+        modelBuilder.Entity<XpGrantLog>(entity =>
+        {
+            entity.HasKey(e => e.XpGrantId);
+            entity.Property(e => e.ActionType).HasMaxLength(50);
+            entity.Property(e => e.ReasonSummary).HasMaxLength(500);
+            entity.Property(e => e.Multiplier).HasColumnType("decimal(4, 2)");
+            entity.Property(e => e.GrantedAt).HasDefaultValueSql("(getutcdate())");
+            entity.HasIndex(e => new { e.UserId, e.GrantedAt });
+
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.XpGrantLogs)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_XpGrantLogs_Users");
+        });
+
         modelBuilder.Entity<PasswordResetToken>(entity =>
         {
             entity.HasKey(e => e.TokenId);
@@ -351,6 +371,24 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_PasswordResetTokens_Users");
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId);
+            entity.Property(e => e.Type).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Message).HasMaxLength(1000).IsRequired();
+            entity.Property(e => e.LinkUrl).HasMaxLength(500);
+            entity.Property(e => e.IsRead).HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+            entity.HasIndex(e => new { e.UserId, e.IsRead, e.CreatedAt });
+
+            entity.HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Notifications_Users");
         });
 
         OnModelCreatingPartial(modelBuilder);

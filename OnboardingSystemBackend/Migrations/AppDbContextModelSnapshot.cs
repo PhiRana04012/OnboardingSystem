@@ -312,6 +312,53 @@ namespace OnboardingSystem.Migrations
                     b.ToTable("ModuleDepartments", (string)null);
                 });
 
+            modelBuilder.Entity("OnboardingSystem.Entities.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(getutcdate())");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("LinkUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId", "IsRead", "CreatedAt");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("OnboardingSystem.Entities.PasswordResetToken", b =>
                 {
                     b.Property<int>("TokenId")
@@ -630,6 +677,50 @@ namespace OnboardingSystem.Migrations
                     b.ToTable("UserModuleProgress", (string)null);
                 });
 
+            modelBuilder.Entity("OnboardingSystem.Entities.XpGrantLog", b =>
+                {
+                    b.Property<long>("XpGrantId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("XpGrantId"));
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("BaseXp")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FinalXp")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("GrantedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(getutcdate())");
+
+                    b.Property<int?>("ModuleId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Multiplier")
+                        .HasColumnType("decimal(4, 2)");
+
+                    b.Property<string>("ReasonSummary")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("XpGrantId");
+
+                    b.HasIndex("UserId", "GrantedAt");
+
+                    b.ToTable("XpGrantLogs");
+                });
+
             modelBuilder.Entity("UserRole", b =>
                 {
                     b.Property<int>("UserId")
@@ -723,6 +814,18 @@ namespace OnboardingSystem.Migrations
                     b.Navigation("Department");
 
                     b.Navigation("Module");
+                });
+
+            modelBuilder.Entity("OnboardingSystem.Entities.Notification", b =>
+                {
+                    b.HasOne("OnboardingSystem.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Notifications_Users");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OnboardingSystem.Entities.PasswordResetToken", b =>
@@ -858,6 +961,18 @@ namespace OnboardingSystem.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OnboardingSystem.Entities.XpGrantLog", b =>
+                {
+                    b.HasOne("OnboardingSystem.Entities.User", "User")
+                        .WithMany("XpGrantLogs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_XpGrantLogs_Users");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("UserRole", b =>
                 {
                     b.HasOne("OnboardingSystem.Entities.Role", null)
@@ -925,6 +1040,8 @@ namespace OnboardingSystem.Migrations
                     b.Navigation("UserChecklistItems");
 
                     b.Navigation("UserModuleProgresses");
+
+                    b.Navigation("XpGrantLogs");
                 });
 #pragma warning restore 612, 618
         }

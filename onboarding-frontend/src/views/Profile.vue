@@ -92,6 +92,9 @@
           <!-- Уровень -->
           <div>
             <p class="text-primary-300 text-sm font-medium mb-1">Текущий уровень</p>
+            <p v-if="gamStore.profile?.engagementLabel" class="text-xs text-gray-400 mb-2">
+              {{ gamStore.profile.engagementLabel }}
+            </p>
             <div class="flex items-center gap-3">
               <span class="text-4xl font-black text-white">{{ gamStore.profile?.level || authStore.currentUser.level || 1 }}</span>
               <span class="px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1"
@@ -111,6 +114,17 @@
           <div class="text-right">
             <p class="text-3xl font-black text-emerald-400">{{ gamStore.profile?.totalXP || authStore.currentUser.totalXP || 0 }} XP</p>
             <p class="text-sm text-gray-400 mt-1">До следующего уровня: {{ xpToNextLevel }} XP</p>
+          </div>
+        </div>
+
+        <div v-if="gamStore.profile?.recentXpGrants?.length" class="mb-6 space-y-2">
+          <p class="text-sm text-primary-300 font-medium">Последние награды XP</p>
+          <div
+            v-for="(grant, idx) in gamStore.profile.recentXpGrants"
+            :key="idx"
+            class="text-sm text-gray-300 bg-white/5 rounded-lg px-3 py-2"
+          >
+            +{{ grant.finalXp }} XP — {{ grant.reasonSummary || grant.actionType }}
           </div>
         </div>
 
@@ -264,6 +278,8 @@ const levelTitle = computed(() => {
 })
 
 const xpToNextLevel = computed(() => {
+  if (gamStore.profile?.xpToNextLevel != null)
+    return gamStore.profile.xpToNextLevel
   if (!gamStore.profile) {
     const lvl = authStore.currentUser?.level || 1
     const xp = authStore.currentUser?.totalXP || 0

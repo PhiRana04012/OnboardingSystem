@@ -16,13 +16,23 @@ public class TestAttemptsController : ControllerBase
     private readonly ILogger<TestAttemptsController> _logger;
     private readonly IEmailService _emailService;
     private readonly IGamificationService _gamificationService;
+    private readonly INotificationService _notificationService;
+    private readonly IAuthorizationService _authorizationService;
 
-    public TestAttemptsController(AppDbContext context, ILogger<TestAttemptsController> logger, IEmailService emailService, IGamificationService gamificationService)
+    public TestAttemptsController(
+        AppDbContext context,
+        ILogger<TestAttemptsController> logger,
+        IEmailService emailService,
+        IGamificationService gamificationService,
+        INotificationService notificationService,
+        IAuthorizationService authorizationService)
     {
         _context = context;
         _logger = logger;
         _emailService = emailService;
         _gamificationService = gamificationService;
+        _notificationService = notificationService;
+        _authorizationService = authorizationService;
     }
 
 
@@ -158,6 +168,14 @@ public class TestAttemptsController : ControllerBase
         var isPassed = score >= module.PassingScore;
         var attemptNumber = existingAttempts + 1;
 
+        decimal? previousBestScore = null;
+        if (existingAttempts > 0)
+        {
+            previousBestScore = await _context.TestAttempts
+                .Where(t => t.UserId == dto.UserId && t.ModuleId == dto.ModuleId)
+                .MaxAsync(t => (decimal?)t.Score);
+        }
+
         // Сохраняем попытку
         var attempt = new TestAttempt
         {
@@ -216,29 +234,38 @@ public class TestAttemptsController : ControllerBase
             await CheckAndCompleteOnboardingAsync(dto.UserId);
         }
 
-        // --- Gamification ---
-        int xpEarned = 0;
+        var gamificationRequest = new Services.Gamification.GamificationXpRequest
+        {
+            ActionType = isPassed
+                ? Services.Gamification.GamificationActionTypes.TestPassed
+                : Services.Gamification.GamificationActionTypes.TestFailed,
+            ModuleId = dto.ModuleId,
+            ModuleTitle = module.Title,
+            IsMandatoryModule = module.IsMandatory,
+            TestScore = score,
+            AttemptNumber = attemptNumber,
+            TestPassed = isPassed,
+            PreviousBestScore = previousBestScore
+        };
+        var xpResult = await _gamificationService.ProcessEventAsync(dto.UserId, gamificationRequest);
+
         if (isPassed)
         {
-            xpEarned += 50; // База за сдачу 
-            if (attemptNumber == 1) xpEarned += 20; // С первой попытки
-            if (score == 100) xpEarned += 30; // 100% результат
-
-            await _gamificationService.AddXpAsync(dto.UserId, xpEarned);
-
-            // Ачивки за тесты
-            if (score == 100) await _gamificationService.GrantAchievementAsync(dto.UserId, "TEST_100");
-            
-            // Если модуль безопасности
-            if (module.Title.Contains("узост", StringComparison.OrdinalIgnoreCase) || module.Title.Contains("езопасн", StringComparison.OrdinalIgnoreCase))
-            {
-                await _gamificationService.GrantAchievementAsync(dto.UserId, "MODULE_SAFETY");
-            }
+            await _notificationService.SendAsync(
+                dto.UserId,
+                NotificationTypes.TestPassed,
+                "Тест сдан",
+                $"Модуль «{module.Title}»: {score:F0}%.",
+                $"/module/{dto.ModuleId}");
         }
         else
         {
-            // Утешительный опыт
-            await _gamificationService.AddXpAsync(dto.UserId, 5);
+            await _notificationService.SendAsync(
+                dto.UserId,
+                NotificationTypes.TestFailed,
+                "Тест не сдан",
+                $"Модуль «{module.Title}»: {score:F0}%. Осталось попыток: {Math.Max(0, module.MaxAttempts - attemptNumber)}.",
+                $"/module/{dto.ModuleId}/test");
         }
 
         var result = new TestResultDto
@@ -254,6 +281,8 @@ public class TestAttemptsController : ControllerBase
             IsPassed = isPassed,
             CanRetry = !isPassed && attemptNumber < module.MaxAttempts,
             RemainingAttempts = Math.Max(0, module.MaxAttempts - attemptNumber),
+            XpAwarded = xpResult.FinalXp,
+            XpReason = xpResult.FinalXp > 0 ? $"+{xpResult.FinalXp} XP — {xpResult.ReasonSummary}" : null,
             QuestionResults = questionResults
         };
 
@@ -295,13 +324,45 @@ public class TestAttemptsController : ControllerBase
     }
 
     /// <summary>
-    /// Сбросить попытки теста для пользователя (доступно Админам/HR)
+    /// Сбросить попытки теста для пользователя (доступно только Админам/HR)
     /// </summary>
     [HttpDelete("reset/user/{userId}/module/{moduleId}")]
     [ProducesResponseType(204)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> ResetAttempts(int userId, int moduleId)
     {
+        // Получаем текущего пользователя
+        var currentUser = await this.GetCurrentUserAsync(_context);
+        
+        // Проверяем авторизацию: только Админы и HR могут сбрасывать попытки
+        if (currentUser == null)
+        {
+            return Unauthorized();
+        }
+
+        var isAdmin = _authorizationService.IsAdmin(currentUser);
+        var isHr = _authorizationService.IsHr(currentUser);
+
+        if (!isAdmin && !isHr)
+        {
+            return Forbid();
+        }
+
+        // Проверяем, что целевой пользователь существует
+        var targetUser = await _context.Users.FindAsync(userId);
+        if (targetUser == null)
+        {
+            return NotFound(new { message = "Пользователь не найден" });
+        }
+
+        // Проверяем, что модуль существует
+        var module = await _context.Modules.FindAsync(moduleId);
+        if (module == null)
+        {
+            return NotFound(new { message = "Модуль не найден" });
+        }
+
         var attempts = await _context.TestAttempts
             .Where(t => t.UserId == userId && t.ModuleId == moduleId)
             .ToListAsync();
@@ -320,12 +381,13 @@ public class TestAttemptsController : ControllerBase
             progress.CompletionDate = null;
         }
 
+        // Логируем с указанием кто выполнил действие
         var actionLog = new ActionLog
         {
-            UserId = userId,
-            ActionType = "Сброс попыток теста",
+            UserId = currentUser.UserId,
+            ActionType = "Администратор сбросил попытки теста",
             Timestamp = DateTime.UtcNow,
-            Details = $"Сброшены попытки по модулю ID {moduleId}"
+            Details = $"Сброшены попытки для пользователя {targetUser.FullName} (ID: {userId}) по модулю {module.Title} (ID: {moduleId}). Сброшено попыток: {attempts.Count}"
         };
         _context.ActionLogs.Add(actionLog);
 
@@ -382,6 +444,23 @@ public class TestAttemptsController : ControllerBase
 
             await _emailService.SendOnboardingCompletedEmailAsync(hrEmail, mentorEmail, user.FullName);
             await _gamificationService.GrantAchievementAsync(userId, "ONBOARDING_DONE");
+
+            await _notificationService.SendAsync(
+                userId,
+                NotificationTypes.OnboardingCompleted,
+                "Онбординг завершён!",
+                "Поздравляем! Вы прошли все обязательные модули.",
+                "/");
+
+            if (user.MentorId.HasValue)
+            {
+                await _notificationService.SendAsync(
+                    user.MentorId.Value,
+                    NotificationTypes.OnboardingCompleted,
+                    "Подопечный завершил онбординг",
+                    $"{user.FullName} завершил программу онбординга.",
+                    "/mentor");
+            }
         }
     }
 }

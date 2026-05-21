@@ -19,6 +19,36 @@
             Создать запись в журнале действий
             </summary>
         </member>
+        <member name="M:OnboardingSystem.Controllers.AnalyticsController.GetDashboard(System.Int32)">
+            <summary>
+            Аналитика + план обучения + следующий модуль (один запрос, один вызов AI)
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.AnalyticsController.GetProgressAnalysis(System.Int32)">
+            <summary>
+            Получить AI-анализ прогресса обучения пользователя
+            </summary>
+            <param name="userId">ID пользователя</param>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.AnalyticsController.GetLearningPath(System.Int32,System.String)">
+            <summary>
+            Получить персональный путь обучения
+            </summary>
+            <param name="userId">ID пользователя</param>
+            <param name="strategy">Стратегия: fast-track, balanced, deep-learning</param>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.AnalyticsController.GetNextModule(System.Int32)">
+            <summary>
+            Получить следующий рекомендованный модуль для прохождения
+            </summary>
+            <param name="userId">ID пользователя</param>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.AnalyticsController.GetWeakAndStrongAreas(System.Int32)">
+            <summary>
+            Получить слабые и сильные области пользователя
+            </summary>
+            <param name="userId">ID пользователя</param>
+        </member>
         <member name="M:OnboardingSystem.Controllers.ChecklistsController.GetModuleChecklist(System.Int32,System.Int32)">
             <summary>
             Получить чек-лист модуля для конкретного пользователя
@@ -254,7 +284,7 @@
         </member>
         <member name="M:OnboardingSystem.Controllers.TestAttemptsController.ResetAttempts(System.Int32,System.Int32)">
             <summary>
-            Сбросить попытки теста для пользователя (доступно Админам/HR)
+            Сбросить попытки теста для пользователя (доступно только Админам/HR)
             </summary>
         </member>
         <member name="M:OnboardingSystem.Controllers.UsersController.GetUsers">
@@ -290,6 +320,26 @@
         <member name="M:OnboardingSystem.Controllers.UsersController.SetPassword(OnboardingSystem.DTOs.SetPasswordDto)">
             <summary>
             Установить пароль по токену (публичный endpoint, не требует авторизации)
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.UsersController.AssignMentees(System.Int32,OnboardingSystem.DTOs.AssignMenteesDto)">
+            <summary>
+            Массовое назначение подопечных наставнику
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.AssignMenteesDto">
+            <summary>
+            DTO для массового назначения подопечных наставнику
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.AssignMenteesDto.MentorId">
+            <summary>
+            ID наставника
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.AssignMenteesDto.MenteeIds">
+            <summary>
+            Список ID сотрудников, которые будут подопечными наставника
             </summary>
         </member>
         <member name="T:OnboardingSystem.DTOs.CreateUserDto">
@@ -442,167 +492,32 @@
             Когда был использован
             </summary>
         </member>
-        <member name="T:OnboardingSystem.Migrations.InitialCreate">
+        <member name="T:OnboardingSystem.Migrations.AddGametables">
             <inheritdoc />
         </member>
-        <member name="M:OnboardingSystem.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:OnboardingSystem.Migrations.AddGametables.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:OnboardingSystem.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:OnboardingSystem.Migrations.AddGametables.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:OnboardingSystem.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:OnboardingSystem.Migrations.AddGametables.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:OnboardingSystem.Migrations.AddUserProfileFields">
+        <member name="T:OnboardingSystem.Migrations.AddNotifications">
             <inheritdoc />
         </member>
-        <member name="M:OnboardingSystem.Migrations.AddUserProfileFields.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:OnboardingSystem.Migrations.AddNotifications.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:OnboardingSystem.Migrations.AddUserProfileFields.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:OnboardingSystem.Migrations.AddNotifications.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:OnboardingSystem.Migrations.AddUserProfileFields.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:OnboardingSystem.Migrations.AddNotifications.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:OnboardingSystem.Migrations.AddGamification">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddGamification.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddGamification.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddGamification.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.AddChecklists2">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddChecklists2.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddChecklists2.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddChecklists2.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.AddChecklists">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddChecklists.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddChecklists.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddChecklists.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.AddFaqEntries">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddFaqEntries.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddFaqEntries.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddFaqEntries.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.UpdateModel">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.UpdateModel.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.UpdateModel.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.UpdateModel.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.Add1n">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.Add1n.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.Add1n.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.Add1n.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.AddKeycloakIntegration">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddKeycloakIntegration.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddKeycloakIntegration.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.AddUserProperties">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddUserProperties.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddUserProperties.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddUserProperties.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.email">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.email.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.email.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.email.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.AddJobTitles">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddJobTitles.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddJobTitles.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddJobTitles.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.AddHeader">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddHeader.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddHeader.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddHeader.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:OnboardingSystem.Migrations.AddDepartmentHead">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddDepartmentHead.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:OnboardingSystem.Migrations.AddDepartmentHead.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
+        <member name="M:OnboardingSystem.Services.IAiMentorService.AskAsync(System.String,System.Boolean,System.Threading.CancellationToken)">
+            <param name="includeKnowledgeContext">false — без PDF/FAQ в system prompt (аналитика, планы)</param>
         </member>
         <member name="T:OnboardingSystem.Services.IAuthenticationProvider">
             <summary>
@@ -708,6 +623,31 @@
         <member name="M:OnboardingSystem.Services.IKeycloakAdminService.AssignRolesAsync(System.String,System.Collections.Generic.IList{System.String})">
             <summary>
             Назначить роли пользователю в Keycloak
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.ILearningPathService.GenerateLearningPathAsync(System.Int32,System.String,OnboardingSystem.DTOs.AIAnalyticsDto,System.Threading.CancellationToken)">
+            <summary>
+            Генерирует оптимальный путь обучения для пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.ILearningPathService.GetNextRecommendedModuleAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить рекомендованный следующий модуль
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.ILearningPathService.GetUserLearningPathAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить сохранённый Learning Path пользователя
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IProgressAnalyticsService.AnalyzeUserProgressAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Анализирует текущий прогресс пользователя через ИИ
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IProgressAnalyticsService.GetWeakAndStrongAreasAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить слабые и сильные области пользователя
             </summary>
         </member>
         <member name="T:OnboardingSystem.Services.IRimsIntegrationService">

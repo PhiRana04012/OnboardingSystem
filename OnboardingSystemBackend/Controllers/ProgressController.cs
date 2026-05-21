@@ -15,12 +15,18 @@ public class ProgressController : ControllerBase
     private readonly AppDbContext _context;
     private readonly ILogger<ProgressController> _logger;
     private readonly IGamificationService _gamificationService;
+    private readonly INotificationService _notificationService;
 
-    public ProgressController(AppDbContext context, ILogger<ProgressController> logger, IGamificationService gamificationService)
+    public ProgressController(
+        AppDbContext context,
+        ILogger<ProgressController> logger,
+        IGamificationService gamificationService,
+        INotificationService notificationService)
     {
         _context = context;
         _logger = logger;
         _gamificationService = gamificationService;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -218,18 +224,20 @@ public class ProgressController : ControllerBase
 
         await _context.SaveChangesAsync();
         
-        // --- Gamification ---
-        await _gamificationService.AddXpAsync(userId, 20); // 20 XP за прочтение теории
-        
-        // Check if this is the first module ever completed by checking total modules read
-        var completedCount = await _context.UserModuleProgresses
-            .Where(p => p.UserId == userId && p.Status == "Завершён")
-            .CountAsync();
-            
-        if (completedCount == 1)
+        await _gamificationService.ProcessEventAsync(userId, new Services.Gamification.GamificationXpRequest
         {
-            await _gamificationService.GrantAchievementAsync(userId, "FIRST_MODULE");
-        }
+            ActionType = Services.Gamification.GamificationActionTypes.ModuleRead,
+            ModuleId = dto.ModuleId,
+            IsMandatoryModule = module.IsMandatory,
+            ModuleTitle = module.Title
+        });
+
+        await _notificationService.SendAsync(
+            userId,
+            NotificationTypes.ModuleCompleted,
+            "Модуль завершён",
+            $"Вы прочитали модуль «{module.Title}».",
+            $"/module/{dto.ModuleId}");
 
         await _context.Entry(progress)
             .Reference(p => p.User)

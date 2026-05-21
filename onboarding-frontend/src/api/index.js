@@ -17,9 +17,10 @@ const createApiInstance = (baseURL) => {
   // Request interceptor for adding auth token
   instance.interceptors.request.use(
     (config) => {
-      // Получаем токен из localStorage
+      const url = config.url || ''
+      const isPublicAuth = url.includes('/users/login') || url.includes('/users/set-password')
       const token = localStorage.getItem('authToken')
-      if (token) {
+      if (token && !isPublicAuth) {
         config.headers.Authorization = `Bearer ${token}`
       }
       return config
@@ -38,6 +39,15 @@ const createApiInstance = (baseURL) => {
         const data = error.response.data
         
         if (status === 401) {
+          const url = error.config?.url || ''
+          const isLogin = url.includes('/users/login')
+          if (!isLogin) {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('currentUser')
+            if (!window.location.pathname.startsWith('/login')) {
+              window.location.href = '/login'
+            }
+          }
           console.error('Unauthorized')
         } else if (status === 404) {
           console.error('Resource not found:', error.config.url)

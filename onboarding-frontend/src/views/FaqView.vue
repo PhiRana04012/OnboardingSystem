@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-4xl mx-auto space-y-6">
     <div class="text-center space-y-2">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">База знаний и FAQ</h1>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">FAQ</h1>
       <p class="text-gray-600 dark:text-gray-300">Ответы на часто задаваемые вопросы для новых сотрудников</p>
     </div>
 

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
+using OnboardingSystem.Services;
+using OnboardingSystem.Services.Gamification;
 
 namespace OnboardingSystem.Controllers;
 
@@ -11,10 +13,12 @@ namespace OnboardingSystem.Controllers;
 public class GamificationController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IGamificationService _gamificationService;
 
-    public GamificationController(AppDbContext context)
+    public GamificationController(AppDbContext context, IGamificationService gamificationService)
     {
         _context = context;
+        _gamificationService = gamificationService;
     }
 
     /// <summary>
@@ -36,13 +40,33 @@ public class GamificationController : ControllerBase
         }
 
         var allAchievements = await _context.Achievements.ToListAsync();
+        var engagement = await _gamificationService.GetEngagementStateAsync(userId);
+        var level = LevelProgression.GetLevelFromTotalXp(user.TotalXP);
+
+        var recentGrants = await _context.XpGrantLogs
+            .AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.GrantedAt)
+            .Take(5)
+            .Select(x => new XpGrantDto
+            {
+                FinalXp = x.FinalXp,
+                ActionType = x.ActionType,
+                ReasonSummary = x.ReasonSummary,
+                GrantedAt = x.GrantedAt
+            })
+            .ToListAsync();
 
         var dto = new GamificationProfileDto
         {
             UserId = user.UserId,
             TotalXP = user.TotalXP,
-            Level = user.Level,
-            NextLevelXP = user.Level * 100, // simple calc: level 1 -> 100, level 2 -> 200 max.
+            Level = level,
+            NextLevelXP = LevelProgression.ThresholdForLevel(level + 1),
+            XpToNextLevel = LevelProgression.XpToNextLevel(user.TotalXP, level),
+            LevelProgressPercent = LevelProgression.LevelProgressPercent(user.TotalXP, level),
+            EngagementLabel = EngagementLabels.ToDisplayName(engagement.Cluster),
+            RecentXpGrants = recentGrants
         };
 
         foreach (var ach in allAchievements)
