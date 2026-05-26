@@ -49,6 +49,31 @@
             </summary>
             <param name="userId">ID пользователя</param>
         </member>
+        <member name="M:OnboardingSystem.Controllers.AnalyticsController.GetDepartmentDashboard(System.Int32)">
+            <summary>
+            Получить полный дашборд аналитики для отдела
+            Включает метрики, прогресс сотрудников и активность по дням
+            </summary>
+            <param name="departmentId">ID отдела</param>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.AnalyticsController.GetDepartmentMetrics(System.Int32)">
+            <summary>
+            Получить метрики отдела
+            </summary>
+            <param name="departmentId">ID отдела</param>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.AnalyticsController.GetDepartmentEmployeeProgress(System.Int32)">
+            <summary>
+            Получить прогресс каждого сотрудника в отделе
+            </summary>
+            <param name="departmentId">ID отдела</param>
+        </member>
+        <member name="M:OnboardingSystem.Controllers.AnalyticsController.GetDepartmentDailyActivity(System.Int32)">
+            <summary>
+            Получить активность по дням недели для отдела
+            </summary>
+            <param name="departmentId">ID отдела</param>
+        </member>
         <member name="M:OnboardingSystem.Controllers.ChecklistsController.GetModuleChecklist(System.Int32,System.Int32)">
             <summary>
             Получить чек-лист модуля для конкретного пользователя
@@ -322,11 +347,6 @@
             Установить пароль по токену (публичный endpoint, не требует авторизации)
             </summary>
         </member>
-        <member name="M:OnboardingSystem.Controllers.UsersController.AssignMentees(System.Int32,OnboardingSystem.DTOs.AssignMenteesDto)">
-            <summary>
-            Массовое назначение подопечных наставнику
-            </summary>
-        </member>
         <member name="T:OnboardingSystem.DTOs.AssignMenteesDto">
             <summary>
             DTO для массового назначения подопечных наставнику
@@ -395,6 +415,146 @@
         <member name="T:OnboardingSystem.DTOs.UpdateUserDto">
             <summary>
             DTO для обновления данных пользователя
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.DepartmentAnalyticsDashboardDto">
+            <summary>
+            Дашборд аналитики для менеджера отдела
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentAnalyticsDashboardDto.Metrics">
+            <summary>
+            Ключевые метрики отдела
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentAnalyticsDashboardDto.EmployeeProgress">
+            <summary>
+            Прогресс каждого сотрудника в отделе
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentAnalyticsDashboardDto.ActivityByDay">
+            <summary>
+            Активность по дням недели
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentAnalyticsDashboardDto.GeneratedAt">
+            <summary>
+            Когда была сгенерирована статистика
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.DepartmentMetricsDto">
+            <summary>
+            Метрики по отделу
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentMetricsDto.ActiveNewcomers">
+            <summary>
+            Количество активных новичков (в процессе онбординга)
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentMetricsDto.CompletedOnboarding">
+            <summary>
+            Количество завершивших онбординг
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentMetricsDto.AverageXP">
+            <summary>
+            Средний XP в отделе
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentMetricsDto.AverageLevel">
+            <summary>
+            Средний уровень в отделе
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentMetricsDto.CompletionPercentage">
+            <summary>
+            Процент завершения онбординга в отделе
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentMetricsDto.AverageOnboardingDays">
+            <summary>
+            Среднее время адаптации (в днях)
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DepartmentMetricsDto.TotalEmployees">
+            <summary>
+            Общее количество сотрудников в отделе
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.EmployeeProgressDto">
+            <summary>
+            Прогресс отдельного сотрудника
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.EmployeeProgressDto.OnboardingStatus">
+            <summary>
+            Статус онбординга: active, completed, paused
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.EmployeeProgressDto.Level">
+            <summary>
+            Текущий уровень
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.EmployeeProgressDto.TotalXP">
+            <summary>
+            Текущий XP
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.EmployeeProgressDto.CompletionPercentage">
+            <summary>
+            Процент завершения онбординга
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.EmployeeProgressDto.DaysInOnboarding">
+            <summary>
+            Дни на онбординге
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.EmployeeProgressDto.HireDate">
+            <summary>
+            Дата найма
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.EmployeeProgressDto.MentorName">
+            <summary>
+            ФИО наставника
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.EmployeeProgressDto.HasRecentActivity">
+            <summary>
+            Есть ли недавняя активность (последние 3 дня)
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.DTOs.DailyActivityDto">
+            <summary>
+            Активность по дням недели
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DailyActivityDto.DayOfWeek">
+            <summary>
+            День недели (Monday, Tuesday, etc.)
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DailyActivityDto.ActiveUsers">
+            <summary>
+            Количество активных пользователей в этот день
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DailyActivityDto.TestsCompleted">
+            <summary>
+            Количество выполненных тестов
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DailyActivityDto.ModulesCompleted">
+            <summary>
+            Количество модулей завершено
+            </summary>
+        </member>
+        <member name="P:OnboardingSystem.DTOs.DailyActivityDto.AverageXpGained">
+            <summary>
+            Средний набранный XP в этот день
             </summary>
         </member>
         <member name="T:OnboardingSystem.DTOs.LoginDto">
@@ -516,6 +676,41 @@
         <member name="M:OnboardingSystem.Migrations.AddNotifications.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:OnboardingSystem.Services.DepartmentAnalyticsService">
+            <summary>
+            Сервис для получения аналитики по отделам
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.DepartmentAnalyticsService.GetDepartmentDashboardAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить полный дашборд аналитики для отдела
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.DepartmentAnalyticsService.GetDepartmentMetricsAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить метрики по отделу
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.DepartmentAnalyticsService.GetEmployeeProgressAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить прогресс каждого сотрудника в отделе
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.DepartmentAnalyticsService.GetDailyActivityAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить активность по дням недели (за последние 4 недели)
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.DepartmentAnalyticsService.GetEmptyDailyActivity">
+            <summary>
+            Получить пустую неделю активности
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.DepartmentAnalyticsService.GetDayOfWeekNumber(System.String)">
+            <summary>
+            Получить номер дня недели для сортировки
+            </summary>
+        </member>
         <member name="M:OnboardingSystem.Services.IAiMentorService.AskAsync(System.String,System.Boolean,System.Threading.CancellationToken)">
             <param name="includeKnowledgeContext">false — без PDF/FAQ в system prompt (аналитика, планы)</param>
         </member>
@@ -603,6 +798,31 @@
         <member name="M:OnboardingSystem.Services.IAuthorizationService.CanManageModule(OnboardingSystem.Entities.User,OnboardingSystem.Entities.Module)">
             <summary>
             Управление модулями: админ/HR — все; начальник — только модули своего отдела
+            </summary>
+        </member>
+        <member name="T:OnboardingSystem.Services.IDepartmentAnalyticsService">
+            <summary>
+            Сервис для получения аналитики по отделам
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IDepartmentAnalyticsService.GetDepartmentDashboardAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить дашборд аналитики для отдела
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IDepartmentAnalyticsService.GetDepartmentMetricsAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить метрики по отделу
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IDepartmentAnalyticsService.GetEmployeeProgressAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить прогресс каждого сотрудника в отделе
+            </summary>
+        </member>
+        <member name="M:OnboardingSystem.Services.IDepartmentAnalyticsService.GetDailyActivityAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Получить активность по дням недели
             </summary>
         </member>
         <member name="M:OnboardingSystem.Services.IKeycloakAdminService.CreateUserAsync(System.String,System.String,System.String,System.Collections.Generic.IList{System.String})">

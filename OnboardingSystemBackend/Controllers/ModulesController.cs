@@ -86,12 +86,7 @@ public class ModulesController : ControllerBase
             return NotFound();
         }
 
-        var currentUser = await this.GetCurrentUserAsync(_context);
-        if (currentUser != null && !_authorizationService.CanManageModule(currentUser, module))
-        {
-            return Forbid();
-        }
-
+        // GET доступен всем авторизованным пользователям
         return Ok(MapModuleToDto(module));
     }
 

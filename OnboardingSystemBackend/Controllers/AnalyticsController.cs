@@ -14,17 +14,20 @@ public class AnalyticsController : ControllerBase
 {
     private readonly IProgressAnalyticsService _analyticsService;
     private readonly ILearningPathService _learningPathService;
+    private readonly IDepartmentAnalyticsService _departmentAnalyticsService;
     private readonly AppDbContext _context;
     private readonly ILogger<AnalyticsController> _logger;
 
     public AnalyticsController(
         IProgressAnalyticsService analyticsService,
         ILearningPathService learningPathService,
+        IDepartmentAnalyticsService departmentAnalyticsService,
         AppDbContext context,
         ILogger<AnalyticsController> logger)
     {
         _analyticsService = analyticsService;
         _learningPathService = learningPathService;
+        _departmentAnalyticsService = departmentAnalyticsService;
         _context = context;
         _logger = logger;
     }
@@ -180,6 +183,150 @@ public class AnalyticsController : ControllerBase
         {
             _logger.LogError(ex, "Error getting areas for user {UserId}", userId);
             return StatusCode(500, new { message = "Ошибка при получении информации" });
+        }
+    }
+
+    // ==================== МЕНЕДЖЕРСКАЯ АНАЛИТИКА ====================
+
+    /// <summary>
+    /// Получить полный дашборд аналитики для отдела
+    /// Включает метрики, прогресс сотрудников и активность по дням
+    /// </summary>
+    /// <param name="departmentId">ID отдела</param>
+    [HttpGet("department/{departmentId}/dashboard")]
+    [ProducesResponseType(typeof(DepartmentAnalyticsDashboardDto), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult<DepartmentAnalyticsDashboardDto>> GetDepartmentDashboard(int departmentId)
+    {
+        try
+        {
+            // Проверка доступа - пользователь может видеть данные только своего отдела
+            var currentUser = await this.GetCurrentUserAsync(_context);
+            if (currentUser != null && currentUser.DepartmentId != departmentId)
+            {
+                _logger.LogWarning(
+                    "User {UserId} attempted to access department {DepartmentId} analytics",
+                    currentUser.UserId,
+                    departmentId);
+                return Forbid();
+            }
+
+            var dashboard = await _departmentAnalyticsService.GetDepartmentDashboardAsync(departmentId);
+            return Ok(dashboard);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Department {DepartmentId} not found", departmentId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading department dashboard for {DepartmentId}", departmentId);
+            return StatusCode(500, new { message = "Ошибка при загрузке аналитики отдела" });
+        }
+    }
+
+    /// <summary>
+    /// Получить метрики отдела
+    /// </summary>
+    /// <param name="departmentId">ID отдела</param>
+    [HttpGet("department/{departmentId}/metrics")]
+    [ProducesResponseType(typeof(DepartmentMetricsDto), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult<DepartmentMetricsDto>> GetDepartmentMetrics(int departmentId)
+    {
+        try
+        {
+            var currentUser = await this.GetCurrentUserAsync(_context);
+            if (currentUser != null && currentUser.DepartmentId != departmentId)
+            {
+                return Forbid();
+            }
+
+            var metrics = await _departmentAnalyticsService.GetDepartmentMetricsAsync(departmentId);
+            return Ok(metrics);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Department {DepartmentId} not found", departmentId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting metrics for department {DepartmentId}", departmentId);
+            return StatusCode(500, new { message = "Ошибка при получении метрик" });
+        }
+    }
+
+    /// <summary>
+    /// Получить прогресс каждого сотрудника в отделе
+    /// </summary>
+    /// <param name="departmentId">ID отдела</param>
+    [HttpGet("department/{departmentId}/employees")]
+    [ProducesResponseType(typeof(List<EmployeeProgressDto>), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult<List<EmployeeProgressDto>>> GetDepartmentEmployeeProgress(int departmentId)
+    {
+        try
+        {
+            var currentUser = await this.GetCurrentUserAsync(_context);
+            if (currentUser != null && currentUser.DepartmentId != departmentId)
+            {
+                return Forbid();
+            }
+
+            var progress = await _departmentAnalyticsService.GetEmployeeProgressAsync(departmentId);
+            return Ok(progress);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Department {DepartmentId} not found", departmentId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting employee progress for department {DepartmentId}", departmentId);
+            return StatusCode(500, new { message = "Ошибка при получении прогресса сотрудников" });
+        }
+    }
+
+    /// <summary>
+    /// Получить активность по дням недели для отдела
+    /// </summary>
+    /// <param name="departmentId">ID отдела</param>
+    [HttpGet("department/{departmentId}/activity")]
+    [ProducesResponseType(typeof(List<DailyActivityDto>), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult<List<DailyActivityDto>>> GetDepartmentDailyActivity(int departmentId)
+    {
+        try
+        {
+            var currentUser = await this.GetCurrentUserAsync(_context);
+            if (currentUser != null && currentUser.DepartmentId != departmentId)
+            {
+                return Forbid();
+            }
+
+            var activity = await _departmentAnalyticsService.GetDailyActivityAsync(departmentId);
+            return Ok(activity);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Department {DepartmentId} not found", departmentId);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting activity for department {DepartmentId}", departmentId);
+            return StatusCode(500, new { message = "Ошибка при получении активности" });
         }
     }
 }

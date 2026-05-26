@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const routes = [
@@ -82,42 +82,47 @@ const routes = [
   }
 ]
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes
-})
+export const createAppRouter = (history = createWebHistory()) => {
+  const router = createRouter({
+    history,
+    routes
+  })
 
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  
-  if (to.meta.requiresAuth === false) {
+  router.beforeEach((to, from, next) => {
+    const authStore = useAuthStore()
+
+    if (to.meta.requiresAuth === false) {
+      next()
+      return
+    }
+
+    if (!authStore.isAuthenticated) {
+      next({ name: 'Login' })
+      return
+    }
+
+    if (to.meta.requiresReportsAccess && !authStore.canViewDepartmentReports) {
+      next({ name: 'Dashboard' })
+      return
+    }
+
+    if (to.meta.requiresDepartmentManagement && !authStore.canManageDepartment) {
+      next({ name: 'Dashboard' })
+      return
+    }
+
+    if (to.meta.requiresMentor && !authStore.isMentor && !authStore.canManageMentees) {
+      next({ name: 'Dashboard' })
+      return
+    }
+
     next()
-    return
-  }
+  })
 
-  if (!authStore.isAuthenticated) {
-    next({ name: 'Login' })
-    return
-  }
+  return router
+}
 
-  if (to.meta.requiresReportsAccess && !authStore.canViewDepartmentReports) {
-    next({ name: 'Dashboard' })
-    return
-  }
-
-  if (to.meta.requiresDepartmentManagement && !authStore.canManageDepartment) {
-    next({ name: 'Dashboard' })
-    return
-  }
-
-  // Check mentor specific access
-  if (to.meta.requiresMentor && !authStore.isMentor && !authStore.canManageMentees) {
-    next({ name: 'Dashboard' })
-    return
-  }
-
-  next()
-})
+const router = createAppRouter()
 
 export default router
 

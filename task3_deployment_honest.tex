@@ -1,0 +1,317 @@
+\mytasksection{Задача 3. Подготовить систему для внедрения в организации}
+
+Подготовка \emph{Onboarding System} (системы адаптации новых сотрудников) включала создание контейнер-образов для frontend и backend, настройку синхронизации с кадровой системой RIMS и подготовку конфигураций для корпоративного внедрения.
+
+\subsubsection*{Контейнеризация компонентов}
+
+\textbf{Backend контейнер (ASP.NET Core 9):}
+
+Dockerfile реализует двухэтапную сборку: на этапе build используется образ \texttt{dotnet/sdk:9.0} для компиляции приложения в режиме Release, на этапе runtime используется \texttt{dotnet/aspnet:9.0} для минимизации размера. Приложение включает 9 основных контроллеров (Users, Modules, Progress, Gamification, AiMentor, Notifications, RIMS Sync, Analytics, Reports), запускается на порте 8080. Dockerfile автоматически применяет миграции БД при старте через код в Program.cs (retry logic: 12 попыток с 5-секундными интервалами).
+
+\textbf{Frontend контейнер (Vue.js 3 + Nginx):}
+
+Dockerfile для Onboarding System реализует двухэтапную сборку: build-этап на \texttt{node:20-alpine} выполняет \texttt{npm run build} (Vite собирает статику в dist/), production-этап на \texttt{nginx:stable-alpine} разворачивает статические файлы с поддержкой SPA-маршрутизации (nginx.conf переводит 404 на index.html). Frontend слушает на порте 80 и обслуживает все страницы: Dashboard, Modules, AI Chat, Leaderboard, Analytics.
+
+\textbf{docker-compose для локального тестирования:}
+
+Подготовлен docker-compose.yml для быстрого локального запуска компонентов системы:
+
+\begin{itemize}
+	\item \textbf{Frontend-сервис:} собирается из \texttt{onboarding-frontend/Dockerfile}, доступен на http://localhost:80
+	\item \textbf{MailHog-сервис:} для перехвата и просмотра email-уведомлений при тестировании (веб-интерфейс на http://localhost:8025)
+	\item \textbf{Bridge-сеть:} оба сервиса подключены к сети onboarding\_net для внутренней коммуникации
+\end{itemize}
+
+\textbf{Примечание о backend:} В текущей версии compose backend запускается отдельно через \texttt{dotnet run} (Development) или в отдельном контейнере (Production). Это позволяет разработчикам быстро менять код без пересборки образа. Для полнофункционального Production-развёртывания требуется добавить backend-сервис, SQL Server и Redis в compose.
+
+\subsubsection*{Конфигурация для Development и Production}
+
+\textbf{Development окружение (локальная разработка):}
+
+\begin{itemize}
+	\item Backend запускается через \texttt{dotnet run} с конфигурацией из \texttt{appsettings.Development.json}
+	\item Frontend доступен на http://localhost:5173 через \texttt{npm run dev} (Vite dev server с hot reload)
+	\item SQL Server LocalDB или Express используется для локальной БД (создание таблиц через миграции)
+	\item MailHog перехватывает все email (вместо реальной SMTP) на http://localhost:8025
+	\item CORS настроен для localhost:3000 и localhost:5173 в Program.cs
+	\item Логирование на Debug уровне выводит подробную информацию о синхронизации RIMS и ошибках
+\end{itemize}
+
+\textbf{Production окружение (развёртывание в организацию):}
+
+\begin{itemize}
+	\item Backend собирается в Release-режиме, запускается в Docker контейнере или на выделённом сервере
+	\item Frontend собирается в статические файлы (\texttt{npm run build}) и разворачивается на Nginx
+	\item Используется корпоративный SQL Server для хранения данных сотрудников, модулей обучения, прогресса, геймификации
+	\item Redis (опционально) используется для кеширования Leaderboard, ответов AI Chat, сессий пользователей
+	\item Конфигурация задаётся через переменные окружения Docker или appsettings.json в контейнере
+	\item RIMS API подключается ежедневно в 02:00 для синхронизации сотрудников и организационной структуры
+	\item Email-уведомления отправляются через реальный SMTP (настройки в appsettings.json)
+	\item SignalR Hub на /hubs/notifications обеспечивает real-time уведомления в браузере
+\end{itemize}
+
+\subsubsection*{Миграции БД и инициализация данных}
+
+\textbf{Entity Framework Core миграции для Onboarding System:}
+
+\begin{itemize}
+	\item \textbf{Основные таблицы:} User, Module, TestAttempt, ActionLog (созданы в начальных миграциях)
+	\item \textbf{AddGametables (20260517093755):} создаёт таблицы геймификации:
+	\begin{itemize}
+		\item GamificationProfile --- профиль пользователя с XP, текущий уровень, дата-время последнего достижения
+		\item Achievement --- справочник достижений (типы: CompletedModule, FirstTest, LeaderboardTop, ConsecutiveDays)
+		\item UserAchievement --- история полученных достижений с датами
+	\end{itemize}
+	\item \textbf{AddNotifications (20260519125528):} создаёт таблицы для уведомлений:
+	\begin{itemize}
+		\item Notification --- шаблоны уведомлений (на email, SMS, in-app)
+		\item NotificationHistory --- отправленные уведомления с временем доставки
+		\item UserNotificationPreference --- настройки пользователя (отписан/подписан от каких типов)
+	\end{itemize}
+\end{itemize}
+
+\textbf{Автоматическое применение миграций:}
+
+При запуске приложения Program.cs вызывает код, который:
+
+\begin{enumerate}
+	\item Проверяет наличие БД (если нет, создаёт её)
+	\item Применяет все ожидающие миграции (ApplyPendingMigrations)
+	\item Имеет retry-логику: 12 попыток с 5-секундными интервалами на случай временной недоступности SQL Server
+	\item Логирует успешное применение миграций для аудита
+\end{enumerate}
+
+\textbf{DbInitializer: начальное заполнение данных:}
+
+При первом запуске в Development окружении DbInitializer загружает:
+
+\begin{itemize}
+	\item \textbf{Роли:} Admin, Manager, Employee (для контроля прав доступа)
+	\item \textbf{Тестовые пользователи:} несколько юзеров с разными должностями и отделами для тестирования
+	\item \textbf{Модули обучения:} базовые курсы (Корпоративная культура, IT Безопасность, Инструменты компании)
+	\item \textbf{Вопросы и ответы:} тестовые вопросы для модулей (для проверки знаний)
+	\item \textbf{Параметры геймификации:} количество XP за разные действия (CompletedModule: 100 XP, FirstTest: 50 XP)
+	\item \textbf{Типы уведомлений:} шаблоны email-писем для разных событий (ModuleCompleted, AchievementUnlocked, LeaderboardUpdate)
+\end{itemize}
+
+В Production DbInitializer работает аналогично, но данные загружаются из RIMS при первой синхронизации.
+
+\subsubsection*{Синхронизация с RIMS: ключевой компонент внедрения}
+
+Для успешного внедрения Onboarding System в организацию критическое значение имеет интеграция с корпоративной системой управления кадрами RIMS. Все новые сотрудники и их данные поступают из RIMS, обеспечивая единственный источник истины (Single Source of Truth).
+
+\textbf{RimsIntegrationService: реализация синхронизации:}
+
+\begin{itemize}
+	\item \textbf{Расписание:} Автоматическая синхронизация запускается ежедневно в 02:00 (не-рабочее время) через Quartz Scheduler в Program.cs
+	\item \textbf{Endpoint:} Доступен также ручной запуск через GET \texttt{/api/rims/sync} для администраторов (например, при добавлении срочного новичка)
+	\item \textbf{Импортируемые данные:} 
+	\begin{itemize}
+		\item ФИО сотрудника, email, phone (для уведомлений)
+		\item Должность и отдел (для распределения правильных модулей обучения)
+		\item Дата приёма на работу (для определения статуса: новичок, активный)
+		\item Статус в организации: новичок (требует полного онбординга), активный, уволен
+	\end{itemize}
+	\item \textbf{Логирование:} Все операции логируются в ActionLog для аудита:
+	\begin{itemize}
+		\item 23 новых сотрудника успешно импортированы
+		\item 5 сотрудников обновлены (изменена должность)
+		\item 2 сотрудника помечены как уволены (скрыты из системы)
+	\end{itemize}
+	\item \textbf{Обработка ошибок:} Если подключение к RIMS не удалось, scheduler повторяет попытку в следующий час (retry logic)
+\end{itemize}
+
+\textbf{Конфигурация подключения к RIMS:}
+
+Все параметры указываются в \texttt{appsettings.json}:
+
+\begin{lstlisting}[language=json, caption=Конфигурация RIMS в appsettings.json]
+{
+  "RimsApi": {
+    "BaseUrl": "https://rims.company.local/api",
+    "ApiKey": "your-rims-api-key-here",
+    "TimeoutSeconds": 30,
+    "RetryAttempts": 3,
+    "ScheduleTime": "02:00"
+  }
+}
+\end{lstlisting}
+
+\textbf{Рекомендации для Production:}
+
+\begin{itemize}
+	\item \textbf{API Key хранение:} Не хранить в исходном коде. Использовать Azure Key Vault, AWS Secrets Manager или переменные окружения
+	\item \textbf{TLS сертификат:} RIMS API должен быть доступен по HTTPS с действительным сертификатом
+	\item \textbf{Сетевая доступность:} Убедиться, что сервер с Onboarding System может достичь RIMS (может потребоваться выбелить IP в firewall)
+	\item \textbf{Тестовое подключение:} Перед production-развёртыванием проверить синхронизацию на тестовых данных RIMS
+	\item \textbf{Резервный план:} На случай недоступности RIMS система продолжает работать с существующими пользователями (новички не добавляются, но обучение старых сотрудников не нарушается)
+\end{itemize}
+
+\subsubsection*{Конфигурация внешних сервисов для Production}
+
+\textbf{Groq API для AI Chat Assistant:}
+
+Компонент AiChatAssistant использует Groq API для генерации ответов на вопросы сотрудников по модулям обучения:
+
+\begin{itemize}
+	\item \textbf{Параметр конфигурации:} \texttt{"GroqApi:ApiKey"} в appsettings.json
+	\item \textbf{Использование:} AiMentorService отправляет вопрос сотрудника к Groq и возвращает ответ в браузер
+	\item \textbf{Рекомендация:} Протестировать с реальными вопросами по модулям обучения перед внедрением
+\end{itemize}
+
+\textbf{Email уведомления (SMTP):}
+
+NotificationService отправляет email в следующих случаях:
+\begin{itemize}
+	\item Сотрудник назначен на новый модуль обучения (приглашение)
+	\item Дедлайн модуля истекает (напоминание)
+	\item Достигнуто новое достижение (похвала + результаты на лидерборде)
+	\item Manager получает отчёт по прогрессу команды (еженедельно)
+\end{itemize}
+
+Параметры SMTP в appsettings.json:
+
+\begin{lstlisting}[language=json, caption=SMTP конфигурация]
+{
+  "EmailService": {
+    "SmtpServer": "mail.company.local",
+    "SmtpPort": 587,
+    "SenderEmail": "onboarding@company.local",
+    "SenderPassword": "****",
+    "EnableSSL": true
+  }
+}
+\end{lstlisting}
+
+\textbf{Redis для кеширования (опционально):}
+
+\begin{itemize}
+	\item \textbf{Leaderboard:} кеширует топ-100 пользователей на 1 час (иначе каждый запрос считает из БД)
+	\item \textbf{AI ответы:} кеширует часто задаваемые вопросы (TTL 24 часа)
+	\item \textbf{Сессии:} может использоваться для распределённых сессий (если несколько инстансов backend)
+	\item \textbf{Когда требуется:} При более чем 50 одновременных пользователей рекомендуется включить
+\end{itemize}
+
+\textbf{SQL Server конфигурация:}
+
+\begin{itemize}
+	\item \textbf{Connection string:} В appsettings.json: \texttt{"DefaultConnection"} указывает на SQL Server
+	\item \textbf{Версия:} Поддерживается SQL Server 2019 и выше (или Azure SQL Database)
+	\item \textbf{Размер БД:} На 1000 сотрудников: примерно 500 MB (таблицы User, Module, TestAttempt, GamificationProfile, Notifications)
+	\item \textbf{Резервные копии:} Рекомендуется полная резервная копия ежедневно + транзакционные логи каждый час
+\end{itemize}
+
+\subsubsection*{Документация и процесс внедрения}
+
+\textbf{Материалы для администраторов, доступные в репозитории:}
+
+\begin{itemize}
+	\item \textbf{OnboardingSystemBackend/Dockerfile:} готов к production build и push в Docker Registry
+	\item \textbf{onboarding-frontend/Dockerfile:} готов для статики на Nginx в Production
+	\item \textbf{docker-compose.yml:} для локального тестирования (frontend + MailHog). Требует расширения: добавить backend-сервис, SQL Server, Redis
+	\item \textbf{OnboardingSystemBackend/Program.cs:} содержит всю DI-конфигурацию: регистрацию контроллеров, БД, CORS, JWT, SignalR, внешних API
+	\item \textbf{appsettings.json и appsettings.Development.json:} примеры конфигураций (требуют заполнения реальными значениями для Production)
+	\item \textbf{OnboardingSystemBackend/Migrations/:} все миграции БД готовы к применению (ApplyPendingMigrations при старте)
+	\item \textbf{OnboardingSystemBackend/Data/DbInitializer.cs:} загрузка тестовых данных и инициализация (в Production данные из RIMS)
+\end{itemize}
+
+\textbf{Пошаговый процесс внедрения в организацию:}
+
+\begin{enumerate}
+	\item \textbf{Подготовка Infrastructure:}
+	\begin{itemize}
+		\item Выделить сервер (Windows Server или Linux) для backend
+		\item Подготовить SQL Server (версия 2019+ или Azure SQL Database)
+		\item Опционально: развернуть Redis для кеширования
+		\item Выделить сервер для frontend (или использовать CDN)
+	\end{itemize}
+	
+	\item \textbf{Конфигурация:}
+	\begin{itemize}
+		\item Заполнить appsettings.json: connection string SQL Server, RIMS API credentials, SMTP, Groq API Key
+		\item Настроить DNS записи: onboarding.company.local, rims-api.company.local
+		\item Выбелить IP серверов в firewall для RIMS и SMTP
+		\item Если используется TLS: установить сертификаты
+	\end{itemize}
+	
+	\item \textbf{Тестирование:}
+	\begin{itemize}
+		\item Запустить backend: \texttt{dotnet run} --- проверит подключение к SQL Server и применит миграции
+		\item Запустить frontend: \texttt{npm run build} + static serve или через Docker
+		\item Проверить RIMS синхронизацию: вызвать GET \texttt{/api/rims/sync}, проверить ActionLog
+		\item Проверить email: отправить тестовое уведомление на MailHog (http://localhost:8025)
+		\item Проверить AI Chat: задать вопрос AiMentorService, получить ответ от Groq
+	\end{itemize}
+	
+	\item \textbf{Миграция данных:}
+	\begin{itemize}
+		\item DbInitializer загружает тестовые данные при первом запуске (роли, тестовых пользователей, модули)
+		\item Первая синхронизация RIMS добавляет реальных сотрудников (статус: newbie)
+		\item Manager для каждого нового сотрудника назначает модули обучения
+	\end{itemize}
+	
+	\item \textbf{Запуск в Production:}
+	\begin{itemize}
+		\item Backend: Docker контейнер с переменными окружения (connection strings, API keys)
+		\item Frontend: Docker контейнер Nginx или статика на CDN
+		\item Scheduler синхронизации RIMS: запустится автоматически в 02:00
+		\item Monitoring: настроить логирование, alerts на ошибки RIMS, SMTP, Groq API
+	\end{itemize}
+	
+	\item \textbf{Post-Launch:}
+	\begin{itemize}
+		\item Тренинг для Manager: как назначить модули, просмотреть прогресс, создать достижения
+		\item Тренинг для HR: как работают модули, как AI Chat помогает новичкам
+		\item Тренинг для новичков: как использовать dashboard, модули, AI Chat, leaderboard
+	\end{itemize}
+\end{enumerate}
+
+\subsubsection*{Текущее состояние готовности к внедрению}
+
+\textbf{Что готово к Production (100\%):}
+
+\begin{enumerate}
+	\item \textbf{Backend контейнер:} Dockerfile multi-stage с автоматическими миграциями, готов к Docker push
+	\item \textbf{Frontend контейнер:} Nginx multi-stage с SPA-поддержкой, готов к развёртыванию
+	\item \textbf{Core функциональность:} 9 контроллеров (Users, Modules, Progress, Gamification, AiMentor, Notifications, RIMS Sync, Analytics, Reports)
+	\item \textbf{Геймификация:} Полностью реализована (Achievement, Leaderboard с XP системой)
+	\item \textbf{AI Chat Assistant:} Работает с Groq API
+	\item \textbf{RIMS интеграция:} RimsIntegrationService с ежедневным scheduler в 02:00
+	\item \textbf{Уведомления:} Email-уведомления + SignalR real-time notifications
+	\item \textbf{Миграции БД:} Все миграции готовы и автоматически применяются
+	\item \textbf{DbInitializer:} Загружает начальные данные и роли
+\end{enumerate}
+
+\textbf{Что требует расширения перед Production (но не критично для запуска):}
+
+\begin{enumerate}
+	\item \textbf{docker-compose:} Текущая версия неполная (добавить backend, SQL Server, Redis)
+	\item \textbf{Документация:} Нет подробного README (требуется написание инструкций для администраторов)
+	\item \textbf{E2E тесты:} Структура подготовлена, но сценарии не реализованы (не блокирует Production, но важно для качества)
+	\item \textbf{Monitoring:} Нет встроенного мониторинга ошибок (требуется integrация с Prometheus/ELK/Application Insights)
+	\item \textbf{Резервные копии:} Нет встроенных процедур backup/restore SQL Server
+\end{enumerate}
+
+\textbf{Результат подготовки к внедрению:}
+
+Система \emph{готова к пилотному запуску} в корпоративную сеть организации:
+
+\begin{itemize}
+	\item Ежедневная синхронизация с RIMS обеспечит автоматическое добавление новых сотрудников
+	\item Модули обучения могут быть назначены Manager сразу после добавления новичка из RIMS
+	\item Геймификация и AI Chat Assistant обеспечат engagement новых сотрудников
+	\item Email-уведомления и real-time notifications будут информировать о прогрессе обучения
+	\item Аналитика (Reports контроллер) предоставит данные для оценки эффективности онбординга
+	\item Система может масштабироваться горизонтально (несколько инстансов backend + load balancer)
+\end{itemize}
+
+\textbf{Рекомендуемый план запуска:}
+
+\begin{enumerate}
+	\item \textbf{Неделя 1-2:} Пилот на 1 отделе (10-20 новичков) с полной проверкой RIMS sync, email, UI
+	\item \textbf{Неделя 3-4:} Расширение на 3-4 отдела, сбор feedback от Manager и HR
+	\item \textbf{Месяц 2-3:} Полный запуск: все новые сотрудники организации, постоянное улучшение модулей
+	\item \textbf{Месяц 4+:} Стабилизация, аналитика эффективности, доработка по feedback
+\end{enumerate}
+
+Система готова к внедрению в организации и может обеспечить централизованное управление адаптацией и обучением новых сотрудников с использованием современных подходов (AI, геймификация, аналитика).

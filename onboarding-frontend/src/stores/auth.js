@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { usersApi } from '../api/services'
-import { useNotificationsStore } from './notifications'
 
 export const useAuthStore = defineStore('auth', () => {
   // Восстанавливаем пользователя из localStorage (если есть) на старте
@@ -18,8 +17,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const isNewEmployee = computed(() => hasRole('Новый сотрудник'))
-  // Наставник определяется по наличию роли "Наставник"
-  const isMentor = computed(() => hasRole('Наставник'))
+  // Наставник определяется по факту наличия подопечных, а не по роли.
+  const isMentor = computed(() => !!(currentUser.value && currentUser.value.hasMentees))
   const isHR = computed(() => hasRole('HR-специалист'))
   const isManager = computed(() => hasRole('Руководитель подразделения'))
   const isAdmin = computed(() => hasRole('Администратор системы'))
@@ -53,8 +52,6 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (email, password) => {
     try {
       isLoading.value = true
-      localStorage.removeItem('authToken')
-      localStorage.removeItem('currentUser')
       const response = await usersApi.login(email, password)
       
       if (!response.data.success) {
@@ -67,9 +64,6 @@ export const useAuthStore = defineStore('auth', () => {
       // Сохраняем пользователя
       currentUser.value = response.data.user
       localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
-
-      const notificationsStore = useNotificationsStore()
-      await notificationsStore.connect()
       
       return currentUser.value
     } catch (error) {
@@ -110,9 +104,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const logout = async () => {
-    const notificationsStore = useNotificationsStore()
-    await notificationsStore.disconnect()
+  const logout = () => {
     currentUser.value = null
     localStorage.removeItem('currentUser')
     localStorage.removeItem('authToken')

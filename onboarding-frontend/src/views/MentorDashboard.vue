@@ -133,7 +133,8 @@ const loadMentees = async () => {
     isLoading.value = true
     // Here we request the mentees using user's mentor ID
     const res = await usersApi.getMentees(authStore.currentUser.userId)
-    mentees.value = res.data
+    // Обработка ответа: проверяем оба варианта (массив или объект с data)
+    mentees.value = Array.isArray(res) ? res : (res.data || [])
   } catch (error) {
     console.error('Failed to load mentees:', error)
   } finally {

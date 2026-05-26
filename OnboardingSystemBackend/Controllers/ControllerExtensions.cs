@@ -16,8 +16,7 @@ public static class ControllerExtensions
     /// </summary>
     public static async Task<User?> GetCurrentUserAsync(this ControllerBase controller, AppDbContext context)
     {
-        var userIdClaim = controller.User.FindFirst("sub")
-            ?? controller.User.FindFirst(ClaimTypes.NameIdentifier);
+        var userIdClaim = controller.User.FindFirst("sub");
         if (!int.TryParse(userIdClaim?.Value, out var userId))
         {
             return null;
@@ -35,8 +34,7 @@ public static class ControllerExtensions
     /// </summary>
     public static int? GetCurrentUserId(this ControllerBase controller)
     {
-        var userIdClaim = controller.User.FindFirst("sub")
-            ?? controller.User.FindFirst(ClaimTypes.NameIdentifier);
+        var userIdClaim = controller.User.FindFirst("sub");
         if (int.TryParse(userIdClaim?.Value, out var userId))
         {
             return userId;

@@ -42,6 +42,10 @@
           <h3 class="text-lg font-bold text-gray-900 mb-4 pb-3 border-b border-gray-100">Рабочая информация</h3>
           <div class="space-y-4">
             <div>
+              <label class="text-xs text-gray-400 font-medium">Должность</label>
+              <p class="font-bold text-gray-900 mt-0.5">{{ jobTitleLabel }}</p>
+            </div>
+            <div>
               <label class="text-xs text-gray-400 font-medium">Подразделение</label>
               <p class="font-bold text-gray-900 mt-0.5">{{ authStore.currentUser.departmentName }}</p>
             </div>

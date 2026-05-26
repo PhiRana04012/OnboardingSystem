@@ -1,9 +1,20 @@
 <template>
   <div class="space-y-6">
     <div class="flex justify-between items-center">
-      <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
-        Управление наставниками
-      </h1>
+      <div class="flex items-center gap-3">
+        <button
+          @click="goBackToAdmin"
+          class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+          title="Вернуться в администрирование"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
+          Управление наставниками
+        </h1>
+      </div>
     </div>
 
     <!-- Mentor Selection -->
@@ -323,9 +334,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { usersApi, departmentsApi } from '../api/services'
 import { useAuthStore } from '../stores/auth'
 
+const router = useRouter()
 const authStore = useAuthStore()
 
 const selectedMentor = ref(null)
@@ -444,6 +457,10 @@ const formatDate = (dateString) => {
   if (!dateString) return 'Не указано'
   const date = new Date(dateString)
   return date.toLocaleDateString('ru-RU')
+}
+
+const goBackToAdmin = () => {
+  router.push({ name: 'Admin' })
 }
 
 const loadDepartments = async () => {

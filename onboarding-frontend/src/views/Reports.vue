@@ -225,7 +225,7 @@
                   </span>
                   
                   <button 
-                    v-if="!result.isPassed && (authStore.isAdmin || authStore.isHR)"
+                    v-if="authStore.isAdmin || authStore.isHR"
                     @click="resetUserAttempts(result.userId, result.moduleId)"
                     class="ml-3 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-xs font-medium underline"
                     title="Сбросить все попытки по этому модулю"

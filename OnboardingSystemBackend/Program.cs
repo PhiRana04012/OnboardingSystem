@@ -1,9 +1,5 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using OnboardingSystem.Data;
-using OnboardingSystem.Hubs;
 using OnboardingSystem.Services;
 using System.Reflection;
 using QuestPDF.Infrastructure;
@@ -15,12 +11,7 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 
 // Add services
-builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
-builder.Services.AddSignalR();
-builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<IProgressAnalyticsService, ProgressAnalyticsService>();
-builder.Services.AddScoped<ILearningPathService, LearningPathService>();
 
 // Add HTTP Client for RIMS API
 builder.Services.AddHttpClient("RimsApi", client =>
@@ -51,49 +42,6 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // Add Export Service
 builder.Services.AddScoped<IReportExportService, ReportExportService>();
 
-// JWT Bearer — токен с логина подставляется в User, фильтрация по ролям в контроллерах
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var jwtKey = jwtSettings["Key"];
-if (!string.IsNullOrWhiteSpace(jwtKey))
-{
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
-        {
-            options.MapInboundClaims = false;
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings["Issuer"],
-                ValidAudience = jwtSettings["Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-                ClockSkew = TimeSpan.FromMinutes(1)
-            };
-            // Просроченный/битый токен не роняет login и прочие анонимные запросы
-            options.Events = new JwtBearerEvents
-            {
-                OnMessageReceived = context =>
-                {
-                    var accessToken = context.Request.Query["access_token"];
-                    var path = context.HttpContext.Request.Path;
-                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
-                    {
-                        context.Token = accessToken;
-                    }
-                    return Task.CompletedTask;
-                },
-                OnAuthenticationFailed = context =>
-                {
-                    context.NoResult();
-                    return Task.CompletedTask;
-                }
-            };
-        });
-    builder.Services.AddAuthorization();
-}
-
 // Add Authentication Services
 builder.Services.AddScoped<PasswordHasher>();
 builder.Services.AddScoped<JwtTokenGenerator>();
@@ -112,7 +60,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? "Server=.\\SQLEXPRESS;Database=onboarding;Integrated Security=true;TrustServerCertificate=true;";
-    options.UseSqlServer(connectionString, sql => sql.CommandTimeout(60));
+    options.UseSqlServer(connectionString);
 });
 
 // Add Swagger/OpenAPI
@@ -144,23 +92,9 @@ builder.Services.AddSwaggerGen(c =>
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    // Default policy for REST APIs
     options.AddDefaultPolicy(policy =>
     {
-        policy
-            .WithOrigins("http://localhost:3000", "http://localhost:5173")
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
-    
-    // Specific policy for SignalR hubs - must allow credentials
-    options.AddPolicy("SignalRPolicy", policy =>
-    {
-        policy
-            .WithOrigins("http://localhost:3000", "http://localhost:5173")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
     });
 });
 
@@ -184,10 +118,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 // CORS must be before UseAuthorization and MapControllers
 app.UseCors();
-app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHub<NotificationHub>("/hubs/notifications").RequireCors("SignalRPolicy");
 
 // Apply migrations at startup
 using (var scope = app.Services.CreateScope())
