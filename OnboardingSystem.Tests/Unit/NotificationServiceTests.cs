@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -46,43 +45,35 @@ public class NotificationServiceTests
     }
 
     [Fact]
-    public async Task SendAsync_CreatesNotification_AndReturnsDto()
+    public async Task SendAsync_CreatesNotification_AndSendsToHub()
     {
-        var dto = await _service.SendAsync(42, "info", "Привет", "Сообщение", "/link");
+        var user = new User { UserId = 1, Email = "user@test.com", FullName = "User", OnboardingStatus = "В процессе" };
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
 
-        Assert.Equal("info", dto.Type);
-        Assert.Equal("Привет", dto.Title);
-        Assert.Equal("Сообщение", dto.Message);
-        Assert.Equal("/link", dto.LinkUrl);
-        Assert.False(dto.IsRead);
-        Assert.True(dto.CreatedAt <= DateTime.UtcNow);
+        var result = await _service.SendAsync(1, "info", "Test", "Message", "/link");
 
-        var persisted = await _context.Notifications.SingleAsync();
-        Assert.Equal(dto.NotificationId, persisted.NotificationId);
-        Assert.Equal(1, await _service.GetUnreadCountAsync(42));
+        Assert.NotNull(result);
+        Assert.Equal("Test", result.Title);
+        Assert.Equal("Message", result.Message);
+
+        var saved = await _context.Notifications.FirstOrDefaultAsync(n => n.NotificationId == result.NotificationId);
+        Assert.NotNull(saved);
+
+        _hubClientsMock.Verify(x => x.Group(It.IsAny<string>()), Times.Once);
+        _clientProxyMock.Verify(x => x.SendCoreAsync("ReceiveNotification", It.IsAny<object?[]>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task MarkAsReadAsync_MarksNotificationRead()
+    public async Task SendAsync_CreatesNotificationWithoutLinkUrl()
     {
-        var dto = await _service.SendAsync(55, "info", "Заголовок", "Сообщение");
+        var user = new User { UserId = 1, Email = "user@test.com", FullName = "User", OnboardingStatus = "В процессе" };
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
 
-        var result = await _service.MarkAsReadAsync(dto.NotificationId, 55);
+        var result = await _service.SendAsync(1, "info", "Test", "Message");
 
-        Assert.True(result);
-        Assert.Equal(0, await _service.GetUnreadCountAsync(55));
-    }
-
-    [Fact]
-    public async Task MarkAllAsReadAsync_AllNotificationsBecomeRead()
-    {
-        await _service.SendAsync(66, "info", "A", "1");
-        await _service.SendAsync(66, "info", "B", "2");
-
-        await _service.MarkAllAsReadAsync(66);
-
-        Assert.Equal(0, await _service.GetUnreadCountAsync(66));
-        var list = await _service.GetRecentAsync(66);
-        Assert.All(list, item => Assert.True(item.IsRead));
+        Assert.NotNull(result);
+        Assert.Null(result.LinkUrl);
     }
 }

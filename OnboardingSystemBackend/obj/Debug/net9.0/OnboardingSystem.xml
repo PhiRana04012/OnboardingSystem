@@ -676,6 +676,18 @@
         <member name="M:OnboardingSystem.Migrations.AddNotifications.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:OnboardingSystem.Migrations.FixXpGrantLogMultiplierPrecision">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.FixXpGrantLogMultiplierPrecision.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.FixXpGrantLogMultiplierPrecision.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:OnboardingSystem.Migrations.FixXpGrantLogMultiplierPrecision.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:OnboardingSystem.Services.DepartmentAnalyticsService">
             <summary>
             Сервис для получения аналитики по отделам

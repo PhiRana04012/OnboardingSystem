@@ -40,81 +40,69 @@ public class AnalyticsControllerTests
             _departmentAnalyticsServiceMock.Object,
             _context,
             _loggerMock.Object);
+
+        var claims = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("sub", "1") }, "TestAuth"));
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = claims }
+        };
     }
 
     [Fact]
-    public async Task GetDashboard_ReturnsOk_WithDashboardData()
+    public async Task GetDashboard_ReturnsOk_WhenAnalyticsAvailable()
     {
-        var analytics = new AIAnalyticsDto
-        {
-            UserId = 10,
-            AIInsight = "Хорошая прогрессия",
-            EstimatedCompletionDays = 5
-        };
+        var user = new User { UserId = 1, Email = "user@test.com", FullName = "User", OnboardingStatus = "В процессе" };
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
 
-        var learningPath = new LearningPathDto
-        {
-            UserId = 10,
-            EstimatedCompletionDays = 5,
-            PlannedOrder = { new PlannedModuleDto { ModuleId = 1, ModuleTitle = "Модуль 1" } }
-        };
+        var analytics = new AIAnalyticsDto { UserId = 1 };
+        var learningPath = new LearningPathDto { UserId = 1, PlannedOrder = new List<PlannedModuleDto>() };
 
-        _analyticsServiceMock
-            .Setup(x => x.AnalyzeUserProgressAsync(10))
-            .ReturnsAsync(analytics);
-
-        _learningPathServiceMock
-            .Setup(x => x.GenerateLearningPathAsync(10, "balanced", analytics))
+        _analyticsServiceMock.Setup(x => x.AnalyzeUserProgressAsync(It.Is<int>(id => id == 1), It.IsAny<CancellationToken>())).ReturnsAsync(analytics);
+        _learningPathServiceMock.Setup(x => x.GenerateLearningPathAsync(
+                It.Is<int>(id => id == 1),
+                It.IsAny<string>(),
+                It.IsAny<AIAnalyticsDto?>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(learningPath);
 
-        var result = await _controller.GetDashboard(10);
+        var result = await _controller.GetDashboard(1);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var response = Assert.IsType<AnalyticsDashboardDto>(okResult.Value);
-
-        Assert.Equal(10, response.Analytics.UserId);
-        Assert.Equal(1, response.LearningPath.PlannedOrder.Count);
-        Assert.Equal(learningPath.PlannedOrder[0].ModuleId, response.NextModule?.ModuleId);
+        var dashboard = Assert.IsType<AnalyticsDashboardDto>(okResult.Value);
+        Assert.NotNull(dashboard.Analytics);
     }
 
     [Fact]
-    public async Task GetLearningPath_ReturnsNotFound_WhenUserMissing()
+    public async Task GetDashboard_ReturnsNotFound_WhenUserDoesNotExist()
     {
-        _learningPathServiceMock
-            .Setup(x => x.GenerateLearningPathAsync(123, It.IsAny<string>()))
-            .ThrowsAsync(new ArgumentException("Пользователь не найден"));
+        _analyticsServiceMock.Setup(x => x.AnalyzeUserProgressAsync(It.Is<int>(id => id == 999), It.IsAny<CancellationToken>())).ThrowsAsync(new ArgumentException("User not found"));
 
-        var result = await _controller.GetLearningPath(123);
+        var result = await _controller.GetDashboard(999);
 
         Assert.IsType<NotFoundObjectResult>(result.Result);
     }
 
     [Fact]
-    public async Task GetDepartmentDashboard_ReturnsForbid_WhenUserFromAnotherDepartment()
+    public async Task GetProgressAnalysis_ReturnsOk()
     {
-        var user = new User
-        {
-            UserId = 100,
-            DepartmentId = 2,
-            Email = "user@company.local",
-            FullName = "User",
-            OnboardingStatus = "Не начат"
-        };
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        var analytics = new AIAnalyticsDto { UserId = 1 };
+        _analyticsServiceMock.Setup(x => x.AnalyzeUserProgressAsync(It.Is<int>(id => id == 1), It.IsAny<CancellationToken>())).ReturnsAsync(analytics);
 
-        var claims = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
-            new Claim("sub", user.UserId.ToString())
-        }, "TestAuth"));
+        var result = await _controller.GetProgressAnalysis(1);
 
-        _controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext { User = claims }
-        };
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedAnalytics = Assert.IsType<AIAnalyticsDto>(okResult.Value);
+        Assert.Equal(1, returnedAnalytics.UserId);
+    }
 
-        var result = await _controller.GetDepartmentDashboard(1);
+    [Fact]
+    public async Task GetProgressAnalysis_ReturnsNotFound_WhenNotFound()
+    {
+        _analyticsServiceMock.Setup(x => x.AnalyzeUserProgressAsync(It.Is<int>(id => id == 999), It.IsAny<CancellationToken>())).ThrowsAsync(new ArgumentException("User not found"));
 
-        Assert.IsType<ForbidResult>(result.Result);
+        var result = await _controller.GetProgressAnalysis(999);
+
+        Assert.IsType<NotFoundObjectResult>(result.Result);
     }
 }

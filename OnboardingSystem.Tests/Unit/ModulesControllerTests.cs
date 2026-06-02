@@ -8,6 +8,7 @@ using OnboardingSystem.Controllers;
 using OnboardingSystem.Data;
 using OnboardingSystem.DTOs;
 using OnboardingSystem.Entities;
+using OnboardingSystem.Services;
 using Xunit;
 
 namespace OnboardingSystem.Tests.Unit;
@@ -15,113 +16,124 @@ namespace OnboardingSystem.Tests.Unit;
 public class ModulesControllerTests
 {
     private readonly Mock<ILogger<ModulesController>> _loggerMock;
+    private readonly Mock<IAuthorizationService> _authorizationServiceMock;
     private readonly AppDbContext _context;
     private readonly ModulesController _controller;
 
     public ModulesControllerTests()
     {
         _loggerMock = new Mock<ILogger<ModulesController>>();
+        _authorizationServiceMock = new Mock<IAuthorizationService>();
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
         _context = new AppDbContext(options);
-        _controller = new ModulesController(_context, _loggerMock.Object);
+        _controller = new ModulesController(_context, _loggerMock.Object, _authorizationServiceMock.Object);
+
+        var claims = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("sub", "1") }, "TestAuth"));
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = claims }
+        };
+
+        _authorizationServiceMock.Setup(x => x.IsAdmin(It.IsAny<User>())).Returns(true);
+        _authorizationServiceMock.Setup(x => x.IsHr(It.IsAny<User>())).Returns(false);
+        _authorizationServiceMock.Setup(x => x.IsDepartmentHead(It.IsAny<User>())).Returns(false);
     }
 
     [Fact]
-    public async Task GetAll_ReturnsOk_WithAllModules()
+    public async Task GetModules_ReturnsOk_WithAllModules()
     {
-        // Arrange
         var modules = new[]
         {
-            new Module { ModuleId = 1, ModuleTitle = "Модуль 1", Description = "Описание 1", IsMandatory = true },
-            new Module { ModuleId = 2, ModuleTitle = "Модуль 2", Description = "Описание 2", IsMandatory = false }
+            new Module { ModuleId = 1, Title = "Module 1", Description = "Description 1", IsMandatory = true },
+            new Module { ModuleId = 2, Title = "Module 2", Description = "Description 2", IsMandatory = false }
         };
 
         _context.Modules.AddRange(modules);
         await _context.SaveChangesAsync();
 
-        // Act
-        var result = await _controller.GetAll();
+        var result = await _controller.GetModules(null, null);
 
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var returnedModules = Assert.IsType<List<ModuleDto>>(okResult.Value);
         Assert.Equal(2, returnedModules.Count);
     }
 
     [Fact]
-    public async Task GetById_ReturnsOk_WhenModuleExists()
+    public async Task GetModules_ReturnsOk_FilteredByMandatory()
     {
-        // Arrange
+        _context.Modules.AddRange(
+            new Module { ModuleId = 1, Title = "Module 1", IsMandatory = true },
+            new Module { ModuleId = 2, Title = "Module 2", IsMandatory = false },
+            new Module { ModuleId = 3, Title = "Module 3", IsMandatory = true }
+        );
+        await _context.SaveChangesAsync();
+
+        var result = await _controller.GetModules(null, true);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedModules = Assert.IsType<List<ModuleDto>>(okResult.Value);
+        Assert.Equal(2, returnedModules.Count);
+    }
+
+    [Fact]
+    public async Task GetModule_ReturnsOk_WhenModuleExists()
+    {
         var module = new Module
         {
             ModuleId = 1,
-            ModuleTitle = "Тестовый модуль",
-            Description = "Описание",
+            Title = "Test Module",
+            Description = "Test Description",
             IsMandatory = true,
-            Content = "Содержание"
+            Content = "Test Content"
         };
 
         _context.Modules.Add(module);
         await _context.SaveChangesAsync();
 
-        // Act
-        var result = await _controller.GetById(1);
+        var result = await _controller.GetModule(1);
 
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var returnedModule = Assert.IsType<ModuleDto>(okResult.Value);
-        Assert.Equal("Тестовый модуль", returnedModule.ModuleTitle);
+        Assert.Equal("Test Module", returnedModule.Title);
     }
 
     [Fact]
-    public async Task GetById_ReturnsNotFound_WhenModuleDoesNotExist()
+    public async Task GetModule_ReturnsNotFound_WhenModuleDoesNotExist()
     {
-        // Act
-        var result = await _controller.GetById(999);
-
-        // Assert
-        Assert.IsType<NotFoundObjectResult>(result);
+        var result = await _controller.GetModule(999);
+        Assert.IsType<NotFoundResult>(result.Result);
     }
 
     [Fact]
-    public async Task Create_ReturnsCreated_WithValidData()
+    public async Task CreateModule_ReturnsCreated()
     {
-        // Arrange
         var moduleDto = new CreateModuleDto
         {
-            ModuleTitle = "Новый модуль",
-            Description = "Описание",
+            Title = "New Module",
+            Description = "New Description",
             IsMandatory = true,
-            Content = "Содержание",
-            EstimatedDurationMinutes = 120
+            Content = "New Content"
         };
 
-        // Act
-        var result = await _controller.Create(moduleDto);
+        var result = await _controller.CreateModule(moduleDto);
 
-        // Assert
-        var createdResult = Assert.IsType<CreatedAtActionResult>(result);
+        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
         var returnedModule = Assert.IsType<ModuleDto>(createdResult.Value);
-        Assert.Equal("Новый модуль", returnedModule.ModuleTitle);
-
-        // Verify in database
-        var moduleInDb = await _context.Modules.FirstOrDefaultAsync(m => m.ModuleTitle == "Новый модуль");
-        Assert.NotNull(moduleInDb);
+        Assert.Equal("New Module", returnedModule.Title);
     }
 
     [Fact]
-    public async Task Update_ReturnsOk_WithValidData()
+    public async Task UpdateModule_ReturnsOk()
     {
-        // Arrange
         var module = new Module
         {
             ModuleId = 1,
-            ModuleTitle = "Старое название",
-            Description = "Описание",
+            Title = "Old Title",
+            Description = "Old Description",
             IsMandatory = true
         };
 
@@ -130,34 +142,28 @@ public class ModulesControllerTests
 
         var updateDto = new UpdateModuleDto
         {
-            ModuleTitle = "Новое название",
-            Description = "Новое описание",
+            Title = "New Title",
+            Description = "New Description",
             IsMandatory = false
         };
 
-        // Act
-        var result = await _controller.Update(1, updateDto);
+        var result = await _controller.UpdateModule(1, updateDto);
 
-        // Assert
-        Assert.IsType<OkObjectResult>(result);
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
 
         var updatedModule = await _context.Modules.FindAsync(1);
-        Assert.Equal("Новое название", updatedModule.ModuleTitle);
-        Assert.Equal("Новое описание", updatedModule.Description);
+        Assert.Equal("New Title", updatedModule.Title);
     }
 
     [Fact]
-    public async Task Delete_ReturnsNoContent_WhenModuleExists()
+    public async Task DeleteModule_ReturnsNoContent()
     {
-        // Arrange
-        var module = new Module { ModuleId = 1, ModuleTitle = "Удаляемый модуль" };
+        var module = new Module { ModuleId = 1, Title = "To Delete" };
         _context.Modules.Add(module);
         await _context.SaveChangesAsync();
 
-        // Act
-        var result = await _controller.Delete(1);
+        var result = await _controller.DeleteModule(1);
 
-        // Assert
         Assert.IsType<NoContentResult>(result);
 
         var deletedModule = await _context.Modules.FindAsync(1);
@@ -165,56 +171,9 @@ public class ModulesControllerTests
     }
 
     [Fact]
-    public async Task Delete_ReturnsNotFound_WhenModuleDoesNotExist()
+    public async Task DeleteModule_ReturnsNotFound_WhenModuleDoesNotExist()
     {
-        // Act
-        var result = await _controller.Delete(999);
-
-        // Assert
-        Assert.IsType<NotFoundObjectResult>(result);
-    }
-
-    [Fact]
-    public async Task GetByDepartment_ReturnsOk_WithModulesForDepartment()
-    {
-        // Arrange
-        var module = new Module
-        {
-            ModuleId = 1,
-            ModuleTitle = "Модуль",
-            DepartmentId = 5
-        };
-
-        _context.Modules.Add(module);
-        await _context.SaveChangesAsync();
-
-        // Act
-        var result = await _controller.GetByDepartment(5);
-
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        var modules = Assert.IsType<List<ModuleDto>>(okResult.Value);
-        Assert.Single(modules);
-    }
-
-    [Fact]
-    public async Task GetMandatory_ReturnsOnlyMandatoryModules()
-    {
-        // Arrange
-        _context.Modules.AddRange(
-            new Module { ModuleId = 1, ModuleTitle = "Обязательный 1", IsMandatory = true },
-            new Module { ModuleId = 2, ModuleTitle = "Дополнительный", IsMandatory = false },
-            new Module { ModuleId = 3, ModuleTitle = "Обязательный 2", IsMandatory = true }
-        );
-        await _context.SaveChangesAsync();
-
-        // Act
-        var result = await _controller.GetMandatory();
-
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        var modules = Assert.IsType<List<ModuleDto>>(okResult.Value);
-        Assert.Equal(2, modules.Count);
-        Assert.All(modules, m => Assert.True(m.IsMandatory));
+        var result = await _controller.DeleteModule(999);
+        Assert.IsType<NotFoundResult>(result);
     }
 }

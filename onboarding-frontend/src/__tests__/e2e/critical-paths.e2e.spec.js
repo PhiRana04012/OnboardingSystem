@@ -1,13 +1,4 @@
-/**
- * E2E тесты для критических путей
- * 
- * ПРИМЕЧАНИЕ: Полные E2E тесты требуют Playwright или Cypress
- * 
- * Для запуска Playwright тестов:
- * 1. npm install -D @playwright/test
- * 2. npx playwright install
- * 3. npx playwright test
- */
+
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createAppRouter } from '../../router'

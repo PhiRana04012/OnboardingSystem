@@ -428,6 +428,7 @@ public class UsersController : ControllerBase
 
         var mentees = await _context.Users
             .Include(u => u.Department)
+            .Include(u => u.JobTitle)
             .Include(u => u.Roles)
             .Where(u => u.MentorId == mentorId)
             .Select(u => new
@@ -436,7 +437,7 @@ public class UsersController : ControllerBase
                 FullName = u.FullName,
                 Email = u.Email,
                 DepartmentName = u.Department != null ? u.Department.Name : "Не указано",
-                JobTitle = u.JobTitle,
+                JobTitle = u.JobTitle != null ? u.JobTitle.Title : "Не указана",
                 HireDate = u.HireDate,
                 OnboardingStatus = u.OnboardingStatus,
                 TelegramTag = u.TelegramTag,

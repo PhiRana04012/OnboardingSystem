@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OnboardingSystem.Data;
 using OnboardingSystem.Services;
+using OnboardingSystem.Hubs;
 using System.Reflection;
 using QuestPDF.Infrastructure;
 
@@ -12,6 +13,7 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 // Add HTTP Client for RIMS API
 builder.Services.AddHttpClient("RimsApi", client =>
@@ -33,6 +35,7 @@ builder.Services.AddHttpClient("RimsApi", client =>
 });
 
 // builder.Services.AddScoped<IProgressService, ProgressService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IGamificationService, GamificationService>();
 builder.Services.AddHttpClient<IRimsIntegrationService, RimsIntegrationService>();
 
@@ -119,6 +122,7 @@ app.UseHttpsRedirection();
 // CORS must be before UseAuthorization and MapControllers
 app.UseCors();
 app.UseAuthorization();
+app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapControllers();
 
 // Apply migrations at startup

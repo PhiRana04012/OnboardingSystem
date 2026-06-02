@@ -259,6 +259,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.XpGrantId).HasColumnName("XpGrantID");
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.ActionType).HasMaxLength(100);
+            entity.Property(e => e.Multiplier).HasPrecision(10, 4);
             entity.Property(e => e.GrantedAt).HasDefaultValueSql("(getdate())");
 
             entity.HasOne(d => d.User)

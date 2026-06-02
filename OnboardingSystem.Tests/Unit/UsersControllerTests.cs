@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +22,7 @@ public class UsersControllerTests
     private readonly Mock<IAuthenticationProvider> _authProviderMock;
     private readonly PasswordHasher _passwordHasher;
     private readonly Mock<IPasswordResetService> _passwordResetServiceMock;
-    private readonly Mock<IAppAuthorizationService> _authorizationServiceMock;
+    private readonly Mock<IAuthorizationService> _authorizationServiceMock;
 
     public UsersControllerTests()
     {
@@ -33,7 +35,7 @@ public class UsersControllerTests
         _authProviderMock = new Mock<IAuthenticationProvider>();
         _passwordHasher = new PasswordHasher();
         _passwordResetServiceMock = new Mock<IPasswordResetService>();
-        _authorizationServiceMock = new Mock<IAppAuthorizationService>();
+        _authorizationServiceMock = new Mock<IAuthorizationService>();
 
         _passwordResetServiceMock
             .Setup(x => x.CreatePasswordSetupTokenAsync(It.IsAny<int>(), It.IsAny<TimeSpan>()))
@@ -68,6 +70,28 @@ public class UsersControllerTests
     [Fact]
     public async Task CreateUser_ReturnsCreated_WhenUserEmailIsUnique()
     {
+        // Setup current user context with userId = 100
+        var claims = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim("sub", "100")
+        }, "TestAuth"));
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = claims }
+        };
+
+        // Add current user to context
+        var currentUser = new User
+        {
+            UserId = 100,
+            Email = "admin@example.com",
+            FullName = "Admin User",
+            OnboardingStatus = "Завершён"
+        };
+        _context.Users.Add(currentUser);
+        await _context.SaveChangesAsync();
+
         var dto = new CreateUserDto
         {
             FullName = "Новый пользователь",
@@ -81,16 +105,38 @@ public class UsersControllerTests
 
         var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
         Assert.Equal(nameof(UsersController.GetUser), createdResult.ActionName);
-        Assert.Equal(1, await _context.Users.CountAsync());
+        Assert.Equal(2, await _context.Users.CountAsync());
     }
 
     [Fact]
     public async Task CreateUser_ReturnsConflict_WhenEmailAlreadyExists()
     {
+        // Setup current user context with userId = 100
+        var claims = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim("sub", "100")
+        }, "TestAuth"));
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = claims }
+        };
+
+        // Add current user to context
+        var currentUser = new User
+        {
+            UserId = 100,
+            Email = "admin@example.com",
+            FullName = "Admin User",
+            OnboardingStatus = "Завершён"
+        };
+        _context.Users.Add(currentUser);
+
         _context.Users.Add(new User
         {
             Email = "existing@example.com",
-            FullName = "Существующий пользователь"
+            FullName = "Существующий пользователь",
+            OnboardingStatus = "Не начат"
         });
         await _context.SaveChangesAsync();
 
